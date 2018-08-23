@@ -1,0 +1,30 @@
+Package: aquametBio
+Type: Package
+Title: Calculate NRSA and NLA Biological Metrics & Indicators
+Version: 1.0
+Author: Karen Blocksom
+Maintainer: Karen Blocksom <blocksom.karen@epa.gov>
+Description: This package calculates fish and macroinvertebrate metrics used 
+    in the National Rivers and Streams Assessment (NRSA) and the
+    National Lakes Assessment (NLA). It also contains functions to assign 
+    condition class for fish and macroinvertebrates for NRSA and NLA. Default
+    taxa lists as used in NRSA 2013-14 for fish and macroinvertebrates are 
+    included in the package.
+Depends:
+    R (>= 3.0)
+Imports:
+    plyr,
+    dplyr,
+    reshape2,
+    Hmisc,
+    gtools,
+    stringr
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+License: CC0
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+VignetteBuilder: knitr
