@@ -4,7 +4,8 @@
 \alias{calcFishAnomMets}
 \title{Calculate anomaly-based metrics}
 \usage{
-calcFishAnomMets(indata, sampID = "UID", ct = "TOTAL", anomct = "ANOM_CT")
+calcFishAnomMets(indata, sampID = "UID", ct = "TOTAL",
+  anomct = "ANOM_CT")
 }
 \arguments{
 \item{indata}{Input data frame containing variables as identified
