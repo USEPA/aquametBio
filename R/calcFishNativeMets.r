@@ -46,28 +46,28 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
   # Keep data frame with crosswalk info between sampID and SAMPID
   samples <- unique(subset(indata,select=c(sampID,'SAMPID')))
 
-  # Rename counts and distinct variables to FINAL_CT and IS_DISTINCT
-  names(indata)[names(indata)==ct] <- 'FINAL_CT'
+  # Rename counts and distinct variables to TOTAL and IS_DISTINCT
+  names(indata)[names(indata)==ct] <- 'TOTAL'
   names(indata)[names(indata)==dist] <- 'IS_DISTINCT'
   names(indata)[names(indata)==taxa_id] <- 'TAXA_ID'
   names(indata)[names(indata)==nonnat] <- 'NONNATIVE'
 
-  indata[,c('FINAL_CT','IS_DISTINCT')] <- lapply(indata[,c('FINAL_CT','IS_DISTINCT')],as.numeric)
+  indata[,c('TOTAL','IS_DISTINCT')] <- lapply(indata[,c('TOTAL','IS_DISTINCT')],as.numeric)
   indata$TAXA_ID <- as.character(indata$TAXA_ID)
 
-  ## for inCts1, keep only observations without missing or zero FINAL_CT values or TAXA_ID and TAXA_ID!=99999
-  indata.1 <- subset(indata,!is.na(TAXA_ID) & !is.na(FINAL_CT) & FINAL_CT!=0)
+  ## for inCts1, keep only observations without missing or zero TOTAL values or TAXA_ID and TAXA_ID!=99999
+  indata.1 <- subset(indata,!is.na(TAXA_ID) & !is.na(TOTAL) & TOTAL!=0)
 
-  indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID','NONNATIVE'),summarise,IS_DISTINCT=max(IS_DISTINCT),FINAL_CT=sum(FINAL_CT))
+  indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID','NONNATIVE'),summarise,IS_DISTINCT=max(IS_DISTINCT),TOTAL=sum(TOTAL))
 
   # Make sure all necessary columns in inCts are numeric
-  inCts <- plyr::mutate(indata.2,FINAL_CT=as.numeric(FINAL_CT),IS_DISTINCT=as.integer(IS_DISTINCT))
+  inCts <- plyr::mutate(indata.2,TOTAL=as.numeric(TOTAL),IS_DISTINCT=as.integer(IS_DISTINCT))
 
   if(any(unique(inCts$NON_NATIVE) %nin% c('Y','N'))){
     return(print("No native and alien datasets were created because NON_NATIVE must only be 'Y' or 'N' values"))
   }
 
-  inCts.1 <- plyr::ddply(inCts, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),TOTLNTAX=sum(IS_DISTINCT)) %>%
+  inCts.1 <- plyr::ddply(inCts, "SAMPID", mutate, TOTLNIND=sum(TOTAL),TOTLNTAX=sum(IS_DISTINCT)) %>%
     mutate(ALIEN=ifelse(NONNATIVE=='Y',1,NA),NAT=ifelse(NONNATIVE=='N',1,NA))
 
   totals <- unique(inCts.1[,c('SAMPID','TOTLNTAX','TOTLNIND')])
@@ -77,11 +77,11 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
 
   outMet <- plyr::ddply(inCts.1, c("SAMPID"), summarise,
                         ALIENNTAX=sum(IS_DISTINCT*ALIEN,na.rm=T),
-                        ALIENPIND=round(sum(FINAL_CT*ALIEN/TOTLNIND,na.rm=T)*100,2),
+                        ALIENPIND=round(sum(TOTAL*ALIEN/TOTLNIND,na.rm=T)*100,2),
                         ALIENPTAX=round(sum(IS_DISTINCT*ALIEN/TOTLNTAX,na.rm=T)*100,2),
                         NAT_TOTLNTAX=sum(IS_DISTINCT*NAT,na.rm=T),
-                        NAT_TOTLNIND=sum(FINAL_CT*NAT,na.rm=T),
-                        NAT_PIND=round(sum(FINAL_CT*NAT/TOTLNIND,na.rm=T)*100,2),
+                        NAT_TOTLNIND=sum(TOTAL*NAT,na.rm=T),
+                        NAT_PIND=round(sum(TOTAL*NAT/TOTLNIND,na.rm=T)*100,2),
                         NAT_PTAX=round(sum(IS_DISTINCT*NAT/TOTLNTAX,na.rm=T)*100,2),.progress='tk')
 
   outMet.1 <- merge(outMet,empty_base,all=TRUE) %>%

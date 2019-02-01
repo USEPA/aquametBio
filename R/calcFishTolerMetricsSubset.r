@@ -138,8 +138,8 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   inTaxa <- subset(inTaxa,select=names(inTaxa) %in% c(taxa_id,tol,tolval,vel,habitat,trophic,migr))
 
-  # Rename counts and distinct variables to FINAL_CT and IS_DISTINCT
-  names(indata)[names(indata)==ct] <- 'FINAL_CT'
+  # Rename counts and distinct variables to TOTAL and IS_DISTINCT
+  names(indata)[names(indata)==ct] <- 'TOTAL'
   names(indata)[names(indata)==dist] <- 'IS_DISTINCT'
   names(indata)[names(indata)==taxa_id] <- 'TAXA_ID'
   names(indata)[names(indata)==nonnat] <- 'NONNATIVE'
@@ -164,21 +164,21 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
     names(inTaxa)[names(inTaxa)==migr] <- 'MIGRATORY'
   }
 
-  indata[,c('FINAL_CT','IS_DISTINCT')] <- lapply(indata[,c('FINAL_CT','IS_DISTINCT')],as.numeric)
+  indata[,c('TOTAL','IS_DISTINCT')] <- lapply(indata[,c('TOTAL','IS_DISTINCT')],as.numeric)
   indata$TAXA_ID <- as.character(indata$TAXA_ID)
   inTaxa$TAXA_ID <- as.character(inTaxa$TAXA_ID)
   inTaxa$TOL_VAL <- as.numeric(inTaxa$TOL_VAL)
 
-  ## for inCts1, keep only observations without missing or zero FINAL_CT values or TAXA_ID and TAXA_ID!=99999
-  indata.1 <- subset(indata,!is.na(TAXA_ID) & !is.na(FINAL_CT) & FINAL_CT!=0)
+  ## for inCts1, keep only observations without missing or zero TOTAL values or TAXA_ID and TAXA_ID!=99999
+  indata.1 <- subset(indata,!is.na(TAXA_ID) & !is.na(TOTAL) & TOTAL!=0)
 
-  ## Now sum by TAXA_ID for ANOM_CT and for FINAL_CT for each sample
+  ## Now sum by TAXA_ID for ANOM_CT and for TOTAL for each sample
   # Two approaches depending on whether or not NON_NATIVE occurs in the counts data frame
   if('NONNATIVE' %in% names(indata.1)){
-    indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID','NONNATIVE'),summarise,IS_DISTINCT=max(IS_DISTINCT),FINAL_CT=sum(FINAL_CT))
+    indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID','NONNATIVE'),summarise,IS_DISTINCT=max(IS_DISTINCT),TOTAL=sum(TOTAL))
     CALCNAT <- 'Y'
   }else{
-    indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID'),summarise,IS_DISTINCT=max(IS_DISTINCT),FINAL_CT=sum(FINAL_CT))
+    indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID'),summarise,IS_DISTINCT=max(IS_DISTINCT),TOTAL=sum(TOTAL))
     CALCNAT <- 'N'
   }
   # Find all samples with a missing TAXA_ID, which means there are no counts for the site, and output the rows so the user can
@@ -189,16 +189,16 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   }
 
   # Make sure all necessary columns in inCts are numeric
-  inCts <- plyr::mutate(indata.2,FINAL_CT=as.numeric(FINAL_CT),IS_DISTINCT=as.integer(IS_DISTINCT))
+  inCts <- plyr::mutate(indata.2,TOTAL=as.numeric(TOTAL),IS_DISTINCT=as.integer(IS_DISTINCT))
 
   inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID')
 
   if(CALCNAT=='Y'){
-    inCts.1 <- dplyr::select(inCts.1,SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT,NONNATIVE) %>%
-    subset(!is.na(FINAL_CT) & FINAL_CT>0)
+    inCts.1 <- dplyr::select(inCts.1,SAMPID, TAXA_ID, TOTAL, IS_DISTINCT,NONNATIVE) %>%
+    subset(!is.na(TOTAL) & TOTAL>0)
   }else{
-    inCts.1 <- dplyr::select(inCts.1,SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT) %>%
-      subset(!is.na(FINAL_CT) & FINAL_CT>0)
+    inCts.1 <- dplyr::select(inCts.1,SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
+      subset(!is.na(TOTAL) & TOTAL>0)
   }
   # Now create indicator variables
   inTaxa.1 <- plyr::mutate(inTaxa,NTOL=ifelse(TOLERANCE %in% c('S','I'),1,NA)
@@ -297,13 +297,13 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   taxalong <- reshape2::melt(inTaxa.2,id.vars='TAXA_ID',variable.name='TRAIT',na.rm=TRUE) %>%
     plyr::mutate(TRAIT=as.character(TRAIT))
 
-  inCts.2 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),
+  inCts.2 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
                          TOTLNTAX=sum(IS_DISTINCT))
 
   if(CALCNAT=='Y'){
-    inCts.2 <- dplyr::select(inCts.2,SAMPID,FINAL_CT,IS_DISTINCT,TAXA_ID,TOTLNTAX,TOTLNIND,NONNATIVE)
+    inCts.2 <- dplyr::select(inCts.2,SAMPID,TOTAL,IS_DISTINCT,TAXA_ID,TOTLNTAX,TOTLNIND,NONNATIVE)
   }else{
-    inCts.2 <- dplyr::select(inCts.2, SAMPID,FINAL_CT,IS_DISTINCT,TAXA_ID,TOTLNTAX,TOTLNIND)
+    inCts.2 <- dplyr::select(inCts.2, SAMPID,TOTAL,IS_DISTINCT,TAXA_ID,TOTLNTAX,TOTLNIND)
   }
 
   totals <- unique(inCts.2[,c('SAMPID','TOTLNTAX','TOTLNIND')])
@@ -316,7 +316,7 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   # trait in taxalist
   outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT"), summarise,
                   NTAX=sum(IS_DISTINCT),
-                  PIND=round(sum(FINAL_CT/TOTLNIND)*100,2),
+                  PIND=round(sum(TOTAL/TOTLNIND)*100,2),
                   PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
 
   # Melt df to create metric names, then recast into wide format with metric
@@ -339,14 +339,14 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
     }else{
       inNative <- subset(inCts.2,NONNATIVE=='N')
       if(length(inNative)>0){
-        inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(FINAL_CT),
+        inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(TOTAL),
                                              NAT_TOTLNTAX=sum(IS_DISTINCT))
         totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])
 
         natMets <- merge(inNative.tot, taxalong, by='TAXA_ID') %>%
           plyr::ddply(c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND'),summarise,
                                   NTAX=sum(IS_DISTINCT),
-                                  PIND=round(sum(FINAL_CT/NAT_TOTLNIND)*100,2),
+                                  PIND=round(sum(TOTAL/NAT_TOTLNIND)*100,2),
                                   PTAX=round(sum(IS_DISTINCT/NAT_TOTLNTAX)*100,2), .progress='tk')
 
 

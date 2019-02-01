@@ -53,8 +53,8 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
 
   inCts <- subset(inCts,select=c(sampID,ct,dist,taxa_id))
-  # Rename ct and dist to FINAL_CT and IS_DISTINCT
-  names(inCts)[names(inCts)==ct] <- 'FINAL_CT'
+  # Rename ct and dist to TOTAL and IS_DISTINCT
+  names(inCts)[names(inCts)==ct] <- 'TOTAL'
   names(inCts)[names(inCts)==dist] <- 'IS_DISTINCT'
   names(inCts)[names(inCts)==taxa_id] <- 'TAXA_ID'
 
@@ -90,8 +90,8 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   samples <- unique(subset(inCts,select=c(sampID,'SAMPID')))
   inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
-    dplyr::select(SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT) %>%
-    subset(!is.na(FINAL_CT) & FINAL_CT>0)
+    dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
+    subset(!is.na(TOTAL) & TOTAL>0)
 
   inTaxa.1 <- mutate(inTaxa, EPT_=ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
                      ,EPHE=ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA)
@@ -126,7 +126,7 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
-  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),
+  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
                   TOTLNTAX=sum(IS_DISTINCT))
 
   # Merge the count data with the taxalist containing only the traits of
@@ -136,8 +136,8 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # Calculate no. individuals, % individuals, no. taxa, and % taxa for each
   # trait in taxalist
   outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
-                  NIND=sum(FINAL_CT), NTAX=sum(IS_DISTINCT),
-                  PIND=round(sum(FINAL_CT/TOTLNIND)*100,2),
+                  NIND=sum(TOTAL), NTAX=sum(IS_DISTINCT),
+                  PIND=round(sum(TOTAL/TOTLNIND)*100,2),
                   PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
 
   # Melt df to create metric names, then recast into wide format with metric
@@ -259,8 +259,8 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   }
 
   inCts <- subset(inCts,select=c(sampID,ct,dist,taxa_id))
-  # Rename ct and dist to FINAL_CT and IS_DISTINCT
-  names(inCts)[names(inCts)==ct] <- 'FINAL_CT'
+  # Rename ct and dist to TOTAL and IS_DISTINCT
+  names(inCts)[names(inCts)==ct] <- 'TOTAL'
   names(inCts)[names(inCts)==dist] <- 'IS_DISTINCT'
   names(inCts)[names(inCts)==taxa_id] <- 'TAXA_ID'
 
@@ -298,8 +298,8 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   samples <- unique(subset(inCts,select=c(sampID,'SAMPID')))
   inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
-    dplyr::select(SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT) %>%
-    subset(!is.na(FINAL_CT) & FINAL_CT>0)
+    dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
+    subset(!is.na(TOTAL) & TOTAL>0)
 
   inTaxa.1 <- mutate(inTaxa
                      ,COFI=ifelse(str_detect(FFG,'CF'), 1, NA)
@@ -322,7 +322,7 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
-  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),
+  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
                          TOTLNTAX=sum(IS_DISTINCT))
 
   # Merge the count data with the taxalist containing only the traits of
@@ -333,7 +333,7 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # trait in taxalist
   outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
                         NTAX=sum(IS_DISTINCT),
-                        PIND=round(sum(FINAL_CT/TOTLNIND)*100,2),
+                        PIND=round(sum(TOTAL/TOTLNIND)*100,2),
                         PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
 
   # Melt df to create metric names, then recast into wide format with metric
@@ -428,8 +428,8 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   }
 
   inCts <- subset(inCts,select=c(sampID,ct,dist,taxa_id))
-  # Rename ct and dist to FINAL_CT and IS_DISTINCT
-  names(inCts)[names(inCts)==ct] <- 'FINAL_CT'
+  # Rename ct and dist to TOTAL and IS_DISTINCT
+  names(inCts)[names(inCts)==ct] <- 'TOTAL'
   names(inCts)[names(inCts)==dist] <- 'IS_DISTINCT'
   names(inCts)[names(inCts)==taxa_id] <- 'TAXA_ID'
 
@@ -463,8 +463,8 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   samples <- unique(subset(inCts,select=c(sampID,'SAMPID')))
   inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
-    dplyr::select(SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT) %>%
-    subset(!is.na(FINAL_CT) & FINAL_CT>0)
+    dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
+    subset(!is.na(TOTAL) & TOTAL>0)
 
   inTaxa.1 <- mutate(inTaxa
                      ,BURR=ifelse(stringr::str_detect(HABIT,'BU'), 1, NA)
@@ -483,7 +483,7 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
-  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),
+  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
                          TOTLNTAX=sum(IS_DISTINCT))
 
   # Merge the count data with the taxalist containing only the traits of
@@ -494,7 +494,7 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # trait in taxalist
   outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
                         NTAX=sum(IS_DISTINCT),
-                        PIND=round(sum(FINAL_CT/TOTLNIND)*100,2),
+                        PIND=round(sum(TOTAL/TOTLNIND)*100,2),
                         PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
 
   # Melt df to create metric names, then recast into wide format with metric
@@ -586,8 +586,8 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   }
 
   inCts <- subset(inCts,select=c(sampID,ct,dist,taxa_id))
-  # Rename ct and dist to FINAL_CT and IS_DISTINCT
-  names(inCts)[names(inCts)==ct] <- 'FINAL_CT'
+  # Rename ct and dist to TOTAL and IS_DISTINCT
+  names(inCts)[names(inCts)==ct] <- 'TOTAL'
   names(inCts)[names(inCts)==dist] <- 'IS_DISTINCT'
   names(inCts)[names(inCts)==taxa_id] <- 'TAXA_ID'
 
@@ -622,8 +622,8 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   samples <- unique(subset(inCts,select=c(sampID,'SAMPID')))
   inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
-    dplyr::select(SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT) %>%
-    subset(!is.na(FINAL_CT) & FINAL_CT>0)
+    dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
+    subset(!is.na(TOTAL) & TOTAL>0)
 
   inTaxa.1 <- mutate(inTaxa
                      ,TOLR=ifelse(PTV >= 7, 1, NA)
@@ -647,7 +647,7 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
-  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),
+  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
                          TOTLNTAX=sum(IS_DISTINCT))
 
   # Merge the count data with the taxalist containing only the traits of
@@ -658,7 +658,7 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # trait in taxalist
   outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
                         NTAX=sum(IS_DISTINCT),
-                        PIND=round(sum(FINAL_CT/TOTLNIND)*100,2),
+                        PIND=round(sum(TOTAL/TOTLNIND)*100,2),
                         PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
 
   # Melt df to create metric names, then recast into wide format with metric
@@ -764,8 +764,8 @@ calcBentDominMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   }
 
   inCts <- subset(inCts,select=c(sampID,ct,dist,taxa_id))
-  # Rename ct and dist to FINAL_CT and IS_DISTINCT
-  names(inCts)[names(inCts)==ct] <- 'FINAL_CT'
+  # Rename ct and dist to TOTAL and IS_DISTINCT
+  names(inCts)[names(inCts)==ct] <- 'TOTAL'
   names(inCts)[names(inCts)==dist] <- 'IS_DISTINCT'
   names(inCts)[names(inCts)==taxa_id] <- 'TAXA_ID'
 
@@ -798,8 +798,8 @@ calcBentDominMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   samples <- unique(subset(inCts,select=c(sampID,'SAMPID')))
   inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
-    dplyr::select(SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT) %>%
-    subset(!is.na(FINAL_CT) & FINAL_CT>0)
+    dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
+    subset(!is.na(TOTAL) & TOTAL>0)
 
   # Calculate Shannon Diversity
   outMet <- ShanDiversity(inCts.1)
@@ -820,8 +820,8 @@ calcBentDominMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
     # Now calculate % dominant individuals in the top N taxa, but using totlnind
     # in sample as base of calculation
     chiroIn <- merge(inCts,inTaxa[,c('TAXA_ID','FAMILY')],by="TAXA_ID") %>%
-      subset(FAMILY=='CHIRONOMIDAE', select=c('SAMPID','TAXA_ID','FINAL_CT','IS_DISTINCT')) %>%
-      plyr::ddply('SAMPID', mutate, TOTLDIST=sum(IS_DISTINCT*FINAL_CT))
+      subset(FAMILY=='CHIRONOMIDAE', select=c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')) %>%
+      plyr::ddply('SAMPID', mutate, TOTLDIST=sum(IS_DISTINCT*TOTAL))
 
     outMet <- merge(outMet, plyr::rename(Dominance(chiroIn,topN=1),
                                          c("DOM1PIND"="CHIRDOM1PIND")), by="SAMPID", all.x=TRUE)

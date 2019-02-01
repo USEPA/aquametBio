@@ -13,49 +13,49 @@ calcAllFishMets(indf, inTaxa = NULL, sampID = "UID",
   comname = "NAME")
 }
 \arguments{
-\item{indf}{A data frame containing, at minimum, the variables 
+\item{indf}{A data frame containing, at minimum, the variables
 specified in the arguments for sampID, dist, ct, and taxa_id}
 
-\item{inTaxa}{a data frame containing taxonomic information, 
-including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
-and TRIBE, as well as autecology traits with names that match those 
+\item{inTaxa}{a data frame containing taxonomic information,
+including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY,
+and TRIBE, as well as autecology traits with names that match those
 in the arguments ffg, habit, and ptv. In addition, there
-should be a variable with the name in argument taxa_id that matches 
+should be a variable with the name in argument taxa_id that matches
 with all of those in the indf data frame}
 
-\item{sampID}{A character vector containing the names of all 
-variables in indf that specify a unique sample. If not specified, 
+\item{sampID}{A character vector containing the names of all
+variables in indf that specify a unique sample. If not specified,
 the default is \emph{UID}}
 
-\item{dist}{A string with the name of the distinctness variable, 
-which is assumed to have only values of 0 or 1. If not specified, 
+\item{dist}{A string with the name of the distinctness variable,
+which is assumed to have only values of 0 or 1. If not specified,
 the default is \emph{IS_DISTINCT}.}
 
-\item{ct}{A string with the name of the count variable. If not 
-specified, the default is \emph{FINAL_CT}.}
+\item{ct}{A string with the name of the count variable. If not
+specified, the default is \emph{TOTAL}.}
 
-\item{anomct}{A string with the name of the count variable. If not 
+\item{anomct}{A string with the name of the count variable. If not
 specified, the default is \emph{ANOM_CT}.}
 
-\item{taxa_id}{A string with the name of the taxon ID variable 
-in \emph{indf} that matches that in \emph{inTaxa}. The default 
+\item{taxa_id}{A string with the name of the taxon ID variable
+in \emph{indf} that matches that in \emph{inTaxa}. The default
 value is \emph{TAXA_ID}.}
 
-\item{tol}{A string with the name of the variable in the 
+\item{tol}{A string with the name of the variable in the
 \emph{inTaxa} taxalist containing tolerance categories. Valid
 values include S (sensitive), I (intermediate), and T (tolerant).
 The default value is \emph{TOLERANCE}.}
 
-\item{tolval}{A string with the name of the variable in the 
+\item{tolval}{A string with the name of the variable in the
 \emph{inTaxa} taxalist containing numeric tolerance values.
 Valid values range from 0 to 10. The default value is TOL_VAL.}
 
-\item{vel}{A strings with the name of the variable in the 
+\item{vel}{A strings with the name of the variable in the
 \emph{inTaxa} taxalist containing velocity preference values.
-Valid values include R (Rheophil), P (Pool), O (Other), or 
+Valid values include R (Rheophil), P (Pool), O (Other), or
 blank, if unknown. The default value is \emph{VELOCITY}.}
 
-\item{habitat}{A string with the name of the variable in 
+\item{habitat}{A string with the name of the variable in
 \emph{inTaxa} containing habitat preference values. Valid
 values include B (benthic), W (water column), E (edge), or
 blank, if unknown. The default value is \emph{HABITAT}.}
@@ -66,48 +66,48 @@ values include I (invertivore), C (carnivore), O (omnivore),
 H (herbivore), or blank if unknown. The default value is
 \emph{inTaxa} is TROPHIC.}
 
-\item{migr}{A string with the name of the variable in 
-\emph{inTaxa} containing migratory status value. Valid 
+\item{migr}{A string with the name of the variable in
+\emph{inTaxa} containing migratory status value. Valid
 values include N (No), Y (Yes), and blank if unknown. The
 default value is \emph{MIGRATORY}.}
 
-\item{nonnat}{A string with the name of the optional variable in 
-\emph{inCts} containing non-native status. Valid values are 'Y' for 
-non-native and 'N' for native. The default name 
+\item{nonnat}{A string with the name of the optional variable in
+\emph{inCts} containing non-native status. Valid values are 'Y' for
+non-native and 'N' for native. The default name
 is \emph{NONNATIVE}.}
 
-\item{reprod}{A string with the name of the variable in 
-\emph{inTaxa} containing reproductive trait values. Valid 
+\item{reprod}{A string with the name of the variable in
+\emph{inTaxa} containing reproductive trait values. Valid
 values include C (Clean, coarse lithophil), D (Drifter),
 G (Guarder), O (Other), or blank if unknown. The default
 value is \emph{REPROD}.}
 
-\item{temp}{A string with the name of the variable in 
+\item{temp}{A string with the name of the variable in
 \emph{inTaxa} containing the temperature preference values.
-Valid values include WM (warm), CD (cold water), CL (cool water), 
+Valid values include WM (warm), CD (cold water), CL (cool water),
 or blank if unknow. The default value is \emph{TEMP}.}
 
-\item{family}{A string with the name of the variable in the 
-\emph{inTaxa} taxalist containing family name. The default value 
+\item{family}{A string with the name of the variable in the
+\emph{inTaxa} taxalist containing family name. The default value
 is \emph{FAMILY}.}
 
-\item{genus}{A string with the name of the variable in the 
+\item{genus}{A string with the name of the variable in the
 \emph{inTaxa} taxalist containing the genus name. The default
 value is \emph{GENUS}}
 
-\item{comname}{A string with the name of the variable in the 
-\emph{inTaxa} taxalist containing the common name. The 
+\item{comname}{A string with the name of the variable in the
+\emph{inTaxa} taxalist containing the common name. The
 default value is \emph{NAME}.}
 }
 \value{
-A data frame containing the variables in sampID and 
+A data frame containing the variables in sampID and
 all fish metrics as additional variables. These are listed in
 the document \emph{NRSA_Fish_Metric_Descriptions.pdf} included
 in this package, which contains metric descriptions.
 }
 \description{
-This is a wrapper function that calculates 
-all fish metrics as used in the National Aquatic 
+This is a wrapper function that calculates
+all fish metrics as used in the National Aquatic
 Resource Surveys.
 }
 \examples{

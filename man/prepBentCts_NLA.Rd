@@ -5,23 +5,24 @@
 \title{Aggregate benthic macroinvertebrate data for use
 with NLA benthic metrics and MMIs}
 \usage{
-prepBentCts_NLA(inCts, inTaxa = bentTaxa, sampID = "UID",
+prepBentCts_NLA(inCts, inTaxa = bentTaxa_nla, sampID = "UID",
   ct = "TOTAL", taxa_id = "TAXA_ID")
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables
-specified in the arguments for sampID, ct, and taxa_id}
+specified in the arguments for sampID, ct, and taxa_id.}
 
 \item{inTaxa}{a data frame containing taxonomic information,
 including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY,
 and TRIBE, as well as autecology traits with names that match those
 in the arguments ffg, habit, and ptv. In addition, there
 should be a variable with the name in argument taxa_id that matches
-with all of those in the indf data frame}
+with all of those in the indf data frame. The default data frame
+is bentTaxa_nla.}
 
 \item{sampID}{A character vector containing the names of all
 variables in indf that specify a unique sample. If not specified,
-the default is \emph{UID}}
+the default is \emph{UID}.}
 
 \item{ct}{A string with the name of the count variable. If not
 specified, the default is \emph{TOTAL}.}

@@ -22,10 +22,10 @@
 
 Dominance<-function(df, topN=1){
  rr <- subset(df,IS_DISTINCT==1)
- rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(FINAL_CT))
+ rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
 
 
-	tt <- stats::aggregate(list(domN=rr$FINAL_CT)
+	tt <- stats::aggregate(list(domN=rr$TOTAL)
 			,list(SAMPID=rr$SAMPID)
 			,function(x){
 				sum(x[order(x,decreasing=TRUE)[1:topN]]
@@ -43,12 +43,12 @@ Dominance<-function(df, topN=1){
 
 # Function calculates Shannon Diversity metric
 # indata <-- data frame containing unique sample identifier (UID), IS_DISTINCT numeric variable indicating taxonomic distinctness as 0 or 1,
-# 		and FINAL_CT as the count variable
+# 		and TOTAL as the count variable
 
 ShanDiversity <- function(indata){
 	rr <- subset(indata,IS_DISTINCT==1)
-	rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(FINAL_CT))
-	tt <- plyr::ddply(rr,"SAMPID",summarise,HPRIME=round(-1*sum((FINAL_CT/TOTSUM)*(log(FINAL_CT/TOTSUM))),2))
+	rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
+	tt <- plyr::ddply(rr,"SAMPID",summarise,HPRIME=round(-1*sum((TOTAL/TOTSUM)*(log(TOTAL/TOTSUM))),2))
 
 	return(tt)
 }
@@ -56,15 +56,15 @@ ShanDiversity <- function(indata){
 
 # Function to calculate weighted tolerance value index (e.g., HBI) as the sum of the proportion of a taxon multiplied by the tolerance value
 #		for that taxon. All taxa included in proportion calculations, not just those with PTVs.
-# indata <-- input data frame with TAXA_ID, FINAL_CT, and UID variables
+# indata <-- input data frame with TAXA_ID, TOTAL, and UID variables
 # taxalist <-- taxalist with TAXA_ID and tolerance values (TVs) as RESULT and PARAMETER as either PTV or TOL_VAL
 
 tolindex<-function(indata, taxalist){
 	tv_taxa <- taxalist[taxalist$TRAIT %in% c('PTV','TOL_VAL'),]
-	indata1 <- plyr::ddply(indata,"SAMPID",mutate,SUMCT=sum(FINAL_CT))
+	indata1 <- plyr::ddply(indata,"SAMPID",mutate,SUMCT=sum(TOTAL))
 	#This allows us to sum across only those taxa with TVs
 	tv_cts <- merge(indata1,tv_taxa,by="TAXA_ID")
-	outTV <- plyr::ddply(tv_cts,"SAMPID",summarise,WTD_TV=round(sum(FINAL_CT*as.numeric(value))/unique(SUMCT),2))
+	outTV <- plyr::ddply(tv_cts,"SAMPID",summarise,WTD_TV=round(sum(TOTAL*as.numeric(value))/unique(SUMCT),2))
 	return(outTV)
 }
 
@@ -75,8 +75,8 @@ tolindexFish<-function(indata, taxalist){
 	tv_taxa <- taxalist[,c('TAXA_ID','TOL_VAL')]
 	# This allows us to sum across only those taxa with TVs
 	tv_cts <- merge(indata,tv_taxa,by="TAXA_ID")
-	outTV <- dplyr::filter(tv_cts,!is.na(FINAL_CT) & !is.na(TOL_VAL)) %>%
+	outTV <- dplyr::filter(tv_cts,!is.na(TOTAL) & !is.na(TOL_VAL)) %>%
     plyr::ddply("SAMPID", summarise,
-	   WTD_TV=round(sum(FINAL_CT*as.numeric(TOL_VAL,na.rm=T))/sum(FINAL_CT),2))
+	   WTD_TV=round(sum(TOTAL*as.numeric(TOL_VAL,na.rm=T))/sum(TOTAL),2))
 	return(outTV)
 }

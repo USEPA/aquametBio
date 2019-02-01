@@ -39,7 +39,7 @@ which is assumed to have only values of 0 or 1. If not specified,
 the default is \emph{IS_DISTINCT}.}
 
 \item{ct}{A string with the name of the count variable. If not
-specified, the default is \emph{FINAL_CT}.}
+specified, the default is \emph{TOTAL}.}
 
 \item{taxa_id}{A string with the name of the taxon ID variable
 in \emph{indata} that matches that in \emph{inTaxa}. The default

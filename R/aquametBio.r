@@ -5,7 +5,7 @@
 #'
 #' @importFrom Hmisc "%nin%" capitalize
 #' @importFrom gtools smartbind
-#' @importFrom plyr ddply mutate summarize summarise rename
+#' @importFrom plyr ddply mutate summarize summarise rename revalue
 #' @importFrom dplyr filter select "%>%" group_by
 #' @importFrom reshape2 dcast melt
 #' @importFrom stringr str_detect

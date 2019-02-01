@@ -9,24 +9,24 @@ calcFishAnomMets(indata, sampID = "UID", ct = "TOTAL",
 }
 \arguments{
 \item{indata}{Input data frame containing variables as identified
-in the arguments for \emph{sampID}, \emph{dist}, \emph{ct}, 
+in the arguments for \emph{sampID}, \emph{dist}, \emph{ct},
 \emph{taxa_id}.}
 
-\item{sampID}{sampID A character vector containing the names of all 
-variables in indf that specify a unique sample. If not specified, 
+\item{sampID}{sampID A character vector containing the names of all
+variables in indf that specify a unique sample. If not specified,
 the default is \emph{UID}.
-#' @param ct A string with the name of the count variable. If not 
+#' @param ct A string with the name of the count variable. If not
 specified, the default is \emph{TOTAL}.}
 
-\item{ct}{A string with the name of the count variable. If not 
+\item{ct}{A string with the name of the count variable. If not
 specified, the default is \emph{TOTAL}.}
 
-\item{anomct}{A string with the name of the count variable. If not 
+\item{anomct}{A string with the name of the count variable. If not
 specified, the default is \emph{ANOM_CT}.}
 }
 \value{
-A data frame containing the variables in sampID and 
-the fish anomaly metric ANOMPIND as an additional variable. Metric 
+A data frame containing the variables in sampID and
+the fish anomaly metric ANOMPIND as an additional variable. Metric
 descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
 included in this package.
 }

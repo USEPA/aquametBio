@@ -2,36 +2,37 @@
 % Please edit documentation in R/prepBentCts_WSA.r
 \name{prepBentCts_WSA}
 \alias{prepBentCts_WSA}
-\title{Aggregate benthic macroinvertebrate data for use 
+\title{Aggregate benthic macroinvertebrate data for use
 with WSA and NRSA benthic metrics and MMIs}
 \usage{
-prepBentCts_WSA(inCts, inTaxa = bentTaxa, sampID = "UID",
+prepBentCts_WSA(inCts, inTaxa = bentTaxa_nrsa, sampID = "UID",
   ct = "TOTAL", taxa_id = "TAXA_ID")
 }
 \arguments{
-\item{inCts}{A data frame containing, at minimum, the variables 
+\item{inCts}{A data frame containing, at minimum, the variables
 specified in the arguments for sampID, ct, and taxa_id}
 
-\item{inTaxa}{a data frame containing taxonomic information, 
-including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
-and TRIBE, as well as autecology traits with names that match those 
+\item{inTaxa}{a data frame containing taxonomic information,
+including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY,
+and TRIBE, as well as autecology traits with names that match those
 in the arguments ffg, habit, and ptv. In addition, there
-should be a variable with the name in argument taxa_id that matches 
-with all of those in the indf data frame}
+should be a variable with the name in argument taxa_id that matches
+with all of those in the indf data frame. The default data frame is
+bentTaxa_nrsa.}
 
-\item{sampID}{A character vector containing the names of all 
-variables in indf that specify a unique sample. If not specified, 
+\item{sampID}{A character vector containing the names of all
+variables in indf that specify a unique sample. If not specified,
 the default is \emph{UID}}
 
-\item{ct}{A string with the name of the count variable. If not 
+\item{ct}{A string with the name of the count variable. If not
 specified, the default is \emph{TOTAL}.}
 
-\item{taxa_id}{A string with the name of the taxon ID variable 
-in \emph{inCts} that matches that in \emph{inTaxa}. The default 
+\item{taxa_id}{A string with the name of the taxon ID variable
+in \emph{inCts} that matches that in \emph{inTaxa}. The default
 value is \emph{TAXA_ID}.}
 }
 \value{
-A data frame containing the \emph{sampID} fields, plus 
+A data frame containing the \emph{sampID} fields, plus
 TAXA_ID, TOTAL, and IS_DISTINCT. Taxonomy is aggregated to the level
 used for the NRSA MMI and distinctness is recalculated on this
 aggregated dataset.
