@@ -110,10 +110,11 @@ test_that("NRSA Benthic MMI scores correct",
   testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID','ECO_BIO')
                                  ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER)) %>%
-    mutate(PARAMETER=plyr::revalue(PARAMETER,c('MMI_BENT'='MMI_BENT_NLA12','BENT_MMI_COND'='BENT_COND')))
+    plyr::mutate(PARAMETER=plyr::revalue(PARAMETER,c('MMI_BENT'='MMI_BENT_NLA12','BENT_MMI_COND'='BENT_COND')))
   bentMMI_NLA_test.long <- reshape2::melt(bentMMI_NLA_test,id.vars=c('SITE_ID')
                                       ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
-    filter(PARAMETER %nin% c('ECO_BIO','TOTLNIND'))
+    plyr::mutate(PARAMETER=as.character(PARAMETER)) %>%
+    dplyr::filter(PARAMETER %nin% c('ECO_BIO','TOTLNIND'))
   compOut <- merge(bentMMI_NLA_test.long,testOut.long,by=c('SITE_ID','PARAMETER'))
   expect_true(nrow(compOut)==73)
   compOut.cond <- subset(compOut, PARAMETER=='BENT_COND')
