@@ -8,37 +8,37 @@ calcNLA_BenthicMMI(inMets, sampID = "UID", ecoreg = "ECOREG",
   totlnind = "TOTLNIND")
 }
 \arguments{
-\item{inMets}{A data frame containing, at minimum, the variables 
-specified in the arguments for sampID, ecoreg, totlnind, and the metrics 
-necessary for calculation of MMI by region. If values for more than 
-the necessary metrics are included in the input data frame, the 
+\item{inMets}{A data frame containing, at minimum, the variables
+specified in the arguments for sampID, ecoreg, totlnind, and the metrics
+necessary for calculation of MMI by region. If values for more than
+the necessary metrics are included in the input data frame, the
 unnecessary  metrics will be ignored for each given site.
 
 The necessary metrics, by aggregated bioregion, are:
 
  CPL: NOINPTAX, CHIRDOM5PIND, PREDNTAX, SPWLNTAX, EPT_NTAX, NTOLPIND
-     
+
  EHIGH: NOINPTAX, CHIRDOM5PIND, COGANTAX, CLNGNTAX, EPOTNTAX, TL23NTAX
- 
+
  PLAINS: DIPTPTAX, CHIRDOM5PIND, PREDNTAX, CLMBPTAX, EPOTNTAX, TL23PIND
- 
+
  UMW: NOINPIND, CHIRDOM3PIND, SHRDPIND, CLNGNTAX, CRUSNTAX, TL23PTAX
- 
+
  WMTNS: DIPTPIND, HPRIME, SCRPNTAX, CLNGNTAX, EPT_NTAX, TL23PTAX
- 
- Descriptions of these metrics can be found in the file 
- \emph{NRSA_Invertebrate_Metric_Descriptions.pdf}, included in 
+
+ Descriptions of these metrics can be found in the file
+ \emph{NRSA_Invertebrate_Metric_Descriptions.pdf}, included in
  the documentation for this package.}
 
-\item{sampID}{A character vector containing the names of all 
-variables in inMets that specify a unique sample. If not specified, 
+\item{sampID}{A character vector containing the names of all
+variables in inMets that specify a unique sample. If not specified,
 the default is \emph{UID}}
 
-\item{ecoreg}{A string with the name of the aggregated bioregion variable. 
+\item{ecoreg}{A string with the name of the aggregated bioregion variable.
 Valid values that correspond to regions used in NLA are
 CPL, EHIGH, PLAINS, UMW, and WMTNS.}
 
-\item{totlnind}{A string with the name of the variable with the 
+\item{totlnind}{A string with the name of the variable with the
 total individuals in each sample.}
 }
 \value{
@@ -48,8 +48,8 @@ sites. The variable names are COMP_PT, DIVS_PT, FEED_PT, HABT_PT,
 RICH_PT, TOLR_PT, MMI_BENT, BENT_MMI_COND.
 }
 \description{
-This is a function that calculates 
-the benthic MMI as used for the National Lakes 
+This is a function that calculates
+the benthic MMI as used for the National Lakes
 Assessment, based on inputs of the appropriate metrics.
 }
 \author{
