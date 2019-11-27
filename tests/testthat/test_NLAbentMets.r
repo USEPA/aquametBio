@@ -8,7 +8,7 @@ test_that("Benthic Taxonomy metric values correct",
           {
             testOut <- calcBentTaxMets(bentctsNLA_test,inTaxa=bentTaxa_nla,sampID=c('SITE_ID')
                                         ,dist='IS_DISTINCT',ct='TOTAL')
-            testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID')
+            testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID')
                                            ,variable.name='PARAMETER',value.name='RESULT') %>%
               plyr::mutate(PARAMETER=as.character(PARAMETER))
             compOut <- merge(bentMetsNLA_test,testOut.long,by=c('SITE_ID','PARAMETER'))
@@ -21,7 +21,7 @@ test_that("Benthic FFG metric values correct",
 {
   testOut <- calcBentFFGmets(bentctsNLA_test,inTaxa=bentTaxa_nla,sampID=c('SITE_ID')
                               ,dist='IS_DISTINCT',ct='TOTAL',ffg='FFG')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER))
   compOut <- merge(bentMetsNLA_test,testOut.long,by=c('SITE_ID','PARAMETER'))
@@ -35,7 +35,7 @@ test_that("Benthic Habit metric values correct",
 {
   testOut <- calcBentHabitMets(bentctsNLA_test,inTaxa=bentTaxa_nla,sampID=c('SITE_ID')
                          ,dist='IS_DISTINCT',ct='TOTAL',habit='HABIT')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER))
   compOut <- merge(bentMetsNLA_test,testOut.long,by=c('SITE_ID','PARAMETER'))
@@ -48,7 +48,7 @@ test_that("Benthic tolerance metric values correct",
 {
   testOut <- calcBentTolMets(bentctsNLA_test,inTaxa=bentTaxa_nla,sampID=c('SITE_ID')
                            ,dist='IS_DISTINCT',ct='TOTAL',ptv='PTV')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER))
   compOut <- merge(bentMetsNLA_test,testOut.long,by=c('SITE_ID','PARAMETER'))
@@ -62,7 +62,7 @@ test_that("Benthic dominance and diversity metric values correct",
 {
   testOut <- calcBentDominMets(bentctsNLA_test,inTaxa=bentTaxa_nla,sampID=c('SITE_ID')
                          ,dist='IS_DISTINCT',ct='TOTAL')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER))
   compOut <- merge(bentMetsNLA_test,testOut.long,by=c('SITE_ID','PARAMETER'))
@@ -75,7 +75,7 @@ test_that("All benthic metric values correct",
             testOut <- calcAllBentMets(indf=bentctsNLA_test,inTaxa=bentTaxa_nla,sampID=c('SITE_ID')
                                        ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG'
                                        ,habit='HABIT',ptv='PTV')
-            testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID')
+            testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID')
                                            ,variable.name='PARAMETER',value.name='RESULT') %>%
               plyr::mutate(PARAMETER=as.character(PARAMETER))
             compOut <- merge(bentMetsNLA_test,testOut.long,by=c('SITE_ID','PARAMETER'))
@@ -91,7 +91,7 @@ test_that("MMI metrics correct",
             testOut <- calcNLA_BentMMImets(inCts=indf.eco,inTaxa=bentTaxa_nla,sampID=c('SITE_ID')
                                        ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG'
                                        ,habit='HABIT',ptv='PTV',ecoreg='ECO_BIO')
-            testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID','ECO_BIO')
+            testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID','ECO_BIO')
                                            ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
               plyr::mutate(PARAMETER=as.character(PARAMETER))
             compOut <- merge(bentMetsNLA_test,testOut.long,by=c('SITE_ID','PARAMETER'))
@@ -101,17 +101,17 @@ test_that("MMI metrics correct",
           })
 
 
-testIn <- reshape2::dcast(bentMetsNLA_test,SITE_ID+ECO_BIO~PARAMETER,value.var='RESULT')
+testIn <- data.table::dcast(bentMetsNLA_test,SITE_ID+ECO_BIO~PARAMETER,value.var='RESULT')
 
 test_that("NRSA Benthic MMI scores correct",
 {
   testOut <- calcNLA_BenthicMMI(testIn,sampID=c('SITE_ID')
                                  ,ecoreg='ECO_BIO',totlnind='TOTLNIND')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('SITE_ID','ECO_BIO')
+  testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID','ECO_BIO')
                                  ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER)) %>%
     plyr::mutate(PARAMETER=plyr::revalue(PARAMETER,c('MMI_BENT'='MMI_BENT_NLA12','BENT_MMI_COND'='BENT_COND')))
-  bentMMI_NLA_test.long <- reshape2::melt(bentMMI_NLA_test,id.vars=c('SITE_ID')
+  bentMMI_NLA_test.long <- data.table::melt(bentMMI_NLA_test,id.vars=c('SITE_ID')
                                       ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER)) %>%
     dplyr::filter(PARAMETER %nin% c('ECO_BIO','TOTLNIND'))

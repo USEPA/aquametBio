@@ -167,7 +167,7 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
 
   params<-c('EPT_','EPOT','DIPT','NOIN','CRUS','COGA','PRED','SCRP','SHRD','CLMB','CLNG','SPWL','TL23','NTOL')
 
-  taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
+  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
   inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
@@ -186,9 +186,9 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
                         PIND=round(sum(TOTAL/TOTLNIND)*100,2),
                         PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
 
-  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
+  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <-reshape2::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
+  outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
     merge(samples,by='SAMPID')
 
   shanMet <- ShanDiversity(inCts.1)
@@ -217,7 +217,7 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
            ,CHIRDOM5PIND=ifelse(is.na(CHIRDOM5PIND) & CHIRDOM3PIND>0, 100
                                 ,ifelse(is.na(CHIRDOM5PIND) & CHIRDOM3PIND==0, 0, CHIRDOM5PIND)))
 
-  outLong.1 <- reshape2::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg)) %>%
+  outLong.1 <- data.table::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg)) %>%
     merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO_BIO','PARAMETER'),all.y=T) %>%
     plyr::mutate(value=ifelse(is.na(value),0,value))
 
@@ -230,7 +230,7 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',ecoreg,sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide.fin <- reshape2::dcast(outLong.1,eval(formula),value.var='value') %>%
+  outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value') %>%
     merge(totals,by='SAMPID') %>%
     dplyr::select(-SAMPID)
 

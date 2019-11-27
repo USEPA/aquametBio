@@ -171,7 +171,7 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   inTaxa.2 <- subset(inTaxa.1,select=names(inTaxa.1) %in% c('TAXA_ID',params))
 
-  taxalong <- reshape2::melt(inTaxa.2,id.vars='TAXA_ID',variable.name='TRAIT',na.rm=TRUE) %>%
+  taxalong <- data.table::melt(inTaxa.2,id.vars='TAXA_ID',variable.name='TRAIT',na.rm=TRUE) %>%
     plyr::mutate(TRAIT=as.character(TRAIT))
 
   inCts.2 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
@@ -198,9 +198,9 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   # Melt df to create metric names, then recast into wide format with metric
   # names
-  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TRAIT'))
+  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <- reshape2::dcast(outLong,SAMPID~variable,value.var='value') %>%
+  outWide <- data.table::dcast(outLong,SAMPID~variable,value.var='value') %>%
     merge(totals,by='SAMPID',all.y=T)
 
   # Now run native metrics if CALCNAT='Y'
@@ -222,10 +222,10 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
                                   PTAX=round(sum(IS_DISTINCT/NAT_TOTLNTAX)*100,2), .progress='tk')
 
 
-        natMets.long <- reshape2::melt(natMets,id.vars=c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')) %>%
+        natMets.long <- data.table::melt(natMets,id.vars=c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')) %>%
           mutate(variable=paste('NAT_',TRAIT,variable,sep=''))
 
-        natMets.1 <- reshape2::dcast(natMets.long,SAMPID~variable,value.var='value') %>%
+        natMets.1 <- data.table::dcast(natMets.long,SAMPID~variable,value.var='value') %>%
           merge(totals.nat,by='SAMPID',all.y=T)
 
 
@@ -248,13 +248,13 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- reshape2::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
+  outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
     plyr::mutate(value=ifelse(is.na(value) & variable %nin% c('WTD_TV','NAT_WTD_TV'),0,value))
 
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide.2 <- reshape2::dcast(outLong.1,eval(formula),value.var='value')
+  outWide.2 <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   # Merge metrics with the original indata so that those without metrics because
   # no sample was collected are still output with missing values

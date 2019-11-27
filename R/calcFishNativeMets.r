@@ -90,13 +90,13 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- reshape2::melt(outMet.1,id.vars=c(sampID,'SAMPID')) %>%
+  outLong.1 <- data.table::melt(outMet.1,id.vars=c(sampID,'SAMPID')) %>%
     plyr::mutate(value=ifelse(is.na(value),0,value))
 
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide <- reshape2::dcast(outLong.1,eval(formula),value.var='value')
+  outWide <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   outAll <- merge(outWide,totals,by='SAMPID',all.x=T) %>%
     dplyr::select(-SAMPID)

@@ -1,64 +1,64 @@
 #' @export
 #' @title Calculate NRSA Fish MMI
-#' 
-#' @description This is a function that calculates 
-#' the fish MMI as used for the National Rivers and Streams 
+#'
+#' @description This is a function that calculates
+#' the fish MMI as used for the National Rivers and Streams
 #' Assessment, based on inputs of the appropriate metrics.
-#' 
-#' @param inMets A data frame containing, at minimum, the variables 
-#' specified in the arguments for sampID, ecoreg, lwsarea and the metrics 
-#' necessary for calculation of MMI by region. If values for more than 
-#' the necessary metrics are included in the input data frame, the 
+#'
+#' @param inMets A data frame containing, at minimum, the variables
+#' specified in the arguments for sampID, ecoreg, lwsarea and the metrics
+#' necessary for calculation of MMI by region. If values for more than
+#' the necessary metrics are included in the input data frame, the
 #' unnecessary  metrics will be ignored for each given site.
-#' 
+#'
 #' The necessary metrics, by aggregate ecoregion, are:
-#' 
-#'  CPL: ALIENPIND, RBCATONTAX, LOTPIND, INTLMIGRPTAX, LITHPIND, NAT_TOTLNTAX, 
+#'
+#'  CPL: ALIENPIND, RBCATONTAX, LOTPIND, INTLMIGRPTAX, LITHPIND, NAT_TOTLNTAX,
 #'      TOLRNTAX, INVPTAX
-#'      
+#'
 #'  NAP: ALIENNTAX, SALMNTAX, NAT_RHEOPIND, INTLMIGRPIND, LITHPTAX,
 #'      NTOLPTAX, TOLRNTAX, INVNTAX
-#'      
+#'
 #'  NPL: ALIENNTAX, NAT_CYPRPIND, LOTNTAX, MIGRNTAX, LITHPIND, NTOLPTAX,
-#'      NAT_INTLPIND, NAT_CARNNTAX 
-#'      
+#'      NAT_INTLPIND, NAT_CARNNTAX
+#'
 #'  SAP: NAT_PTAX, NAT_CENTNTAX, NAT_NTOLBENTPTAX, NAT_MIGRNTAX,
 #'      NAT_LITHPIND, NTOLPTAX, TOLRPTAX, INVPIND
-#'      
+#'
 #'  SPL: NAT_PIND, CYPRPTAX, RHEOPIND, NAT_MIGRPTAX, LITHNTAX,
 #'      NAT_NTOLNTAX, TOLRNTAX, HERBPTAX
-#'  
+#'
 #'  TPL: ALIENNTAX, NAT_ICTAPIND, RHEONTAX, INTLMIGRNTAX, LITHPIND,
 #'      NAT_NTOLNTAX, INTLPTAX, CARNNTAX
-#'      
+#'
 #'  UMW: NAT_PTAX, CYPRNTAX, INTLLOTNTAX, INTLMIGRPTAX, LITHPIND,
 #'      NTOLNTAX, TOLRNTAX, INTLINVPTAX
-#'      
+#'
 #'  WMT: NAT_PIND, NAT_CATOPIND, INTLLOTPTAX, NAT_MIGRPTAX, LITHPTAX,
 #'      NAT_TOTLNTAX, TOLRNTAX, NAT_HERBPTAX
-#'      
+#'
 #'  XER: NAT_PIND, CENTPTAX, RHEOPIND, MIGRPTAX, LITHNTAX, NTOLPTAX,
 #'      TOLRNTAX, BENTINVPTAX
-#' 
-#' @param sampID A character vector containing the names of all 
-#' variables in inMets that specify a unique sample. If not specified, 
+#'
+#' @param sampID A character vector containing the names of all
+#' variables in inMets that specify a unique sample. If not specified,
 #' the default is \emph{UID}
-#' @param ecoreg A string with the name of the ecoregion variable. 
+#' @param ecoreg A string with the name of the ecoregion variable.
 #' Valid values that correspond to regions used in NRSA are
 #' CPL, NAP, NPL, SAP, sPL, TPL, UMW, WMT, and XER.
-#' @param lwsarea Numeric values representing the log10 of 
+#' @param lwsarea Numeric values representing the log10 of
 #' watershed area in square km.
-#' 
+#'
 #' @return A data frame containing the variables in sampID, watershed-
-#' adjusted metrics, scored metrics, and the fish MMI for each site. 
-#' Each of these components will be in separate columns, but values 
-#' will only be provided for the metrics in the MMI for the specific 
-#' region of each site, with all other columns being missing for 
-#' that site. 
+#' adjusted metrics, scored metrics, and the fish MMI for each site.
+#' Each of these components will be in separate columns, but values
+#' will only be provided for the metrics in the MMI for the specific
+#' region of each site, with all other columns being missing for
+#' that site.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
 calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'){
-  
+
   necTraits <- c(sampID,ecoreg,lwsarea)
   if(any(necTraits %nin% names(inMets))){
     msgTraits <- which(necTraits %nin% names(inMets))
@@ -66,8 +66,8 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
                 , necTraits[msgTraits]))
     return(NULL)
   }
-  
-  # Rename variables 
+
+  # Rename variables
   names(inMets)[names(inMets)==ecoreg] <- 'ECO9'
   names(inMets)[names(inMets)==lwsarea] <- 'LWSAREA'
 
@@ -77,7 +77,7 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
     else inMets$SAMPID <- paste(inMets$SAMPID,inMets[,sampID[i]],sep='.')
   }
   samples <- unique(inMets[,c('SAMPID',sampID)])
-    
+
   # Check to make sure ecoregion variable is included in the input data frame
   ecoCk <- unique(inMets$ECO9)
   ecos <- c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER')
@@ -87,8 +87,8 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
                 ,paste(ecoCk[msgEco],collapse=',')))
     return(NULL)
   }
-  
- # We now need to make sure that all of the necessary metrics are included in the input dataset  
+
+ # We now need to make sure that all of the necessary metrics are included in the input dataset
   metnames <- data.frame(ECO9=c(rep('CPL',8),rep('NAP',8),rep('NPL',8),rep('SAP',8),rep('SPL',8)
                                           ,rep('TPL',8),rep('UMW',8),rep('WMT',8),rep('XER',8))
                          ,PARAMETER=c(c('ALIENPIND','RBCATONTAX','LOTPIND','INTLMIGRPTAX','LITHPIND','NAT_TOTLNTAX','TOLRNTAX'
@@ -110,21 +110,21 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
                                       ,c('NAT_PIND','CENTPTAX','RHEOPIND','MIGRPTAX','LITHNTAX','NTOLPTAX','TOLRNTAX'
                                          ,'BENTINVPTAX'))
                          ,stringsAsFactors=F)
- 
-  
- matchMets <- reshape2::melt(inMets,id.vars=c('SAMPID','ECO9','LWSAREA'),measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
+
+
+ matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO9','LWSAREA'),measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
                              ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
    merge(metnames,by=c('PARAMETER','ECO9')) %>%
    mutate(PARAMETER=as.character(PARAMETER))
- 
+
  # Run a check to make sure there are exactly 8 rows per sites in the matched dataset
  numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>% subset(Freq<8)
  if(nrow(numMets)>0){
    return(print(paste("Missing metrics values for these samples: ",paste(numMets$SAMPID,collapse=','),
                       ". Check input data frame against required metric list.",sep='')))
  }
- 
- 
+
+
   # Metrics requiring watershed adjustment - intercepts and slopes by metric and ECO9
   wsMets <- data.frame(ECO9=c(rep('CPL',5),rep('NAP',3),rep('NPL',6),rep('SAP',3),rep('SPL',2)
                                         ,rep('TPL',4),rep('UMW',3),rep('WMT',3),rep('XER',4))
@@ -156,15 +156,15 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
                                 ,c(-21.540681,-15.318296,1.104128)
                                 ,c(-20.33135,1.369981,0.094138,9.987192))
                        ,stringsAsFactors=F)
- 
+
  # Now merge fish data with watershed regression info and adjust necessary metrics
  fish.ws <- merge(matchMets,wsMets,by=c('ECO9','PARAMETER'),all.x=T) %>%
    plyr::mutate(RESULT=as.numeric(RESULT)) %>%
    plyr::mutate(RESULT_WS=ifelse(is.na(int),NA,int+slope*LWSAREA),RESULT_NEW=ifelse(is.na(slope),RESULT,round(RESULT-RESULT_WS,3))
           ,PARAMETER=ifelse(is.na(slope),PARAMETER,paste(PARAMETER,'WS',sep='_'))) %>%
    dplyr::select(-RESULT,-RESULT_WS) %>% plyr::rename(c('RESULT_NEW'='RESULT'))
-  
-  
+
+
   cfVal <- data.frame(ECO9=c(rep('CPL',8),rep('NAP',8),rep('NPL',8),rep('SAP',8),rep('SPL',8)
                                        ,rep('TPL',8),rep('UMW',8),rep('WMT',8),rep('XER',8))
                       ,PARAMETER=c(c('ALIENPIND_WS','RBCATONTAX','LOTPIND_WS','INTLMIGRPTAX','LITHPIND_WS','NAT_TOTLNTAX_WS','TOLRNTAX_WS'
@@ -213,31 +213,31 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
                                   ,c('POSITIVE','NEGATIVE',rep('POSITIVE',4),'NEGATIVE','NEGATIVE')
                                   ,c('POSITIVE','NEGATIVE',rep('POSITIVE',4),'NEGATIVE','POSITIVE'))
                       ,stringsAsFactors=F)
- 
- 
+
+
  ww <- merge(fish.ws,cfVal,by=c('PARAMETER','ECO9'),all.x=T)
- 
+
  scoreMet <- function(resptype,x,floor,ceiling){
    if(resptype=='POSITIVE'){
      zz <- round(approx(x=c(floor,ceiling),y=c(0,10),xout=x,method='linear',yleft=0,yright=10)$y,2)
    } else {
      zz <- round(approx(x=c(floor,ceiling),y=c(10,0),xout=x,method='linear',yleft=10,yright=0)$y,2)
    }
-   
+
  }
- 
+
  scored.mets <- data.frame(ww[,c('SAMPID','ECO9','PARAMETER')]
                          ,RESULT=with(ww,mapply(scoreMet,DISTRESP,RESULT,FLOOR,CEILING)))
  scored.mets$PARAMETER <- paste(scored.mets$PARAMETER,'_PT',sep='')
- 
+
  print('Metric scores calculated.')
- 
+
  # Calculate the vector of MMI scores at all sites, as sum of scored metrics, rescaled to a 0-100 range
  mmi <- plyr::ddply(scored.mets,c('SAMPID','ECO9'),summarise,RESULT=round(sum(RESULT)*(10/8),2),PARAMETER='MMI_FISH')
- 
+
  ## Create long format dfs with metric values and metric residuals for modeled metrics
  adj.mets <- subset(ww[grep('_WS',ww$PARAMETER),],select=c('SAMPID','ECO9','PARAMETER','RESULT'))
- 
+
  ## Now combine with metric scores and widen
  dfOut.1 <-rbind(mmi,scored.mets,adj.mets) %>% dcast(SAMPID+ECO9~PARAMETER,value.var='RESULT')
  # Reorder columns
@@ -245,9 +245,9 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
    subset(select=c(sampID,'SAMPID','ECO9','MMI_FISH',names(dfOut.1)[names(dfOut.1) %nin% c(sampID,'SAMPID','ECO9','MMI_FISH')])) %>%
    plyr::rename(c('ECO9'=ecoreg)) %>%
    dplyr::select(-SAMPID)
- 
+
  print("Done calculating MMI score.")
- return(dfOut.2) 
-  
+ return(dfOut.2)
+
 }
 

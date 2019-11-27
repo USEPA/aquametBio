@@ -9,7 +9,7 @@ test_that("Fish tolerance metric values correct",
                              ,taxa_id='TAXA_ID',tol='TOLERANCE_NRSA',tolval='TOL_VAL_EMAPW'
                              ,vel='VEL_NRSA',habitat='HABITAT_NRSA',trophic='TROPHIC_NRSA'
                              ,migr='MIGR_NRSA',nonnat='NON_NATIVE')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
@@ -25,7 +25,7 @@ test_that("Fish tolerance metric values without native or habitat correct",
                              ,taxa_id='TAXA_ID',tol='TOLERANCE_NRSA',tolval='TOL_VAL_EMAPW'
                              ,vel='VEL_NRSA',trophic='TROPHIC_NRSA'
                              ,migr='MIGR_NRSA')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
@@ -39,7 +39,7 @@ test_that("Fish taxonomic metric values correct",
   testOut <- calcFishTaxMets(fishCts_test,fishTaxa,sampID=c('UID'),dist='IS_DISTINCT',ct='FINAL_CT'
                              ,taxa_id='TAXA_ID',nonnat='NON_NATIVE',family='FAMILY'
                              ,genus='GENUS',comname='FINAL_NAME')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
@@ -53,7 +53,7 @@ test_that("Fish taxonomic metric values correct",
   testOut <- calcFishTrophicMets(fishCts_test,fishTaxa,sampID=c('UID'),dist='IS_DISTINCT',ct='FINAL_CT'
                              ,taxa_id='TAXA_ID',nonnat='NON_NATIVE',trophic='TROPHIC_NRSA'
                              ,habitat='HABITAT_NRSA')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
@@ -68,7 +68,7 @@ test_that("Fish other metric values correct",
                                ,taxa_id='TAXA_ID',vel='VEL_NRSA'
                                ,migr='MIGR_NRSA', reprod='REPROD_NRSA', temp='TEMP_NRSA'
                                ,nonnat='NON_NATIVE')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'),all.y=T)
@@ -81,7 +81,7 @@ test_that("Fish native/alien metric values correct",
 {
   testOut <- calcFishNativeMets(fishCts_test,sampID=c('UID'),dist='IS_DISTINCT',ct='FINAL_CT'
                                ,taxa_id='TAXA_ID',nonnat='NON_NATIVE')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'),all.y=T)
@@ -94,7 +94,7 @@ test_that("Fish anomaly metric values correct",
 {
   testOut <- calcFishAnomMets(fishCts_test,sampID=c('UID'),ct='FINAL_CT'
                                 ,anomct='ANOM_CT')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
@@ -112,7 +112,7 @@ test_that("All fish metric values correct",
                              migr='MIGR_NRSA',nonnat='NON_NATIVE',
                              reprod='REPROD_NRSA', temp='TEMP_NRSA',
                              family='FAM_OR_CLS',genus='GENUS',comname='FINAL_NAME')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
@@ -135,7 +135,7 @@ test_that("MMI fish metric values correct",
                              reprod='REPROD_NRSA',
                              family='FAMILY',genus='GENUS',comname='FINAL_NAME',
                              ecoreg='AGGR_ECO9_2015')
-  testOut.long <- reshape2::melt(testOut,id.vars=c('UID','AGGR_ECO9_2015')
+  testOut.long <- data.table::melt(testOut,id.vars=c('UID','AGGR_ECO9_2015')
                                  ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
@@ -149,16 +149,16 @@ lwsarea <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 151
                       ,LWSAREA=c(3.88288,6.36191,6.36425,3.81217,-1.02872,4.41280,2.80386,2.28921,2.45688,2.02662))
 fishws_test <- merge(fishMet_test,lwsarea,by='UID') %>% merge(ecoTest,by='UID')
 # Put fish metrics in wide format
-fishws_test.1 <- reshape2::dcast(fishws_test,UID+SAMPLE_TYPE+LWSAREA+AGGR_ECO9_2015~PARAMETER,value.var='RESULT')
+fishws_test.1 <- data.table::dcast(fishws_test,UID+SAMPLE_TYPE+LWSAREA+AGGR_ECO9_2015~PARAMETER,value.var='RESULT')
 
 test_that("Fish MMI scores correct",
           {
             testOut <- calcFishMMI(fishws_test.1,sampID=c('UID','SAMPLE_TYPE'),ecoreg='AGGR_ECO9_2015'
                                    ,lwsarea='LWSAREA')
-            testOut.long <- reshape2::melt(testOut,id.vars=c('UID','AGGR_ECO9_2015','SAMPLE_TYPE')
+            testOut.long <- data.table::melt(testOut,id.vars=c('UID','AGGR_ECO9_2015','SAMPLE_TYPE')
                                            ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
               plyr::mutate(PARAMETER=as.character(PARAMETER))
-            fishMMI_test.long <- reshape2::melt(fishMMI_test,id.vars=c('UID'),measure.vars='MMI_FISH'
+            fishMMI_test.long <- data.table::melt(fishMMI_test,id.vars=c('UID'),measure.vars='MMI_FISH'
                                                 ,variable.name='PARAMETER',value.name='RESULT')
             compOut <- merge(fishMMI_test.long,testOut.long,by=c('UID','PARAMETER'))
             expect_true(nrow(compOut)==10)
@@ -174,10 +174,10 @@ test_that("Fish MMI scores correct",
           {
             testOut <- assignFishCondition(fishws_test.2,sampID=c('UID','SAMPLE_TYPE'),ecoreg='AGGR_ECO9_2015'
                                    ,wsarea='WSAREA',totlnind='TOTLNIND',mmi='MMI_FISH')
-            testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE')
+            testOut.long <- data.table::melt(testOut,id.vars=c('UID','SAMPLE_TYPE')
                                            ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
               plyr::mutate(PARAMETER=as.character(PARAMETER))
-            fishMMI_test.long <- reshape2::melt(fishMMI_test,id.vars=c('UID'),measure.vars='FISH_MMI_COND'
+            fishMMI_test.long <- data.table::melt(fishMMI_test,id.vars=c('UID'),measure.vars='FISH_MMI_COND'
                                                 ,variable.name='PARAMETER',value.name='RESULT')
             compOut <- merge(fishMMI_test.long,testOut.long,by=c('UID','PARAMETER'))
             expect_true(nrow(compOut)==10)

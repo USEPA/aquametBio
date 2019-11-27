@@ -4,59 +4,67 @@
 \alias{calcAllBentMets}
 \title{Calculate all benthic metrics}
 \usage{
-calcAllBentMets(indf, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
-  ct = "TOTAL", taxa_id = "TAXA_ID", ffg = "FFG", habit = "HABIT",
-  ptv = "PTV")
+calcAllBentMets(
+  indf,
+  inTaxa,
+  sampID = "UID",
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  ffg = "FFG",
+  habit = "HABIT",
+  ptv = "PTV"
+)
 }
 \arguments{
-\item{indf}{A data frame containing, at minimum, the variables 
+\item{indf}{A data frame containing, at minimum, the variables
 specified in the arguments for sampID, dist, ct, and taxa_id}
 
-\item{inTaxa}{a data frame containing taxonomic information, 
-including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
-TRIBE, and GENUS, as well as autecology traits with names that match those 
+\item{inTaxa}{a data frame containing taxonomic information,
+including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY,
+TRIBE, and GENUS, as well as autecology traits with names that match those
 in the arguments ffg, habit, and ptv. In addition, there
-should be a variable with the name in argument taxa_id that matches 
+should be a variable with the name in argument taxa_id that matches
 with all of those in the indf data frame.}
 
-\item{sampID}{A character vector containing the names of all 
-variables in indf that specify a unique sample. If not specified, 
+\item{sampID}{A character vector containing the names of all
+variables in indf that specify a unique sample. If not specified,
 the default is \emph{UID}}
 
-\item{dist}{A string with the name of the distinctness variable, 
-which is assumed to have only values of 0 or 1. If not specified, 
+\item{dist}{A string with the name of the distinctness variable,
+which is assumed to have only values of 0 or 1. If not specified,
 the default is \emph{IS_DISTINCT}.}
 
-\item{ct}{A string with the name of the count variable. If not 
+\item{ct}{A string with the name of the count variable. If not
 specified, the default is \emph{TOTAL}.}
 
-\item{taxa_id}{A string with the name of the taxon ID variable 
-in \emph{indf} that matches that in \emph{inTaxa}. The default 
+\item{taxa_id}{A string with the name of the taxon ID variable
+in \emph{indf} that matches that in \emph{inTaxa}. The default
 value is \emph{TAXA_ID}.}
 
-\item{ffg}{A string with the name of the functional feeding group 
+\item{ffg}{A string with the name of the functional feeding group
 variable in inTaxa. The default value is \emph{FFG}. Values used
-in calculations include CF, CG, PR, SH, Sc, representing 
+in calculations include CF, CG, PR, SH, Sc, representing
 collector-filterer, collector-gatherer, predator, shredder, and
-scraper, respectively. Each taxon may have more than 
+scraper, respectively. Each taxon may have more than
 one FFG value.}
 
-\item{habit}{A string with the name of the habit variable in inTaxa. 
+\item{habit}{A string with the name of the habit variable in inTaxa.
 The default value is \emph{HABIT}. Values for habit that are used in
-calculations include BU, CB, CN, SP, SW, representing burrower, 
-climber, clinger, sprawler, and swimmer, respectively. Each taxon 
+calculations include BU, CB, CN, SP, SW, representing burrower,
+climber, clinger, sprawler, and swimmer, respectively. Each taxon
 may have more than one value for HABIT.}
 
-\item{ptv}{A string with the name of the pollution tolerance value 
+\item{ptv}{A string with the name of the pollution tolerance value
 variable in inTaxa. The default is \emph{PTV}.}
 }
 \value{
-A data frame containing the variables in sampID and all of 
+A data frame containing the variables in sampID and all of
 the benthic macroinvertebrate metrics as additional variables.
 }
 \description{
-This is a wrapper function that calculates 
-all benthic metrics as used in the National Aquatic 
+This is a wrapper function that calculates
+all benthic metrics as used in the National Aquatic
 Resource Surveys.
 }
 \examples{
@@ -65,7 +73,7 @@ Resource Surveys.
   head(bentTaxa_nrsa)
   # Calculate metrics for bentIn, using the taxonomy in the count file as is
   bentMetrics <- calcAllBentMets(indf=bentEx, inTaxa=bentTaxa_nrsa,
-                     sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT'), 
+                     sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT'),
                      dist='IS_DISTINCT',
                      ct='TOTAL',taxa_id='TAXA_ID',
                      ffg='FFG',habit='HABIT',ptv='PTV')

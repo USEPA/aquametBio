@@ -241,7 +241,7 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
 
   inTaxa.2 <- subset(inTaxa.1,select=names(inTaxa.1) %in% c('TAXA_ID',params))
 
-  taxalong <- reshape2::melt(inTaxa.2,id.vars='TAXA_ID',variable.name='TRAIT',na.rm=TRUE) %>%
+  taxalong <- data.table::melt(inTaxa.2,id.vars='TAXA_ID',variable.name='TRAIT',na.rm=TRUE) %>%
     plyr::mutate(TRAIT=as.character(TRAIT))
 
   indata.3 <- plyr::ddply(indata.2, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
@@ -260,9 +260,9 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
 
   # Melt df to create metric names, then recast into wide format with metric
   # names
-  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TRAIT'))
+  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <- reshape2::dcast(outLong,SAMPID~variable,value.var='value')
+  outWide <- data.table::dcast(outLong,SAMPID~variable,value.var='value')
 
   # Calculate metrics based on native status and other traits
   if(any(unique(indata.3$NON_NATIVE) %nin% c('Y','N'))){
@@ -280,10 +280,10 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
                     PIND=round(sum(TOTAL/NAT_TOTLNIND)*100,2),
                     PTAX=round(sum(IS_DISTINCT/NAT_TOTLNTAX)*100,2), .progress='tk')
 
-      natMets.long <- reshape2::melt(natMets,id.vars=c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')) %>%
+      natMets.long <- data.table::melt(natMets,id.vars=c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')) %>%
         mutate(variable=paste('NAT_',TRAIT,variable,sep=''))
 
-      natMets.1 <- reshape2::dcast(natMets.long,SAMPID~variable,value.var='value')
+      natMets.1 <- data.table::dcast(natMets.long,SAMPID~variable,value.var='value')
 
       outWide.1 <- merge(outWide,natMets.1,all=T)
 
@@ -309,7 +309,7 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
     filter(!is.na(SAMPID)) %>%
     merge(samples,by='SAMPID',all.y=T)
 
-  outLong <- reshape2::melt(outAll,id.vars=c(sampID,ecoreg,'SAMPID')) %>%
+  outLong <- data.table::melt(outAll,id.vars=c(sampID,ecoreg,'SAMPID')) %>%
     plyr::mutate(value=ifelse(is.na(value),0,value)) %>%
     merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC'))
 
@@ -323,7 +323,7 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste('SAMPID',paste(sampID,collapse='+'),ecoreg,sep='+')
   formula <- paste(lside,'~variable',sep='')
-  metOut <- reshape2::dcast(outLong,eval(formula),value.var='value') %>%
+  metOut <- data.table::dcast(outLong,eval(formula),value.var='value') %>%
     merge(unique(indata.3[,c('SAMPID','TOTLNIND')]),by='SAMPID') %>%
     dplyr::select(-SAMPID)
 

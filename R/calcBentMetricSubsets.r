@@ -123,7 +123,7 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
             ,'TUBINAID','AMPH','EPOT','HEMI','MITE','ODON','OLLE','ORTH','TANY')
 
 
-  taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
+  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
   inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
@@ -143,9 +143,9 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # Melt df to create metric names, then recast into wide format with metric
   # names
   print("Done calculating taxonomy metrics.")
-  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
+  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <-reshape2::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
+  outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
     merge(samples,by='SAMPID')
 
   # ORTHCHIRPIND are % of Chironomidae individuals in ORTHOCLADIINAE (not in
@@ -175,14 +175,14 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- reshape2::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
+  outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
     mutate(value=ifelse(is.na(value),0,value))
 #  outLong.1 <- outLong.1[grep('NIND',outLong.1$variable,invert=T),]
 
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide.fin <- reshape2::dcast(outLong.1,eval(formula),value.var='value')
+  outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   outWide.fin <- dplyr::select(outWide.fin, -SAMPID)
 
@@ -319,7 +319,7 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   params<-c('COFI','COGA','PRED','SHRD','SCRP','COFITRIC')
 
-  taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
+  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
   inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
@@ -339,9 +339,9 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # Melt df to create metric names, then recast into wide format with metric
   # names
   print("Done calculating functional feeding group metrics.")
-  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
+  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <-reshape2::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
+  outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
     merge(samples,by='SAMPID')
 
   empty_tax <- data.frame(t(rep(NA,18)),stringsAsFactors=F)
@@ -356,13 +356,13 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- reshape2::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
+  outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
     mutate(value=ifelse(is.na(value),0,value))
 
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide.fin <- reshape2::dcast(outLong.1,eval(formula),value.var='value')
+  outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   outWide.fin <- dplyr::select(outWide.fin, -SAMPID)
 
@@ -480,7 +480,7 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   params<-c('BURR','CLMB','CLNG','SPWL','SWIM')
 
-  taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
+  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
   inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
@@ -500,9 +500,9 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # Melt df to create metric names, then recast into wide format with metric
   # names
   print("Done calculating habit metrics.")
-  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
+  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <-reshape2::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
+  outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
     merge(samples,by='SAMPID')
 
   empty_tax <- data.frame(t(rep(NA,15)),stringsAsFactors=F)
@@ -516,13 +516,13 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- reshape2::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
+  outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
     mutate(value=ifelse(is.na(value),0,value))
 
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide.fin <- reshape2::dcast(outLong.1,eval(formula),value.var='value')
+  outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   outWide.fin <- dplyr::select(outWide.fin, -SAMPID)
 
@@ -644,7 +644,7 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   params<-c('TOLR','FACL','INTL','NTOL','STOL','TL01','TL23','TL45','TL67','PTV')
 
-  taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
+  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
   inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
@@ -664,9 +664,9 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # Melt df to create metric names, then recast into wide format with metric
   # names
   print("Done calculating tolerance metrics.")
-  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
+  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <-reshape2::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
+  outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
     merge(samples,by='SAMPID')
 
   # Calculate HBI (WTD_TV)
@@ -692,13 +692,13 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- reshape2::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
+  outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
     mutate(value=ifelse(is.na(value) & variable!='WTD_TV',0,value))
 
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide.fin <- reshape2::dcast(outLong.1,eval(formula),value.var='value')
+  outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   outWide.fin <- dplyr::select(outWide.fin, -SAMPID)
 
@@ -851,13 +851,13 @@ calcBentDominMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- reshape2::melt(outWide,id.vars=c(sampID,'SAMPID')) %>%
+  outLong.1 <- data.table::melt(outWide,id.vars=c(sampID,'SAMPID')) %>%
     mutate(value=ifelse(is.na(value),0,value))
 
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide.fin <- reshape2::dcast(outLong.1,eval(formula),value.var='value')
+  outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   outWide.fin <- dplyr::select(outWide.fin, -SAMPID)
 

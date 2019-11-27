@@ -124,30 +124,30 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   inTaxa <- subset(inTaxa,select=names(inTaxa) %in% necTraits)
 
   taxMet <- calcFishTaxMets(indf,inTaxa,sampID,dist,ct,taxa_id,nonnat,family,genus,comname)
-  tax.1 <- reshape2::melt(taxMet,id.vars=sampID)
+  tax.1 <- data.table::melt(taxMet,id.vars=sampID)
   print("Done calculating taxonomic metrics.")
 
   tolMet <- calcFishTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,tol,tolval,
                             vel,habitat,trophic,migr,nonnat)
-  tol.1 <- reshape2::melt(tolMet,id.vars=sampID)
+  tol.1 <- data.table::melt(tolMet,id.vars=sampID)
   print("Done calculating tolerance metrics.")
 
   tropMet <- calcFishTrophicMets(indf,inTaxa,sampID,dist,ct,taxa_id,habitat
                                  ,trophic,nonnat)
-  trop.1 <- reshape2::melt(tropMet,id.vars=sampID)
+  trop.1 <- data.table::melt(tropMet,id.vars=sampID)
   print("Done calculating trophic metrics.")
 
   othMet <- calcFishOtherMets(indf,inTaxa,sampID,dist,ct,taxa_id,vel,migr
                               ,reprod,temp,nonnat)
-  oth.1 <- reshape2::melt(othMet,id.vars=sampID)
+  oth.1 <- data.table::melt(othMet,id.vars=sampID)
   print("Done calculating other metrics.")
 
   natMet <- calcFishNativeMets(indf,sampID,dist,ct,taxa_id,nonnat)
-  nat.1 <- reshape2::melt(natMet,id.vars=sampID)
+  nat.1 <- data.table::melt(natMet,id.vars=sampID)
   print("Done calculating native metrics.")
 
   anomMet <- calcFishAnomMets(indf,sampID,ct,anomct)
-  anom.1 <- reshape2::melt(anomMet,id.vars=sampID)
+  anom.1 <- data.table::melt(anomMet,id.vars=sampID)
   print("Done calculating anomaly metrics.")
 
   mets <- rbind(tax.1, tol.1, trop.1, oth.1, nat.1, anom.1) %>%
@@ -155,7 +155,7 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),sep='+')
   formula <- paste(lside,'~variable',sep='')
-  metOut <- reshape2::dcast(mets,eval(formula),value.var='value')
+  metOut <- data.table::dcast(mets,eval(formula),value.var='value')
 
   return(metOut)
 }

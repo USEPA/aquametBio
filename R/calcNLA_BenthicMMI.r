@@ -80,7 +80,7 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
                                       ,'DIPTPIND','HPRIME','SCRPNTAX','CLNGNTAX','EPT_NTAX','TL23PTAX')
                          ,stringsAsFactors=FALSE)
 
-  matchMets <- reshape2::melt(inMets,id.vars=c('SAMPID','ECO_BIO','TOTLNIND')
+  matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO_BIO','TOTLNIND')
                               ,measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
                               ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
     merge(metnames,by=c('PARAMETER','ECO_BIO')) %>%
@@ -166,7 +166,7 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste('SAMPID',collapse='+'),'ECO_BIO',sep='+')
   formula <- paste(lside,'~PARAMETER',sep='')
-  mmiOut <- reshape2::dcast(ww,eval(formula),value.var='RESULT')
+  mmiOut <- data.table::dcast(ww,eval(formula),value.var='RESULT')
 
   mmiOut.final <- merge(samples,mmiOut,by='SAMPID',all.x=TRUE) %>%
     subset(select=c(sampID,'SAMPID','ECO_BIO','MMI_BENT','BENT_MMI_COND'
