@@ -22,20 +22,27 @@
 
 Dominance<-function(df, topN=1){
  rr <- subset(df,IS_DISTINCT==1)
- rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
+ rr <- aggregate(list(TOTSUM = rr$TOTAL), by = rr[c('SAMPID')], FUN = sum )
+
+ ss <- merge(df, rr, by = 'SAMPID')
 
 
-	tt <- stats::aggregate(list(domN=rr$TOTAL)
-			,list(SAMPID=rr$SAMPID)
+# rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
+
+
+	tt <- stats::aggregate(list(domN=ss$TOTAL)
+			,list(SAMPID=ss$SAMPID)
 			,function(x){
 				sum(x[order(x,decreasing=TRUE)[1:topN]]
 				)
 			}
 	)
-	uu <- merge(tt,unique(rr[,c('SAMPID','TOTSUM')]),by="SAMPID")
-	uu <- plyr::mutate(uu,dompind=round(domN/TOTSUM*100,2))
+	uu <- merge(tt,unique(ss[,c('SAMPID','TOTSUM')]),by="SAMPID")
+	uu$dompind <- with(uu, round(domN/TOTSUM*100,2))
+	# uu <- plyr::mutate(uu,dompind=round(domN/TOTSUM*100,2))
 	uu <- subset(uu,select=c('SAMPID','dompind'))
-	uu <- plyr::rename(uu,c('dompind'=paste("DOM",topN,"PIND",sep='')))
+	names(uu)[names(uu) == 'dompind'] <- paste('DOM', topN, 'PIND', sep = '')
+	#uu <- plyr::rename(uu,c('dompind'=paste("DOM",topN,"PIND",sep='')))
 
 	return(uu)
 }
@@ -47,8 +54,14 @@ Dominance<-function(df, topN=1){
 
 ShanDiversity <- function(indata){
 	rr <- subset(indata,IS_DISTINCT==1)
-	rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
-	tt <- plyr::ddply(rr,"SAMPID",summarise,HPRIME=round(-1*sum((TOTAL/TOTSUM)*(log(TOTAL/TOTSUM))),2))
+	ss <- aggregate(x=list(TOTSUM = rr$TOTAL), by = rr[c('SAMPID')], FUN = sum)
+
+	rr <- merge(rr, ss, by = 'SAMPID')
+	rr$CALC <- with(rr,(TOTAL/TOTSUM)*(log(TOTAL/TOTSUM)))
+
+	tt <- aggregate(x = list(HPRIME = rr$CALC), by = rr[c('SAMPID')], FUN = function(x){ round(-1*sum(x), 2)})
+	# rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
+	# tt <- plyr::ddply(rr,"SAMPID",summarise,HPRIME=round(-1*sum((TOTAL/TOTSUM)*(log(TOTAL/TOTSUM))),2))
 
 	return(tt)
 }
@@ -61,10 +74,15 @@ ShanDiversity <- function(indata){
 
 tolindex<-function(indata, taxalist){
 	tv_taxa <- taxalist[taxalist$TRAIT %in% c('PTV','TOL_VAL'),]
-	indata1 <- plyr::ddply(indata,"SAMPID",mutate,SUMCT=sum(TOTAL))
+	rr <- aggregate(x = list(SUMCT = indata$TOTAL), by = indata[c('SAMPID')], FUN = sum)
+	indata1 <- merge(indata, rr, by = 'SAMPID')
+
+	# indata1 <- plyr::ddply(indata,"SAMPID",mutate,SUMCT=sum(TOTAL))
 	#This allows us to sum across only those taxa with TVs
 	tv_cts <- merge(indata1,tv_taxa,by="TAXA_ID")
-	outTV <- plyr::ddply(tv_cts,"SAMPID",summarise,WTD_TV=round(sum(TOTAL*as.numeric(value))/unique(SUMCT),2))
+	tv_cts$CALC <- with(tv_cts, TOTAL*as.numeric(value)/SUMCT)
+	outTV <- aggregate(x = list(WTD_TV = tv_cts$CALC), by = tv_cts[c('SAMPID')], FUN = function(x){round(sum(x), 2)})
+	# outTV <- plyr::ddply(tv_cts,"SAMPID",summarise,WTD_TV=round(sum(TOTAL*as.numeric(value))/unique(SUMCT),2))
 	return(outTV)
 }
 
@@ -75,8 +93,16 @@ tolindexFish<-function(indata, taxalist){
 	tv_taxa <- taxalist[,c('TAXA_ID','TOL_VAL')]
 	# This allows us to sum across only those taxa with TVs
 	tv_cts <- merge(indata,tv_taxa,by="TAXA_ID")
-	outTV <- dplyr::filter(tv_cts,!is.na(TOTAL) & !is.na(TOL_VAL)) %>%
-    plyr::ddply("SAMPID", summarise,
-	   WTD_TV=round(sum(TOTAL*as.numeric(TOL_VAL,na.rm=T))/sum(TOTAL),2))
+
+	rr <- subset(tv_cts, !is.na(TOTAL) & !is.na(TOL_VAL))
+	totsum <- aggregate(x = list(TOTSUM = rr$TOTAL), by = rr[c('SAMPID')], FUN = function(x){ sum(x, na.rm=TRUE) })
+
+	ss <- merge(rr, totsum, by = 'SAMPID')
+	ss$CALC <- with(ss, TOTAL*as.numeric(TOL_VAL)/TOTSUM)
+
+	outTV <- aggregate(x = list(WTD_TV = ss$CALC), by = ss[c('SAMPID')], FUN = function(x){ round(sum(x), 2)})
+# 	outTV <- dplyr::filter(tv_cts,!is.na(TOTAL) & !is.na(TOL_VAL)) %>%
+#     plyr::ddply("SAMPID", summarise,
+# 	   WTD_TV=round(sum(TOTAL*as.numeric(TOL_VAL,na.rm=T))/sum(TOTAL),2))
 	return(outTV)
 }

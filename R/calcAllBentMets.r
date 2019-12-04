@@ -201,8 +201,8 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
   mets <- rbind(tax.1, ffg.1, habit.1, tol.1, dom.1,totals.long)
 
   # Finally, we can recast the metrics df into wide format for output
-  lside <- paste(paste(sampID,collapse='+'),sep='+')
-  form <- paste(lside,'~variable',sep='')
+  # lside <- paste(paste(sampID,collapse='+'),sep='+')
+  # form <- paste(lside,'~variable',sep='')
   metOut <- reshape(mets, direction = 'wide', idvar = sampID,  timevar = 'variable')
   names(metOut) <- gsub("value\\.", "", names(metOut))
   # metOut <- data.table::dcast(mets,eval(form),value.var='value')

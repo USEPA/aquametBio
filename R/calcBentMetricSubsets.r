@@ -64,7 +64,8 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   }
 
   # Make sure all taxa match to taxalist and send error if not
-  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID')
+  checkTaxa <- inCts[!(inCts$TAXA_ID %in% inTaxa$TAXA_ID),]
+  # checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID')
   if(nrow(checkTaxa)>0){
     return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
@@ -89,30 +90,56 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   }
 
   samples <- unique(subset(inCts,select=c(sampID,'SAMPID')))
-  inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
-    dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
-    subset(!is.na(TOTAL) & TOTAL>0)
 
-  inTaxa.1 <- mutate(inTaxa, EPT_=ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
-                     ,EPHE=ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA)
-                     ,PLEC=ifelse(ORDER %in% c('PLECOPTERA'),1,NA)
-                     ,TRIC=ifelse(ORDER %in% c('TRICHOPTERA'),1,NA)
-                     ,CHIR=ifelse(FAMILY %in% c('CHIRONOMIDAE'),1,NA)
-                     ,CRUS=ifelse(CLASS %in% c('MALACOSTRACA','MAXILLOPODA','BRANCHIOPODA'
-                                               ,'CEPHALOCARIDA','OSTRACODA','REMIPEDIA'),1,NA)
-                     ,NOIN=ifelse(CLASS %nin% c('INSECTA'),1,NA)
-                     ,DIPT=ifelse(ORDER %in% c('DIPTERA'),1,NA)
-                     ,MOLL=ifelse(PHYLUM %in% c('MOLLUSCA'),1,NA)
-                     ,AMPH=ifelse(ORDER %in% c('AMPHIPODA'),1,NA)
-                     ,EPOT=ifelse(ORDER %in% c('ODONATA','PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
-                     ,HEMI=ifelse(ORDER %in% c('HEMIPTERA'),1,NA)
-                     ,MITE=ifelse(ORDER %in% c('TROMBIDIFORMES','SARCOPTIFORMES'),1,NA)
-                     ,ODON=ifelse(ORDER %in% c('ODONATA'),1,NA)
-                     ,OLLE=ifelse(CLASS %in% c('OLIGOCHAETA','HIRUDINEA','CLITELLATA'),1,NA)
-                     ,ORTH=ifelse(SUBFAMILY %in% c('ORTHOCLADIINAE'),1,NA)
-                     ,TANY=ifelse(TRIBE %in% c('TANYTARSINI'),1,NA)
-                     ,TUBINAID=ifelse(FAMILY %in% c('TUBIFICIDAE','NAIDIDAE'),1,NA)
-                     )
+  inCts.1 <- inCts[inCts$TAXA_ID %in% inTaxa$TAXA_ID, c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')]
+
+  inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL>0,]
+
+  # inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
+  #   dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
+  #   subset(!is.na(TOTAL) & TOTAL>0)
+
+  inTaxa.1 <- inTaxa
+  inTaxa.1$EPT_ <- with(inTaxa.1, ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA))
+  inTaxa.1$EPHE <- with(inTaxa.1, ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA))
+  inTaxa.1$PLEC <- with(inTaxa.1, ifelse(ORDER %in% c('PLECOPTERA'),1,NA))
+  inTaxa.1$TRIC <- with(inTaxa.1, ifelse(ORDER %in% c('TRICHOPTERA'),1,NA))
+  inTaxa.1$CHIR <- with(inTaxa.1, ifelse(FAMILY %in% c('CHIRONOMIDAE'),1,NA))
+  inTaxa.1$CRUS <- with(inTaxa.1, ifelse(CLASS %in% c('MALACOSTRACA','MAXILLOPODA','BRANCHIOPODA'
+                            ,'CEPHALOCARIDA','OSTRACODA','REMIPEDIA'),1,NA))
+  inTaxa.1$NOIN <- with(inTaxa.1, ifelse(CLASS %nin% c('INSECTA'),1,NA))
+  inTaxa.1$DIPT <- with(inTaxa.1, ifelse(ORDER %in% c('DIPTERA'),1,NA))
+  inTaxa.1$MOLL <- with(inTaxa.1, ifelse(PHYLUM %in% c('MOLLUSCA'),1,NA))
+  inTaxa.1$AMPH <- with(inTaxa.1, ifelse(ORDER %in% c('AMPHIPODA'),1,NA))
+  inTaxa.1$EPOT <- with(inTaxa.1, ifelse(ORDER %in% c('ODONATA','PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA))
+  inTaxa.1$HEMI <- with(inTaxa.1, ifelse(ORDER %in% c('HEMIPTERA'),1,NA))
+  inTaxa.1$MITE <- with(inTaxa.1, ifelse(ORDER %in% c('TROMBIDIFORMES','SARCOPTIFORMES'),1,NA))
+  inTaxa.1$ODON <- with(inTaxa.1, ifelse(ORDER %in% c('ODONATA'),1,NA))
+  inTaxa.1$OLLE <- with(inTaxa.1, ifelse(CLASS %in% c('OLIGOCHAETA','HIRUDINEA','CLITELLATA'),1,NA))
+  inTaxa.1$ORTH <- with(inTaxa.1, ifelse(SUBFAMILY %in% c('ORTHOCLADIINAE'),1,NA))
+  inTaxa.1$TANY <- with(inTaxa.1, ifelse(TRIBE %in% c('TANYTARSINI'),1,NA))
+  inTaxa.1$TUBINAID <- with(inTaxa.1, ifelse(FAMILY %in% c('TUBIFICIDAE','NAIDIDAE'),1,NA))
+
+  # inTaxa.1 <- mutate(inTaxa, EPT_=ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
+  #                    ,EPHE=ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA)
+  #                    ,PLEC=ifelse(ORDER %in% c('PLECOPTERA'),1,NA)
+  #                    ,TRIC=ifelse(ORDER %in% c('TRICHOPTERA'),1,NA)
+  #                    ,CHIR=ifelse(FAMILY %in% c('CHIRONOMIDAE'),1,NA)
+  #                    ,CRUS=ifelse(CLASS %in% c('MALACOSTRACA','MAXILLOPODA','BRANCHIOPODA'
+  #                                              ,'CEPHALOCARIDA','OSTRACODA','REMIPEDIA'),1,NA)
+  #                    ,NOIN=ifelse(CLASS %nin% c('INSECTA'),1,NA)
+  #                    ,DIPT=ifelse(ORDER %in% c('DIPTERA'),1,NA)
+  #                    ,MOLL=ifelse(PHYLUM %in% c('MOLLUSCA'),1,NA)
+  #                    ,AMPH=ifelse(ORDER %in% c('AMPHIPODA'),1,NA)
+  #                    ,EPOT=ifelse(ORDER %in% c('ODONATA','PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
+  #                    ,HEMI=ifelse(ORDER %in% c('HEMIPTERA'),1,NA)
+  #                    ,MITE=ifelse(ORDER %in% c('TROMBIDIFORMES','SARCOPTIFORMES'),1,NA)
+  #                    ,ODON=ifelse(ORDER %in% c('ODONATA'),1,NA)
+  #                    ,OLLE=ifelse(CLASS %in% c('OLIGOCHAETA','HIRUDINEA','CLITELLATA'),1,NA)
+  #                    ,ORTH=ifelse(SUBFAMILY %in% c('ORTHOCLADIINAE'),1,NA)
+  #                    ,TANY=ifelse(TRIBE %in% c('TANYTARSINI'),1,NA)
+  #                    ,TUBINAID=ifelse(FAMILY %in% c('TUBIFICIDAE','NAIDIDAE'),1,NA)
+  #                    )
 
   # Drop non-target taxa if included in taxalist
   if(length(grep('NON_TARGET',names(inTaxa.1)))>0) {
@@ -123,11 +150,23 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
             ,'TUBINAID','AMPH','EPOT','HEMI','MITE','ODON','OLLE','ORTH','TANY')
 
 
-  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
+  taxalong <- reshape(inTaxa.1[,c('TAXA_ID',params)], idvar = 'TAXA_ID', direction = 'long',
+                      varying = params, timevar = 'TRAIT', v.names = 'value',
+                      times = params)
+
+  taxalong <- taxalong[!is.na(taxalong$value),]
+
+  # taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
-  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
-                  TOTLNTAX=sum(IS_DISTINCT))
+  totals <- aggregate(x = list(TOTLNIND = inCts.1$TOTAL, TOTLNTAX = inCts.1$IS_DISTINCT), by = inCts.1[c('SAMPID')],
+                       FUN = sum)
+
+  inCts.1 <- merge(inCts.1, totals, by = 'SAMPID')
+  inCts.1$CALCPIND <- with(inCts.1, TOTAL/TOTLNIND)
+  inCts.1$CALCPTAX <- with(inCts.1, IS_DISTINCT/TOTLNTAX)
+  # inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
+  #                 TOTLNTAX=sum(IS_DISTINCT))
 
   # Merge the count data with the taxalist containing only the traits of
   # interest
@@ -135,24 +174,50 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   # Calculate no. individuals, % individuals, no. taxa, and % taxa for each
   # trait in taxalist
-  outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
-                  NIND=sum(TOTAL), NTAX=sum(IS_DISTINCT),
-                  PIND=round(sum(TOTAL/TOTLNIND)*100,2),
-                  PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
+  outMet.1 <- aggregate(x = list(NIND = traitDF$TOTAL, NTAX = traitDF$IS_DISTINCT),
+                                    by = traitDF[c('SAMPID','TRAIT','TOTLNTAX')],
+                      FUN = sum)
+  outMet.2 <- aggregate(x = list(PIND = traitDF$CALCPIND, PTAX = traitDF$CALCPTAX),
+                        by = traitDF[c('SAMPID','TRAIT','TOTLNTAX')],
+                        FUN = function(x){round(sum(x)*100, 2)})
+
+  outMet <- merge(outMet.1, outMet.2, by = c('SAMPID','TRAIT','TOTLNTAX'))
+  # outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
+  #                 NIND=sum(TOTAL), NTAX=sum(IS_DISTINCT),
+  #                 PIND=round(sum(TOTAL/TOTLNIND)*100,2),
+  #                 PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
 
   # Melt df to create metric names, then recast into wide format with metric
   # names
   print("Done calculating taxonomy metrics.")
-  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
+
+  outLong <- reshape(outMet, idvar = c('SAMPID','TOTLNTAX','TRAIT'), direction = 'long',
+                     varying = names(outMet)[!names(outMet) %in% c('SAMPID','TOTLNTAX','TRAIT')],
+                     timevar = 'variable', v.names = 'value',
+                     times = names(outMet)[!names(outMet) %in% c('SAMPID','TOTLNTAX','TRAIT')])
+
+  # outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
-    merge(samples,by='SAMPID')
+  outLong$TRAIT <- NULL
+
+  outWide <- reshape(outLong, idvar = c('SAMPID','TOTLNTAX'), direction = 'wide',
+                     timevar = 'variable', v.names = 'value')
+
+  names(outWide) <- gsub("value\\.", "", names(outWide))
+
+  outWide <- merge(outWide, samples, by='SAMPID')
+
+  # outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
+  #   merge(samples,by='SAMPID')
 
   # ORTHCHIRPIND are % of Chironomidae individuals in ORTHOCLADIINAE (not in
   # total indiv in sample)
-  outWide <- plyr::ddply(outWide, c(sampID,'SAMPID','TOTLNTAX'), mutate,
-                  ORTHCHIRPIND=round(ORTHNIND/CHIRNIND*100,2)) %>%
-    mutate(ORTHCHIRPIND=ifelse(is.na(ORTHCHIRPIND)|is.nan(ORTHCHIRPIND),0,ORTHCHIRPIND))
+  outWide$ORTHCHIRPIND <- with(outWide, round(ORTHNIND/CHIRNIND*100,2))
+  outWide$ORTHCHIRPIND <- with(outWide, ifelse(is.na(ORTHCHIRPIND)|is.nan(ORTHCHIRPIND),0,ORTHCHIRPIND))
+
+   # outWide <- plyr::ddply(outWide, c(sampID,'SAMPID','TOTLNTAX'), mutate,
+  #                 ORTHCHIRPIND=round(ORTHNIND/CHIRNIND*100,2)) %>%
+  #   mutate(ORTHCHIRPIND=ifelse(is.na(ORTHCHIRPIND)|is.nan(ORTHCHIRPIND),0,ORTHCHIRPIND))
 
   empty_tax <- data.frame(t(rep(NA,56)),stringsAsFactors=F)
   names(empty_tax) <- c('TOTLNTAX','AMPHNTAX','AMPHPIND'
@@ -175,16 +240,18 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
-    mutate(value=ifelse(is.na(value),0,value))
+#   outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
+#     mutate(value=ifelse(is.na(value),0,value))
 #  outLong.1 <- outLong.1[grep('NIND',outLong.1$variable,invert=T),]
+  outWide[is.na(outWide)] <- 0
+  # # Finally, we can recast the metrics df into wide format for output
+  # lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
+  # formula <- paste(lside,'~variable',sep='')
+  # outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
-  # Finally, we can recast the metrics df into wide format for output
-  lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
-  formula <- paste(lside,'~variable',sep='')
-  outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value')
-
-  outWide.fin <- dplyr::select(outWide.fin, -SAMPID)
+  outWide.fin <- outWide
+  outWide.fin$SAMPID <- NULL
+  # outWide.fin <- dplyr::select(outWide.fin, -SAMPID)
 
   outWide.fin <- outWide.fin[, c(sampID,'AMPHNTAX','AMPHPIND'
                                  ,'AMPHPTAX','CHIRNTAX','CHIRPIND'
