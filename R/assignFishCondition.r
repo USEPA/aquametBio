@@ -80,22 +80,26 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
     return(NULL)
   }
 
-  # Rename variables
+  # Make sure variables are numeric and rename area and total individuals
   if(any(is.na(inMMI.1[,mmi]))){
 
-    names(inMMI.1)[names(inMMI.1)==wsarea] <- 'WSAREA'
-    names(inMMI.1)[names(inMMI.1)==totlnind] <- 'TOTLNIND'
+     names(inMMI.1)[names(inMMI.1)==wsarea] <- 'WSAREA'
+     names(inMMI.1)[names(inMMI.1)==totlnind] <- 'TOTLNIND'
+    #
+    # inMMI.1 <- plyr::mutate(inMMI.1, WSAREA = as.numeric(WSAREA),
+    #                       TOTLNIND = as.numeric(TOTLNIND))
 
-    inMMI.1 <- plyr::mutate(inMMI.1, WSAREA = as.numeric(WSAREA),
-                          TOTLNIND = as.numeric(TOTLNIND))
+    inMMI.1$WSAREA <- as.numeric(inMMI.1$WSAREA)
+    inMMI.1$TOTLNIND <- as.numeric(inMMI.1$TOTLNIND)
   }
 
-  names(inMMI.1)[names(inMMI.1)==ecoreg] <- 'ECO9'
+  # names(inMMI.1)[names(inMMI.1)==ecoreg] <- 'ECO9'
   names(inMMI.1)[names(inMMI.1)==mmi] <- 'MMI_FISH'
-  inMMI.1 <- plyr::mutate(inMMI.1, MMI_FISH = as.numeric(MMI_FISH))
+  # inMMI.1 <- plyr::mutate(inMMI.1, MMI_FISH = as.numeric(MMI_FISH))
+  inMMI.1$MMI_FISH <- as.numeric(inMMI.1$MMI_FISH)
 
   # Check to make sure ecoregion variable is included in the input data frame
-  ecoCk <- unique(inMMI.1$ECO9)
+  ecoCk <- unique(inMMI.1[,ecoreg])
   ecos <- c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER')
   if(any(ecoCk %nin% ecos)){
     msgEco <- which(ecoCk %nin% ecos)
@@ -114,15 +118,27 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
                             ,fp=c(46.8,47.1,35.8,49.8,39.7,47.5,29.3,65.4,66.2),stringsAsFactors=FALSE)
 
   # Need to account for cases where no missing MMI_FISH
-  cond.mmi.1 <- merge(inMMI.1,cond.tholds,by='ECO9',all.x=TRUE) %>%
-    plyr::mutate(FISH_MMI_COND = ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good'
-                          , ifelse(MMI_FISH < fp, 'Poor'
-                          , ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA)))) %>%
-    plyr::mutate(FISH_MMI_COND=ifelse(!is.na(FISH_MMI_COND), FISH_MMI_COND
-                         , ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), 'Not Assessed'
-                         , ifelse(is.na(MMI_FISH) & TOTLNIND==0 & WSAREA > 2, 'Poor'
-                                  , 'Not Assessed')))) %>%
-    dplyr::select(-gf, -fp)
+  # cond.mmi.1 <- merge(inMMI.1,cond.tholds,by='ECO9',all.x=TRUE) %>%
+  #   plyr::mutate(FISH_MMI_COND = ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good'
+  #                         , ifelse(MMI_FISH < fp, 'Poor'
+  #                         , ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA)))) %>%
+  #   plyr::mutate(FISH_MMI_COND=ifelse(!is.na(FISH_MMI_COND), FISH_MMI_COND
+  #                        , ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), 'Not Assessed'
+  #                        , ifelse(is.na(MMI_FISH) & TOTLNIND==0 & WSAREA > 2, 'Poor'
+  #                                 , 'Not Assessed')))) %>%
+  #   dplyr::select(-gf, -fp)
+  cond.mmi.1 <- merge(inMMI.1, cond.tholds, by.x=ecoreg, by.y='ECO9')
+  cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1,
+                                   ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good'
+                                       , ifelse(MMI_FISH < fp, 'Poor'
+                                           , ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA))))
+
+  cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1, ifelse(!is.na(FISH_MMI_COND), FISH_MMI_COND
+                                                  , ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), 'Not Assessed'
+                                                      , ifelse(is.na(MMI_FISH) & TOTLNIND==0 & WSAREA > 2, 'Poor'
+                                                         , 'Not Assessed'))))
+  cond.mmi.1 <- subset(cond.mmi.1, select=c(-gf, -fp))
+
 
   condOut <- subset(cond.mmi.1, select = c(sampID, 'FISH_MMI_COND')) %>%
     merge(inMMI, by = c(sampID))

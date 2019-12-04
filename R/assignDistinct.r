@@ -71,8 +71,14 @@ assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.
     #                            ,responseName=paste('n',taxlevels[i],sep=''),stringsAsFactors=F) %>%
     #   plyr::rename(c('TAXON'=taxlevels[i]))
     # cc.1 <- merge(cc.1, freqLevel, by=c('SAMP_ID',taxlevels[i]),all.x=T)
-    freqLevel <- plyr::ddply(cc.1,c('SAMP_ID',taxlevels[1:i]),summarise,n=length(SAMP_ID)) %>%
-      plyr::rename(c('n'=paste('n',taxlevels[i],sep='')))
+    # freqLevel <- plyr::ddply(cc.1,c('SAMP_ID',taxlevels[1:i]),summarise,n=length(SAMP_ID)) %>%
+    #   plyr::rename(c('n'=paste('n',taxlevels[i],sep='')))
+
+    freqLevel <- aggregate(x=cc.1$SAMP_ID, by = cc.1[c('SAMP_ID',taxlevels[1:i])], FUN
+                           =length)
+
+    names(freqLevel)[names(freqLevel)=='x'] <- paste('n',taxlevels[i],sep='')
+
 
     cc.1 <- merge(cc.1,freqLevel,by=c('SAMP_ID',taxlevels[1:i]),all.x=T)
 
@@ -99,7 +105,7 @@ assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.
 
 
   outdata<-subset(cc.1,select=c(names(cc),'IS_DISTINCT')) %>%
-    dplyr::select(-SAMP_ID)
+    subset(select=-SAMP_ID)
 
   return(outdata)
 }

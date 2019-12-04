@@ -57,7 +57,8 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ct="TOTAL",taxa_id='TAXA_ID',ffg='FFG',habit='HABIT',ptv='PTV'){
 
   # Make sure all taxa match to taxalist and send error if not
-  checkTaxa <- dplyr::anti_join(indf,inTaxa,by='TAXA_ID')
+  checkTaxa <- indf[indf$TAXA_ID %in% setdiff(indf$TAXA_ID, inTaxa$TAXA_ID),]
+  #checkTaxa <- dplyr::anti_join(indf,inTaxa,by='TAXA_ID')
   if(nrow(checkTaxa)>0){
     return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
@@ -89,33 +90,122 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
 
 
   taxMet <- calcBentTaxMets(indf,inTaxa,sampID,dist,ct,taxa_id)
-  tax.1 <- data.table::melt(taxMet,id.vars=sampID)
+  tax.1 <- reshape(taxMet, idvar = sampID, direction = 'long', varying = c('AMPHNTAX','AMPHPIND'
+                                                                           ,'AMPHPTAX','CHIRNTAX','CHIRPIND'
+                                                                           ,'CHIRPTAX','CRUSNTAX','CRUSPIND','CRUSPTAX'
+                                                                           ,'DIPTNTAX','DIPTPIND','DIPTPTAX','EPHENTAX'
+                                                                           ,'EPHEPIND','EPHEPTAX','EPOTNTAX','EPOTPIND'
+                                                                           ,'EPOTPTAX','EPT_NTAX','EPT_PIND'
+                                                                           ,'EPT_PTAX','HEMINTAX','HEMIPIND','HEMIPTAX'
+                                                                           ,'MITENTAX','MITEPIND','MITEPTAX'
+                                                                           ,'MOLLNTAX','MOLLPIND','MOLLPTAX','NOINNTAX','NOINPIND','NOINPTAX'
+                                                                           ,'ODONNTAX','ODONPIND','ODONPTAX','OLLENTAX','OLLEPIND'
+                                                                           ,'OLLEPTAX','ORTHNTAX','ORTHPIND','ORTHPTAX'
+                                                                           ,'PLECNTAX','PLECPIND','PLECPTAX'
+                                                                           ,'TANYNTAX','TANYPIND'
+                                                                           ,'TANYPTAX','TRICNTAX','TRICPIND','TRICPTAX'
+                                                                           ,'TUBINAIDNTAX','TUBINAIDPIND','TUBINAIDPTAX','ORTHCHIRPIND'),
+                   v.names = 'value', timevar = 'variable', times = c('AMPHNTAX','AMPHPIND'
+                                                                      ,'AMPHPTAX','CHIRNTAX','CHIRPIND'
+                                                                      ,'CHIRPTAX','CRUSNTAX','CRUSPIND','CRUSPTAX'
+                                                                      ,'DIPTNTAX','DIPTPIND','DIPTPTAX','EPHENTAX'
+                                                                      ,'EPHEPIND','EPHEPTAX','EPOTNTAX','EPOTPIND'
+                                                                      ,'EPOTPTAX','EPT_NTAX','EPT_PIND'
+                                                                      ,'EPT_PTAX','HEMINTAX','HEMIPIND','HEMIPTAX'
+                                                                      ,'MITENTAX','MITEPIND','MITEPTAX'
+                                                                      ,'MOLLNTAX','MOLLPIND','MOLLPTAX','NOINNTAX','NOINPIND','NOINPTAX'
+                                                                      ,'ODONNTAX','ODONPIND','ODONPTAX','OLLENTAX','OLLEPIND'
+                                                                      ,'OLLEPTAX','ORTHNTAX','ORTHPIND','ORTHPTAX'
+                                                                      ,'PLECNTAX','PLECPIND','PLECPTAX'
+                                                                      ,'TANYNTAX','TANYPIND'
+                                                                      ,'TANYPTAX','TRICNTAX','TRICPIND','TRICPTAX'
+                                                                      ,'TUBINAIDNTAX','TUBINAIDPIND','TUBINAIDPTAX','ORTHCHIRPIND'))
+  # tax.1 <- data.table::melt(taxMet,id.vars=sampID)
 
   ffgMet <- calcBentFFGmets(indf,inTaxa,sampID,dist,ct,taxa_id,ffg)
-  ffg.1 <- data.table::melt(ffgMet,id.vars=sampID)
+  ffg.1 <- reshape(ffgMet, idvar = sampID, direction = 'long', varying = c('COFINTAX','COFIPIND','COFIPTAX'
+                                                                           ,'COFITRICNTAX','COFITRICPIND','COFITRICPTAX'
+                                                                           ,'COGANTAX','COGAPIND','COGAPTAX'
+                                                                           ,'PREDNTAX','PREDPIND','PREDPTAX'
+                                                                           ,'SCRPNTAX','SCRPPIND','SCRPPTAX'
+                                                                           ,'SHRDNTAX','SHRDPIND','SHRDPTAX'),
+                   v.names = 'value', timevar = 'variable', times = c('COFINTAX','COFIPIND','COFIPTAX'
+                                                                      ,'COFITRICNTAX','COFITRICPIND','COFITRICPTAX'
+                                                                      ,'COGANTAX','COGAPIND','COGAPTAX'
+                                                                      ,'PREDNTAX','PREDPIND','PREDPTAX'
+                                                                      ,'SCRPNTAX','SCRPPIND','SCRPPTAX'
+                                                                      ,'SHRDNTAX','SHRDPIND','SHRDPTAX'))
+  # ffg.1 <- data.table::melt(ffgMet,id.vars=sampID)
 
   habitMet <- calcBentHabitMets(indf,inTaxa,sampID,dist,ct,taxa_id,habit)
-  habit.1 <- data.table::melt(habitMet,id.vars=sampID)
+  habit.1 <- reshape(habitMet, idvar = sampID, direction = 'long', varying = c('BURRNTAX','BURRPIND','BURRPTAX'
+                                                                               ,'CLMBNTAX','CLMBPIND','CLMBPTAX'
+                                                                               ,'CLNGNTAX','CLNGPIND','CLNGPTAX'
+                                                                               ,'SPWLNTAX','SPWLPIND','SPWLPTAX'
+                                                                               ,'SWIMNTAX','SWIMPIND','SWIMPTAX'),
+                     v.names = 'value', timevar = 'variable', times = c('BURRNTAX','BURRPIND','BURRPTAX'
+                                                                        ,'CLMBNTAX','CLMBPIND','CLMBPTAX'
+                                                                        ,'CLNGNTAX','CLNGPIND','CLNGPTAX'
+                                                                        ,'SPWLNTAX','SPWLPIND','SPWLPTAX'
+                                                                        ,'SWIMNTAX','SWIMPIND','SWIMPTAX'))
+  # habit.1 <- data.table::melt(habitMet,id.vars=sampID)
 
   tolMet <- calcBentTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,ptv)
-  tol.1 <- data.table::melt(tolMet,id.vars=sampID)
+  tol.1 <- reshape(tolMet, idvar = sampID, direction = 'long', varying = c('FACLNTAX','FACLPIND','FACLPTAX'
+                                                                           ,'INTLNTAX','INTLPIND','INTLPTAX'
+                                                                           ,'NTOLNTAX','NTOLPIND','NTOLPTAX'
+                                                                           ,'STOLNTAX','STOLPIND','STOLPTAX'
+                                                                           ,'TL01NTAX','TL01PIND','TL01PTAX'
+                                                                           ,'TL23NTAX','TL23PIND','TL23PTAX'
+                                                                           ,'TL45NTAX','TL45PIND','TL45PTAX'
+                                                                           ,'TL67NTAX','TL67PIND','TL67PTAX'
+                                                                           ,'TOLRNTAX','TOLRPIND','TOLRPTAX'
+                                                                           ,'WTD_TV'),
+                   v.names = 'value', timevar = 'variable', times = c('FACLNTAX','FACLPIND','FACLPTAX'
+                                                                      ,'INTLNTAX','INTLPIND','INTLPTAX'
+                                                                      ,'NTOLNTAX','NTOLPIND','NTOLPTAX'
+                                                                      ,'STOLNTAX','STOLPIND','STOLPTAX'
+                                                                      ,'TL01NTAX','TL01PIND','TL01PTAX'
+                                                                      ,'TL23NTAX','TL23PIND','TL23PTAX'
+                                                                      ,'TL45NTAX','TL45PIND','TL45PTAX'
+                                                                      ,'TL67NTAX','TL67PIND','TL67PTAX'
+                                                                      ,'TOLRNTAX','TOLRPIND','TOLRPTAX'
+                                                                      ,'WTD_TV'))
+  # tol.1 <- data.table::melt(tolMet,id.vars=sampID)
 
   domMet <- calcBentDominMets(indf,inTaxa,sampID,dist,ct,taxa_id)
-  dom.1 <- data.table::melt(domMet,id.vars=sampID)
+  # Still working on this below - do I know the set variable names ahead of time?
+  dom.1 <- reshape(domMet, idvar = sampID, direction='long', varying=c('HPRIME','DOM1PIND','DOM3PIND','DOM5PIND',
+                                                                       'CHIRDOM1PIND','CHIRDOM3PIND','CHIRDOM5PIND'),
+                   v.names='value', timevar='variable', times=c('HPRIME','DOM1PIND','DOM3PIND','DOM5PIND','CHIRDOM1PIND',
+                                                                'CHIRDOM3PIND','CHIRDOM5PIND'))
+  # dom.1 <- data.table::melt(domMet,id.vars=sampID)
 
   names(indf)[names(indf)==ct] <- 'FINAL_CT'
   names(indf)[names(indf)==dist] <- 'IS_DISTINCT'
 
-  totals <- plyr::ddply(indf, sampID, summarise, TOTLNIND=sum(FINAL_CT),
-                                   TOTLNTAX=sum(IS_DISTINCT)) %>%
-    melt(id.vars=sampID)
+  rhs <- paste(sampID, collapse='+')
+  form <- paste('cbind(FINAL_CT, IS_DISTINCT)', rhs, sep='~')
+  totals <- aggregate(formula(form), data=indf, FUN = function(x) sum=sum(x))
 
-  mets <- rbind(tax.1, ffg.1, habit.1, tol.1, dom.1,totals)
+  names(totals)[names(totals)=='FINAL_CT'] <- 'TOTLNIND'
+  names(totals)[names(totals)=='IS_DISTINCT'] <- 'TOTLNTAX'
+
+  # Now melt the above using variable and value?
+  totals.long <- reshape(totals, idvar = sampID, direction='long', varying=c('TOTLNIND','TOTLNTAX'),v.names='value',timevar='variable',times=c('TOTLNIND','TOTLNTAX'))
+
+  # totals <- plyr::ddply(indf, sampID, summarise, TOTLNIND=sum(FINAL_CT),
+  #                                  TOTLNTAX=sum(IS_DISTINCT)) %>%
+  #   melt(id.vars=sampID)
+
+  mets <- rbind(tax.1, ffg.1, habit.1, tol.1, dom.1,totals.long)
 
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),sep='+')
-  formula <- paste(lside,'~variable',sep='')
-  metOut <- data.table::dcast(mets,eval(formula),value.var='value')
+  form <- paste(lside,'~variable',sep='')
+  metOut <- reshape(mets, direction = 'wide', idvar = sampID,  timevar = 'variable')
+  names(metOut) <- gsub("value\\.", "", names(metOut))
+  # metOut <- data.table::dcast(mets,eval(form),value.var='value')
 
   return(metOut)
 }
