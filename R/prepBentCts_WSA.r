@@ -96,16 +96,20 @@ prepBentCts_WSA <- function(inCts,inTaxa=bentTaxa_nrsa,sampID='UID',ct='TOTAL'
 
   totals <- aggregate(x = list(TOTAL = inCts.2$TOTAL), by = inCts.2[c(sampID,'TAXA_ID')],
                       FUN = sum)
-  inCts.3 <- merge(inCts.2, totals, by = c(sampID, 'TAXA_ID'))
-  inCts.3 <- merge(inCts.3, inTaxa.1, by = 'TAXA_ID')
+
+  inCts.3 <- merge(totals, inTaxa.1, by = 'TAXA_ID')
 
   # inCts.3 <- plyr::ddply(inCts.2,c(sampID,'TAXA_ID'),summarise,TOTAL=sum(TOTAL)) %>%
   #   merge(inTaxa.1,by='TAXA_ID')
-
   inCts.4 <- assignDistinct(inCts.3,c(sampID),taxlevels=c('PHYLUM','CLASS','ORDER','FAMILY','GENUS')
                             ,final.name='TARGET_TAXON'
-                            ,special.taxa=c('THIENEMANNIMYIA GENUS GR.', 'CERATOPOGONINAE', 'CRICOTOPUS/ORTHOCLADIUS')) %>%
-    plyr::mutate(IS_DISTINCT=ifelse(is.na(IS_DISTINCT),0,IS_DISTINCT))
+                            ,special.taxa=c('THIENEMANNIMYIA GENUS GR.', 'CERATOPOGONINAE', 'CRICOTOPUS/ORTHOCLADIUS'))
+  inCts.4$IS_DISTINCT <- with(inCts.4, ifelse(is.na(IS_DISTINCT),0,IS_DISTINCT))
+
+  # inCts.4 <- assignDistinct(inCts.3,c(sampID),taxlevels=c('PHYLUM','CLASS','ORDER','FAMILY','GENUS')
+  #                           ,final.name='TARGET_TAXON'
+  #                           ,special.taxa=c('THIENEMANNIMYIA GENUS GR.', 'CERATOPOGONINAE', 'CRICOTOPUS/ORTHOCLADIUS')) %>%
+  #   plyr::mutate(IS_DISTINCT=ifelse(is.na(IS_DISTINCT),0,IS_DISTINCT))
 
   outCts <- subset(inCts.4,select=c(sampID,'TAXA_ID','TOTAL','IS_DISTINCT'))
 

@@ -377,12 +377,11 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   #   subset(!is.na(TOTAL) & TOTAL>0)
 
   inTaxa.1 <- inTaxa
-  inTaxa.1$COFI <- with(inTaxa.1, ifelse(str_detect(FFG,'CF'), 1, NA))
-  inTaxa.1$COFI <- with(inTaxa.1, COFI=ifelse(str_detect(FFG,'CF'), 1, NA))
-  inTaxa.1$COFI <- with(inTaxa.1, COGA=ifelse(str_detect(FFG,'CG'), 1, NA))
-  inTaxa.1$COFI <- with(inTaxa.1, PRED=ifelse(str_detect(FFG,'PR'), 1, NA))
-  inTaxa.1$COFI <- with(inTaxa.1, SHRD=ifelse(str_detect(FFG,'SH'), 1, NA))
-  inTaxa.1$COFI <- with(inTaxa.1, SCRP=ifelse(str_detect(FFG,'SC'), 1, NA))
+  inTaxa.1$COFI <- with(inTaxa.1, ifelse(grepl('CF',FFG), 1, NA))
+  inTaxa.1$COGA <- with(inTaxa.1, ifelse(grepl('CG',FFG), 1, NA))
+  inTaxa.1$PRED <- with(inTaxa.1, ifelse(grepl('PR',FFG), 1, NA))
+  inTaxa.1$SHRD <- with(inTaxa.1, ifelse(grepl('SH',FFG), 1, NA))
+  inTaxa.1$SCRP <- with(inTaxa.1, ifelse(grepl('SC',FFG), 1, NA))
 
   # inTaxa.1 <- mutate(inTaxa
   #                    ,COFI=ifelse(str_detect(FFG,'CF'), 1, NA)
@@ -392,7 +391,7 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   #                    ,SCRP=ifelse(str_detect(FFG,'SC'), 1, NA))
 
   if('ORDER' %in% names(inTaxa.1)){
-    inTaxa.1$COFITRIC <- with(inTaxa.1, COFITRIC=ifelse(str_detect(FFG,'CF') & ORDER=='TRICHOPTERA', 1, NA))
+    inTaxa.1$COFITRIC <- with(inTaxa.1, ifelse(grepl('CF',FFG) & ORDER=='TRICHOPTERA', 1, NA))
   }
 
   # Drop non-target taxa if included in taxalist
@@ -605,11 +604,11 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   #   subset(!is.na(TOTAL) & TOTAL>0)
 
   inTaxa.1 <- inTaxa
-  inTaxa.1$BURR <- with(inTaxa.1, ifelse(stringr::str_detect(HABIT,'BU'), 1, NA))
-  inTaxa.1$CLMB <- with(inTaxa.1, ifelse(stringr::str_detect(HABIT,'CB'), 1, NA))
-  inTaxa.1$CLNG <- with(inTaxa.1, ifelse(stringr::str_detect(HABIT,'CN'), 1, NA))
-  inTaxa.1$SPWL <- with(inTaxa.1, ifelse(stringr::str_detect(HABIT,'SP'), 1, NA))
-  inTaxa.1$SWIM <- with(inTaxa.1, ifelse(stringr::str_detect(HABIT,'SW'), 1, NA))
+  inTaxa.1$BURR <- with(inTaxa.1, ifelse(grepl('BU',HABIT), 1, NA))
+  inTaxa.1$CLMB <- with(inTaxa.1, ifelse(grepl('CB',HABIT), 1, NA))
+  inTaxa.1$CLNG <- with(inTaxa.1, ifelse(grepl('CN',HABIT), 1, NA))
+  inTaxa.1$SPWL <- with(inTaxa.1, ifelse(grepl('SP',HABIT), 1, NA))
+  inTaxa.1$SWIM <- with(inTaxa.1, ifelse(grepl('SW',HABIT), 1, NA))
 
   # inTaxa.1 <- mutate(inTaxa
   #                    ,BURR=ifelse(stringr::str_detect(HABIT,'BU'), 1, NA)
@@ -810,7 +809,8 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   inTaxa <- subset(inTaxa,select=names(inTaxa) %in% c('TAXA_ID',ptv))
   names(inTaxa)[names(inTaxa)==ptv] <- 'PTV'
-  inTaxa <- mutate(inTaxa,PTV=as.numeric(PTV))
+  inTaxa$PTV <- as.numeric(inTaxa$PTV)
+#  inTaxa <- mutate(inTaxa,PTV=as.numeric(PTV))
 
   samples <- unique(subset(inCts,select=c(sampID,'SAMPID')))
 

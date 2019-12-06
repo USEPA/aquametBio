@@ -22,9 +22,9 @@
 
 Dominance<-function(df, topN=1){
  rr <- subset(df,IS_DISTINCT==1)
- rr <- aggregate(list(TOTSUM = rr$TOTAL), by = rr[c('SAMPID')], FUN = sum )
+ totals <- aggregate(list(TOTSUM = rr$TOTAL), by = rr[c('SAMPID')], FUN = sum )
 
- ss <- merge(df, rr, by = 'SAMPID')
+ ss <- merge(rr, totals, by = 'SAMPID')
 
 
 # rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
@@ -75,13 +75,16 @@ ShanDiversity <- function(indata){
 tolindex<-function(indata, taxalist){
 	tv_taxa <- taxalist[taxalist$TRAIT %in% c('PTV','TOL_VAL'),]
 	rr <- aggregate(x = list(SUMCT = indata$TOTAL), by = indata[c('SAMPID')], FUN = sum)
-	indata1 <- merge(indata, rr, by = 'SAMPID')
+	# indata1 <- merge(indata, rr, by = 'SAMPID')
 
 	# indata1 <- plyr::ddply(indata,"SAMPID",mutate,SUMCT=sum(TOTAL))
 	#This allows us to sum across only those taxa with TVs
-	tv_cts <- merge(indata1,tv_taxa,by="TAXA_ID")
-	tv_cts$CALC <- with(tv_cts, TOTAL*as.numeric(value)/SUMCT)
-	outTV <- aggregate(x = list(WTD_TV = tv_cts$CALC), by = tv_cts[c('SAMPID')], FUN = function(x){round(sum(x), 2)})
+	tv_cts <- merge(indata,tv_taxa,by="TAXA_ID")
+	# Redo this to match order of operations of original code - get total separately
+	tv_cts$CALC <- with(tv_cts, TOTAL*as.numeric(value))
+	tvOut <- aggregate(x = list(SUMCALC = tv_cts$CALC), by = tv_cts[c('SAMPID')], FUN = sum)
+	outTV <- merge(tvOut, rr, by = c('SAMPID'))
+	outTV$WTD_TV <- with(outTV, round(SUMCALC/SUMCT, 2))
 	# outTV <- plyr::ddply(tv_cts,"SAMPID",summarise,WTD_TV=round(sum(TOTAL*as.numeric(value))/unique(SUMCT),2))
 	return(outTV)
 }

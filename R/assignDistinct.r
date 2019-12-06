@@ -103,9 +103,10 @@ assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.
     cc.1$IS_DISTINCT[whichVal.1] <- 0
   }
 
-
-  outdata<-subset(cc.1,select=c(names(cc),'IS_DISTINCT')) %>%
-    subset(select=-SAMP_ID)
+  outdata <- subset(cc.1,select=c(names(cc),'IS_DISTINCT'))
+  outdata$SAMP_ID <- NULL
+  # outdata<-subset(cc.1,select=c(names(cc),'IS_DISTINCT')) %>%
+  #   subset(select=-SAMP_ID)
 
   return(outdata)
 }
