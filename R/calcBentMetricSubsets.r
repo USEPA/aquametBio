@@ -236,7 +236,7 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ,'TUBINAIDNTAX','TUBINAIDPIND','TUBINAIDPTAX','ORTHCHIRPIND')
 
   outWide.all <- merge(outWide, empty_tax, all=TRUE)
-  outWide.all <- subset(outWide, !is.na(SAMPID))
+  outWide.all <- subset(outWide.all, !is.na(SAMPID)) # This step also drops variables with all missing values (HEMI metrics)
 
  # outWide.all <- merge(outWide, empty_tax, all=TRUE) %>% filter(!is.na(SAMPID))
  # outWide.all <- gtools::smartbind(outWide, empty_tax) %>% filter(!is.na(SAMPID))
@@ -480,7 +480,7 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ,'SHRDNTAX','SHRDPIND','SHRDPTAX')
 
   outWide.all <- merge(outWide, empty_tax, all=TRUE)
-  outWide.all <- subset(outWide, !is.na(SAMPID))
+  outWide.all <- subset(outWide.all, !is.na(SAMPID))
   # outWide.all <- merge(outWide, empty_tax, all=TRUE) %>% filter(!is.na(SAMPID))
 
   # # If we re-melt df now, we have missing values where the metric should be a
@@ -697,7 +697,7 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ,'SWIMNTAX','SWIMPIND','SWIMPTAX')
 
   outWide.all <- merge(outWide, empty_tax, all=TRUE)
-  outWide.all <- subset(outWide, !is.na(SAMPID))
+  outWide.all <- subset(outWide.all, !is.na(SAMPID))
   # outWide.all <- merge(outWide, empty_tax, all=TRUE) %>% filter(!is.na(SAMPID))
 
   # # If we re-melt df now, we have missing values where the metric should be a
@@ -935,7 +935,7 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ,'WTD_TV')
 
   outWide.all <- merge(outWide, empty_tax, all=TRUE)
-  outWide.all <- subset(outWide, !is.na(SAMPID))
+  outWide.all <- subset(outWide.all, !is.na(SAMPID))
   # outWide.all <- merge(outWide, empty_tax, all=TRUE) %>% filter(!is.na(SAMPID))
 
   # # If we re-melt df now, we have missing values where the metric should be a

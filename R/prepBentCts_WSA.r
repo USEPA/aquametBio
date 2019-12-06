@@ -67,25 +67,40 @@ prepBentCts_WSA <- function(inCts,inTaxa=bentTaxa_nrsa,sampID='UID',ct='TOTAL'
   names(inCts)[names(inCts)==taxa_id] <- 'TAXA_ID'
   names(inTaxa)[names(inTaxa)==taxa_id] <- 'TAXA_ID'
 
-  inTaxa.1 <- dplyr::select(inTaxa,TAXA_ID,TARGET_TAXON,PHYLUM,CLASS,ORDER,FAMILY,GENUS)
+  inTaxa.1 <- inTaxa[,c('TAXA_ID','TARGET_TAXON','PHYLUM','CLASS','ORDER','FAMILY','GENUS')]
+  # inTaxa.1 <- dplyr::select(inTaxa,TAXA_ID,TARGET_TAXON,PHYLUM,CLASS,ORDER,FAMILY,GENUS)
 
   # Must first create input dataset using WSA taxonomy and traits
-  inCts.1 <- merge(inCts,inTaxa.1,by=c('TAXA_ID')) %>%
-    plyr::mutate(TOTAL=as.numeric(TOTAL)) %>%
-    filter(TOTAL>0)
+  inCts.1 <- merge(inCts, inTaxa.1, by = c('TAXA_ID'))
+  inCts.1$TOTAL <- as.numeric(inCts.1$TOTAL)
+  inCts.1 <- inCts.1[inCts.1$TOTAL>0,]
+  # inCts.1 <- merge(inCts,inTaxa.1,by=c('TAXA_ID')) %>%
+  #   plyr::mutate(TOTAL=as.numeric(TOTAL)) %>%
+  #   filter(TOTAL>0)
+
   ## Roll mites, oligochaetes, and polychaetes up to family level
   fixTaxa <- with(inCts.1,which(CLASS %in% c('ARACHNIDA','POLYCHAETA','OLIGOCHAETA') & !is.na(FAMILY) & FAMILY!=''))
 
   inCts.1$TARGET_TAXON[fixTaxa] <- inCts.1$FAMILY[fixTaxa]
 
-  inCts.2 <- merge(inCts.1,subset(inTaxa.1,select=c('TAXA_ID','TARGET_TAXON')),by='TARGET_TAXON',all.x=TRUE) %>%
-    plyr::rename(c('TAXA_ID.y'='TAXA_ID')) %>%
-    plyr::mutate(TAXA_ID=ifelse(TARGET_TAXON %in% c('CRICOTOPUS/ORTHOCLADIUS','THIENEMANNIMYIA GENUS GR.'),3581
-                                ,ifelse(TARGET_TAXON %in% c('CERATOPOGONINAE'),3566,TAXA_ID))
-                 ,TARGET_TAXON=ifelse(TAXA_ID==3581,'CHIRONOMIDAE',ifelse(TAXA_ID==3566,'CERATOPOGONIDAE',TARGET_TAXON)))
+  inCts.2 <- merge(inCts.1,subset(inTaxa.1,select=c('TAXA_ID','TARGET_TAXON')),by='TARGET_TAXON',all.x=TRUE)
+  names(inCts.2)[names(inCts.2)=='TAXA_ID.y'] <- 'TAXA_ID'
+  inCts.2$TAXA_ID <- with(inCts.2, ifelse(TARGET_TAXON %in% c('CRICOTOPUS/ORTHOCLADIUS','THIENEMANNIMYIA GENUS GR.'),3581,
+                                           ifelse(TARGET_TAXON %in% c('CERATOPOGONINAE'),3566,TAXA_ID)))
+  inCts.2$TARGET_TAXON <- with(inCts.2, ifelse(TAXA_ID==3581,'CHIRONOMIDAE',ifelse(TAXA_ID==3566,'CERATOPOGONIDAE',TARGET_TAXON)))
+  # inCts.2 <- merge(inCts.1,subset(inTaxa.1,select=c('TAXA_ID','TARGET_TAXON')),by='TARGET_TAXON',all.x=TRUE) %>%
+  #   plyr::rename(c('TAXA_ID.y'='TAXA_ID')) %>%
+  #   plyr::mutate(TAXA_ID=ifelse(TARGET_TAXON %in% c('CRICOTOPUS/ORTHOCLADIUS','THIENEMANNIMYIA GENUS GR.'),3581
+  #                               ,ifelse(TARGET_TAXON %in% c('CERATOPOGONINAE'),3566,TAXA_ID))
+  #                ,TARGET_TAXON=ifelse(TAXA_ID==3581,'CHIRONOMIDAE',ifelse(TAXA_ID==3566,'CERATOPOGONIDAE',TARGET_TAXON)))
 
-  inCts.3 <- plyr::ddply(inCts.2,c(sampID,'TAXA_ID'),summarise,TOTAL=sum(TOTAL)) %>%
-    merge(inTaxa.1,by='TAXA_ID')
+  totals <- aggregate(x = list(TOTAL = inCts.2$TOTAL), by = inCts.2[c(sampID,'TAXA_ID')],
+                      FUN = sum)
+  inCts.3 <- merge(inCts.2, totals, by = c(sampID, 'TAXA_ID'))
+  inCts.3 <- merge(inCts.3, inTaxa.1, by = 'TAXA_ID')
+
+  # inCts.3 <- plyr::ddply(inCts.2,c(sampID,'TAXA_ID'),summarise,TOTAL=sum(TOTAL)) %>%
+  #   merge(inTaxa.1,by='TAXA_ID')
 
   inCts.4 <- assignDistinct(inCts.3,c(sampID),taxlevels=c('PHYLUM','CLASS','ORDER','FAMILY','GENUS')
                             ,final.name='TARGET_TAXON'
