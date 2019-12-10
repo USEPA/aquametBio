@@ -80,11 +80,11 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
                                       ,'DIPTPIND','HPRIME','SCRPNTAX','CLNGNTAX','EPT_NTAX','TL23PTAX')
                          ,stringsAsFactors=FALSE)
 
-  matchMets <- reshape(inMets, idvar = c('SAMPID','ECO9','TOTLNIND'), direction = 'long',
+  matchMets <- reshape(inMets, idvar = c('SAMPID','ECO_BIO','TOTLNIND'), direction = 'long',
                        varying = names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)],
                        timevar = 'PARAMETER', v.names = 'RESULT', times = names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)])
 
-  matchMets <- merge(matchMets, metnames, by = c('PARAMETER','ECO9'))
+  matchMets <- merge(matchMets, metnames, by = c('PARAMETER','ECO_BIO'))
   # matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO_BIO','TOTLNIND')
   #                             ,measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
   #                             ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
@@ -143,11 +143,11 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
   }
 
   ## Send metric values to the scoring function above (scoreMet1)
-  scored.mets <- matchMets.1[,c('SAMPID','TOTLNIND','ECO9','PARAMETER')]
-  scored.mets$RESULT <- with(scored.mets, ifelse(as.numeric(TOTLNIND)==0,0,with(matchMets.1,mapply(scoreMet1,DISTRESP,RESULT,FLOOR,CEILING))))
+  scored.mets <- matchMets.1[,c('SAMPID','TOTLNIND','ECO_BIO','PARAMETER')]
+  scored.mets$RESULT <- with(scored.mets, ifelse(as.numeric(TOTLNIND)<100,NA,with(matchMets.1,mapply(scoreMet1,DISTRESP,RESULT,FLOOR,CEILING))))
   # scored.mets <- mutate(matchMets.1[,c('SAMPID','TOTLNIND','ECO_BIO','PARAMETER')]
   #                       ,RESULT=ifelse(as.numeric(TOTLNIND)<100,NA,with(matchMets.1,mapply(scoreMet1,DISTRESP,RESULT,FLOOR,CEILING))))
-  scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('DIPT_PIND','DIPTPTAX','NOINPIND','NOINPTAX')] <- 'COMP_PT'
+  scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('DIPTPIND','DIPTPTAX','NOINPIND','NOINPTAX')] <- 'COMP_PT'
   scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('HPRIME','CHIRDOM5PIND','CHIRDOM3PIND')] <- 'DIVS_PT'
   scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('SCRPNTAX','SHRDPIND','COGANTAX','PREDNTAX')] <- 'FEED_PT'
   scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('CLMBPTAX','CLNGNTAX','SPWLNTAX')] <- 'HABT_PT'
@@ -163,7 +163,7 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
   #                                        ,'TL23PTAX'='TOLR_PT','TL23PIND'='TOLR_PT'),warn_missing=F)
 
   ## Sum metrics scores for each sample and rescale total to 100-point scale
-  mmi.scores <- aggregate(x = list(SUMMETS = scored.mets$RESULT), by = scored.mets[c('SAMPID','TOTLNIND','ECO9')], FUN = sum)
+  mmi.scores <- aggregate(x = list(SUMMETS = scored.mets$RESULT), by = scored.mets[c('SAMPID','TOTLNIND','ECO_BIO')], FUN = sum)
 
   mmi.scores$PARAMETER <- "MMI_BENT"
   mmi.scores$RESULT <- with(mmi.scores, round((100/60)*SUMMETS, 1))

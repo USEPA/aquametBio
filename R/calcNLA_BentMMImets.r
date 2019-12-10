@@ -142,7 +142,7 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
   names(inTaxa)[names(inTaxa)==ffg] <- 'FFG'
   names(inTaxa)[names(inTaxa)==ptv] <- 'PTV'
 
-  inCts.1 <- inCts[inCts$TAXA_ID %in% inTaxa$TAXA_ID, c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')]
+  inCts.1 <- inCts.adj[inCts.adj$TAXA_ID %in% inTaxa$TAXA_ID, c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')]
   inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL>0,]
   # inCts.1 <- dplyr::semi_join(inCts.adj,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
   #   dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
@@ -250,18 +250,31 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
 
   shanMet <- ShanDiversity(inCts.1)
 
-  chiroIn <- merge(inCts.adj,inTaxa[,c('TAXA_ID','FAMILY')],by="TAXA_ID") %>%
-    subset(FAMILY=='CHIRONOMIDAE', select=c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')) %>%
-    plyr::ddply('SAMPID', mutate, TOTLDIST=sum(IS_DISTINCT*TOTAL))
+  chiroIn <- merge(inCts.adj,inTaxa[,c('TAXA_ID','FAMILY')],by="TAXA_ID")
+  chiroIn <- subset(chiroIn, FAMILY=='CHIRONOMIDAE', select=c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT'))
+  chiroIn$CALC <- with(chiroIn, IS_DISTINCT*TOTAL)
 
-    dom1Met <- Dominance(chiroIn, topN=1) %>%
-      plyr::rename(c('DOM1PIND'='CHIRDOM1PIND'))
+  totldist <- aggregate(x=list(TOTLDIST = chiroIn$CALC), by = chiroIn[c('SAMPID')], FUN = sum)
 
-    dom3Met <- Dominance(chiroIn, topN=3) %>%
-      plyr::rename(c("DOM3PIND"="CHIRDOM3PIND"))
+  chiroIn <- merge(chiroIn, totldist, by = 'SAMPID')
+  # chiroIn <- merge(inCts.adj,inTaxa[,c('TAXA_ID','FAMILY')],by="TAXA_ID") %>%
+  #   subset(FAMILY=='CHIRONOMIDAE', select=c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')) %>%
+  #   plyr::ddply('SAMPID', mutate, TOTLDIST=sum(IS_DISTINCT*TOTAL))
 
-    dom5Met <- Dominance(chiroIn, topN=5) %>%
-      plyr::rename(c("DOM5PIND"="CHIRDOM5PIND"))
+  dom1Met <- Dominance(chiroIn, topN=1)
+  names(dom1Met)[names(dom1Met)=='DOM1PIND'] <- 'CHIRDOM1PIND'
+    # dom1Met <- Dominance(chiroIn, topN=1) %>%
+    #   plyr::rename(c('DOM1PIND'='CHIRDOM1PIND'))
+
+  dom3Met <- Dominance(chiroIn, topN=3)
+  names(dom3Met)[names(dom3Met)=='DOM3PIND'] <- 'CHIRDOM3PIND'
+  # dom3Met <- Dominance(chiroIn, topN=3) %>%
+  #     plyr::rename(c("DOM3PIND"="CHIRDOM3PIND"))
+
+  dom5Met <- Dominance(chiroIn, topN=5)
+  names(dom5Met)[names(dom5Met)=='DOM5PIND'] <- 'CHIRDOM5PIND'
+  # dom5Met <- Dominance(chiroIn, topN=5) %>%
+  #     plyr::rename(c("DOM5PIND"="CHIRDOM5PIND"))
 
   outAll <- merge(outWide, shanMet, by = 'SAMPID')
   outAll <- merge(outAll, dom1Met, by = 'SAMPID', all.x=TRUE)
