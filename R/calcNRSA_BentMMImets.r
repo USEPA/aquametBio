@@ -146,23 +146,38 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
   names(inTaxa)[names(inTaxa)==ffg] <- 'FFG'
   names(inTaxa)[names(inTaxa)==ptv] <- 'PTV'
 
-  inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
-    dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
-    subset(!is.na(TOTAL) & TOTAL>0)
+  inCts.1 <- inCts[inCts$TAXA_ID %in% inTaxa$TAXA_ID, c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')]
+  inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL>0,]
+  # inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
+  #   dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
+  #   subset(!is.na(TOTAL) & TOTAL>0)
 
-  inTaxa.1 <- mutate(inTaxa, EPT_=ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
-                     ,EPHE=ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA)
-                     ,CHIR=ifelse(FAMILY %in% c('CHIRONOMIDAE'),1,NA)
-                     ,NOIN=ifelse(CLASS %nin% c('INSECTA'),1,NA)
-                     ,SHRD=ifelse(stringr::str_detect(FFG,'SH'), 1, NA)
-                     ,SCRP=ifelse(stringr::str_detect(FFG,'SC'), 1, NA)
-                     ,BURR=ifelse(stringr::str_detect(HABIT,'BU'), 1, NA)
-                     ,CLNG=ifelse(stringr::str_detect(HABIT,'CN'), 1, NA)
-                     ,TOLR=ifelse(PTV >= 7, 1, NA)
-                     ,INTL=ifelse(PTV <= 3, 1, NA)
-                     ,NTOL=ifelse(PTV < 6, 1, NA)
-                     ,STOL=ifelse(PTV >= 8, 1, NA)
-  )
+  inTaxa.1 <- inTaxa
+  inTaxa.1$EPT_ <- with(inTaxa.1, ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA))
+  inTaxa.1$EPHE <- with(inTaxa.1, ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA))
+  inTaxa.1$CHIR <- with(inTaxa.1, ifelse(FAMILY %in% c('CHIRONOMIDAE'),1,NA))
+  inTaxa.1$NOIN <- with(inTaxa.1, ifelse(CLASS %nin% c('INSECTA'),1,NA))
+  inTaxa.1$SHRD <- with(inTaxa.1, ifelse(grepl('SH', FFG), 1, NA))
+  inTaxa.1$SCRP <- with(inTaxa.1, ifelse(grepl('SC', FFG), 1, NA))
+  inTaxa.1$BURR <- with(inTaxa.1, ifelse(grepl('BU', HABIT), 1, NA))
+  inTaxa.1$CLNG <- with(inTaxa.1, ifelse(grepl('CN', HABIT), 1, NA))
+  inTaxa.1$TOLR <- with(inTaxa.1, ifelse(PTV >= 7, 1, NA))
+  inTaxa.1$INTL <- with(inTaxa.1, ifelse(PTV <= 3, 1, NA))
+  inTaxa.1$NTOL <- with(inTaxa.1, ifelse(PTV < 6, 1, NA))
+  inTaxa.1$STOL <- with(inTaxa.1, ifelse(PTV >= 8, 1, NA))
+  # inTaxa.1 <- mutate(inTaxa, EPT_=ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
+  #                    ,EPHE=ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA)
+  #                    ,CHIR=ifelse(FAMILY %in% c('CHIRONOMIDAE'),1,NA)
+  #                    ,NOIN=ifelse(CLASS %nin% c('INSECTA'),1,NA)
+  #                    ,SHRD=ifelse(stringr::str_detect(FFG,'SH'), 1, NA)
+  #                    ,SCRP=ifelse(stringr::str_detect(FFG,'SC'), 1, NA)
+  #                    ,BURR=ifelse(stringr::str_detect(HABIT,'BU'), 1, NA)
+  #                    ,CLNG=ifelse(stringr::str_detect(HABIT,'CN'), 1, NA)
+  #                    ,TOLR=ifelse(PTV >= 7, 1, NA)
+  #                    ,INTL=ifelse(PTV <= 3, 1, NA)
+  #                    ,NTOL=ifelse(PTV < 6, 1, NA)
+  #                    ,STOL=ifelse(PTV >= 8, 1, NA)
+  # )
 
   # Drop non-target taxa if included in taxalist
   if(length(grep('NON_TARGET',names(inTaxa.1)))>0) {
@@ -170,7 +185,7 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
   }
 
   params<-c('EPT_','EPHE','CHIR','NOIN','SCRP','SHRD','BURR','CLNG','TOLR','INTL','NTOL','STOL')
-
+# START HERE TO CONTINUE UPDATES TO CODE
   taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
@@ -220,6 +235,5 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
     dplyr::select(-SAMPID)
 
   return(outWide.fin)
-
 
 }
