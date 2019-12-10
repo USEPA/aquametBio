@@ -143,6 +143,7 @@ test_that("MMI metrics correct",
             testOut.long <- reshape(testOut, idvar = c('UID','SAMPLE_TYPE','SAMPLE_CAT','AGGR_ECO9_2015'), direction = 'long',
                                     varying = varLong, timevar = 'PARAMETER',
                                     v.names = 'RESULT', times = varLong)
+            testOut.long <- subset(testOut.long, !is.na(RESULT))
             # testOut.long <- data.table::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT','AGGR_ECO9_2015')
             #                                ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
             #   plyr::mutate(PARAMETER=as.character(PARAMETER))

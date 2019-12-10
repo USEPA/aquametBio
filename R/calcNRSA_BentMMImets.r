@@ -76,14 +76,15 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
                   ,ffg='FFG',habit='HABIT',ptv='PTV'){
 
   # Make sure all taxa match to taxalist and send error if not
-  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID')
+  checkTaxa <- inCts[!(inCts$TAXA_ID %in% inTaxa$TAXA_ID),]
+#  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID')
   if(nrow(checkTaxa)>0){
     return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
 
   # if(is.null(inTaxa)) {
   #   inTaxa <- bentTaxa
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+  inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
   # }
 
   ctVars <- c(sampID,dist,ct,taxa_id,ecoreg)
@@ -185,14 +186,28 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
   }
 
   params<-c('EPT_','EPHE','CHIR','NOIN','SCRP','SHRD','BURR','CLNG','TOLR','INTL','NTOL','STOL')
-# START HERE TO CONTINUE UPDATES TO CODE
-  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
+
+  taxalong <- reshape(inTaxa.1[,c('TAXA_ID',params)], idvar = 'TAXA_ID', direction = 'long',
+                      varying = params, timevar = 'TRAIT', v.names = 'value',
+                      times = params)
+
+  taxalong <- taxalong[!is.na(taxalong$value),]
+
+#  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
-  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
-                         TOTLNTAX=sum(IS_DISTINCT))
+  totals <- aggregate(x = list(TOTLNIND = inCts.1$TOTAL, TOTLNTAX = inCts.1$IS_DISTINCT), by = inCts.1[c('SAMPID')],
+                      FUN = sum)
 
-  totals <- dplyr::select(inCts.1,SAMPID,TOTLNIND) %>% unique()
+  inCts.1 <- merge(inCts.1, totals, by = 'SAMPID')
+  inCts.1$CALCPIND <- with(inCts.1, TOTAL/TOTLNIND)
+  inCts.1$CALCPTAX <- with(inCts.1, IS_DISTINCT/TOTLNTAX)
+  #  taxalong$TRAIT <- as.character(taxalong$TRAIT)
+
+  # inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
+  #                        TOTLNTAX=sum(IS_DISTINCT))
+
+  # totals <- dplyr::select(inCts.1,SAMPID,TOTLNIND) %>% unique()
 
   # Merge the count data with the taxalist containing only the traits of
   # interest
@@ -200,39 +215,84 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
 
   # Calculate no. individuals, % individuals, no. taxa, and % taxa for each
   # trait in taxalist
-  outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
-                        NIND=sum(TOTAL), NTAX=sum(IS_DISTINCT),
-                        PIND=round(sum(TOTAL/TOTLNIND)*100,2),
-                        PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
+  outMet.1 <- aggregate(x = list(NIND = traitDF$TOTAL, NTAX = traitDF$IS_DISTINCT),
+                        by = traitDF[c('SAMPID','TRAIT','TOTLNTAX')],
+                        FUN = sum)
+  outMet.2 <- aggregate(x = list(PIND = traitDF$CALCPIND, PTAX = traitDF$CALCPTAX),
+                        by = traitDF[c('SAMPID','TRAIT','TOTLNTAX')],
+                        FUN = function(x){round(sum(x)*100, 2)})
 
-  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
+  outMet <- merge(outMet.1, outMet.2, by = c('SAMPID','TRAIT','TOTLNTAX'))
+
+  # outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
+  #                       NIND=sum(TOTAL), NTAX=sum(IS_DISTINCT),
+  #                       PIND=round(sum(TOTAL/TOTLNIND)*100,2),
+  #                       PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
+
+  outLong <- reshape(outMet, idvar = c('SAMPID','TOTLNTAX','TRAIT'), direction = 'long',
+                     varying = names(outMet)[!names(outMet) %in% c('SAMPID','TOTLNTAX','TRAIT')],
+                     timevar = 'variable', v.names = 'value',
+                     times = names(outMet)[!names(outMet) %in% c('SAMPID','TOTLNTAX','TRAIT')])
+
+#  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
-  outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
-    merge(samples,by='SAMPID')
+  outLong$TRAIT <- NULL
+
+  outWide <- reshape(outLong, idvar = c('SAMPID','TOTLNTAX'), direction = 'wide',
+                     timevar = 'variable', v.names = 'value')
+
+  names(outWide) <- gsub("value\\.", "", names(outWide))
+
+  outWide <- merge(outWide, samples, by='SAMPID')
+
+  # outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
+  #   merge(samples,by='SAMPID')
 
   shanMet <- ShanDiversity(inCts.1)
-  domMet <- Dominance(inCts.1,5) %>%
-    mutate(DOM5PIND=ifelse(is.na(DOM5PIND),100,DOM5PIND))
+  domMet <- Dominance(inCts.1, 5)
+  domMet$DOM5PIND <- with(domMet, ifelse(is.na(DOM5PIND), 100, DOM5PIND))
+  # domMet <- Dominance(inCts.1,5) %>%
+  #   mutate(DOM5PIND=ifelse(is.na(DOM5PIND),100,DOM5PIND))
 
   outAll <- merge(outWide,shanMet,by='SAMPID')
   outAll <- merge(outAll,domMet,by='SAMPID')
 
-  outLong.1 <- data.table::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg)) %>%
-    merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC')) %>%
-    plyr::mutate(value=ifelse(is.na(value),0,value))
+  outLong.1 <- reshape(outAll, idvar = c(sampID, 'SAMPID', ecoreg), direction = 'long',
+                       varying = names(outAll)[!names(outAll) %in% c(sampID, 'SAMPID', ecoreg)],
+                       timevar='variable', v.names = 'value',
+                       times = names(outAll)[!names(outAll) %in% c(sampID, 'SAMPID', ecoreg)])
 
-  ckMetnum <- as.data.frame(table(SAMPID=outLong.1$SAMPID)) %>%
-    dplyr::filter(Freq!=6)
+  outLong.2 <- merge(outLong.1, metnames, by.x = c(ecoreg, 'variable'), by.y = c('ECO', 'METRIC'))
+
+  # outLong.1 <- data.table::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg)) %>%
+  #   merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC')) %>%
+  #   plyr::mutate(value=ifelse(is.na(value),0,value))
+  outLong.2$value[is.na(outLong.2$value)] <- 0
+
+  ckMetnum <- as.data.frame(table(SAMPID=outLong.2$SAMPID))
+
+  ckMetnum <- subset(ckMetnum, Freq!=6)
+  # ckMetnum <- as.data.frame(table(SAMPID=outLong.1$SAMPID)) %>%
+  #   dplyr::filter(Freq!=6)
   if(nrow(ckMetnum)>0){
     print("Error in output! Wrong number of metrics per site!")
   }
 
   # Finally, we can recast the metrics df into wide format for output
-  lside <- paste(paste(sampID,collapse='+'),'SAMPID',ecoreg,sep='+')
-  formula <- paste(lside,'~variable',sep='')
-  outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value') %>%
-    merge(totals,by='SAMPID') %>%
-    dplyr::select(-SAMPID)
+  outLong.2$METTYPE <- NULL
+  outWide.fin <- reshape(outLong.2, idvar = c(sampID, 'SAMPID', ecoreg), direction = 'wide',
+                         timevar = 'variable', v.names = 'value')
+
+  names(outWide.fin) <- gsub("value\\.", "", names(outWide.fin))
+
+  outWide.fin <- merge(outWide.fin, totals[,c('SAMPID','TOTLNIND')], by = 'SAMPID')
+  outWide.fin$SAMPID <- NULL
+
+  # lside <- paste(paste(sampID,collapse='+'),'SAMPID',ecoreg,sep='+')
+  # formula <- paste(lside,'~variable',sep='')
+  # outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value') %>%
+  #   merge(totals,by='SAMPID') %>%
+  #   dplyr::select(-SAMPID)
 
   return(outWide.fin)
 

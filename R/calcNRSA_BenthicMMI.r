@@ -97,7 +97,7 @@ calcNRSA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='
                        varying = names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)],
                        timevar = 'PARAMETER', v.names = 'RESULT', times = names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)])
 
-  matchMets.1 <- merge(matchMets, metnames, by = c('PARAMETER','ECO9'))
+  matchMets <- merge(matchMets, metnames, by = c('PARAMETER','ECO9'))
 
   # matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO9','TOTLNIND')
   #                             ,measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
@@ -106,7 +106,9 @@ calcNRSA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='
   #   mutate(PARAMETER=as.character(PARAMETER))
 
   # Run a check to make sure there are exactly 8 rows per sites in the matched dataset
-  numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>% subset(Freq<6)
+  numMets <- as.data.frame(table(SAMPID = matchMets$SAMPID))
+  numMets <- subset(numMets, Freq<6)
+  #  numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>% subset(Freq<6)
   if(nrow(numMets)>0){
     return(print(paste("Missing metrics values for these samples: ",numMets$SAMPID,". Check input data frame against required metric list.",sep='')))
   }
@@ -196,6 +198,7 @@ calcNRSA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='
                                   ,names(mmiOut)[names(mmiOut) %nin% c(sampID,'SAMPID','ECO9','MMI_BENT','BENT_MMI_COND')]))
   names(mmiOut.final)[names(mmiOut.final)=='ECO9'] <- ecoreg
   mmiOut.final$SAMPID <- NULL
+  mmiOut.final$BENT_MMI_COND <- with(mmiOut.final, ifelse(is.na(MMI_BENT), 'Not Assessed', BENT_MMI_COND))
 
   # mmiOut.final <- merge(samples,mmiOut,by='SAMPID') %>%
   #   subset(select=c(sampID,'SAMPID','ECO9','MMI_BENT','BENT_MMI_COND'

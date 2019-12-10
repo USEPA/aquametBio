@@ -80,17 +80,26 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
                                       ,'DIPTPIND','HPRIME','SCRPNTAX','CLNGNTAX','EPT_NTAX','TL23PTAX')
                          ,stringsAsFactors=FALSE)
 
-  matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO_BIO','TOTLNIND')
-                              ,measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
-                              ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
-    merge(metnames,by=c('PARAMETER','ECO_BIO')) %>%
-    mutate(PARAMETER=as.character(PARAMETER))
+  matchMets <- reshape(inMets, idvar = c('SAMPID','ECO9','TOTLNIND'), direction = 'long',
+                       varying = names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)],
+                       timevar = 'PARAMETER', v.names = 'RESULT', times = names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)])
+
+  matchMets <- merge(matchMets, metnames, by = c('PARAMETER','ECO9'))
+  # matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO_BIO','TOTLNIND')
+  #                             ,measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
+  #                             ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
+  #   merge(metnames,by=c('PARAMETER','ECO_BIO')) %>%
+  #   mutate(PARAMETER=as.character(PARAMETER))
 
   # Run a check to make sure there are exactly 6 rows per sites in the matched dataset
-  numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>%
-    subset(Freq<6) %>%
-    merge(inMets,by='SAMPID') %>%
-    filter(is.na(TOTLNIND)|TOTLNIND>=100)
+  numMets <- as.data.frame(table(SAMPID = matchMets$SAMPID))
+  numMets <- subset(numMets, Freq<6)
+  numMets <- merge(numMets, inMets, by = 'SAMPID')
+  numMets <- subset(numMets, is.na(TOTLNIND)|TOTLNIND>=100)
+  # numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>%
+  #   subset(Freq<6) %>%
+  #   merge(inMets,by='SAMPID') %>%
+  #   filter(is.na(TOTLNIND)|TOTLNIND>=100)
   if(nrow(numMets)>0){
     return(print(paste("Missing metrics values for these samples: ",numMets$SAMPID,". Check input data frame against required metric list.",sep='')))
   }
@@ -134,19 +143,33 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
   }
 
   ## Send metric values to the scoring function above (scoreMet1)
-  scored.mets <- mutate(matchMets.1[,c('SAMPID','TOTLNIND','ECO_BIO','PARAMETER')]
-                        ,RESULT=ifelse(as.numeric(TOTLNIND)<100,NA,with(matchMets.1,mapply(scoreMet1,DISTRESP,RESULT,FLOOR,CEILING))))
-  scored.mets$PARAMETER <- plyr::revalue(scored.mets$PARAMETER
-                                         ,c('DIPTPIND'='COMP_PT','DIPTPTAX'='COMP_PT'
-                                         ,'NOINPIND'='COMP_PT','NOINPTAX'='COMP_PT','HPRIME'='DIVS_PT','CHIRDOM5PIND'='DIVS_PT'
-                                         ,'CHIRDOM3PIND'='DIVS_PT','SCRPNTAX'='FEED_PT','SHRDPIND'='FEED_PT'
-                                         ,'COGANTAX'='FEED_PT','PREDNTAX'='FEED_PT','CLMBPTAX'='HABT_PT','CLNGNTAX'='HABT_PT'
-                                         ,'SPWLNTAX'='HABT_PT','CRUSNTAX'='RICH_PT'
-                                         ,'EPT_NTAX'='RICH_PT','EPOTNTAX'='RICH_PT','NTOLPIND'='TOLR_PT','TL23NTAX'='TOLR_PT'
-                                         ,'TL23PTAX'='TOLR_PT','TL23PIND'='TOLR_PT'),warn_missing=F)
+  scored.mets <- matchMets.1[,c('SAMPID','TOTLNIND','ECO9','PARAMETER')]
+  scored.mets$RESULT <- with(scored.mets, ifelse(as.numeric(TOTLNIND)==0,0,with(matchMets.1,mapply(scoreMet1,DISTRESP,RESULT,FLOOR,CEILING))))
+  # scored.mets <- mutate(matchMets.1[,c('SAMPID','TOTLNIND','ECO_BIO','PARAMETER')]
+  #                       ,RESULT=ifelse(as.numeric(TOTLNIND)<100,NA,with(matchMets.1,mapply(scoreMet1,DISTRESP,RESULT,FLOOR,CEILING))))
+  scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('DIPT_PIND','DIPTPTAX','NOINPIND','NOINPTAX')] <- 'COMP_PT'
+  scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('HPRIME','CHIRDOM5PIND','CHIRDOM3PIND')] <- 'DIVS_PT'
+  scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('SCRPNTAX','SHRDPIND','COGANTAX','PREDNTAX')] <- 'FEED_PT'
+  scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('CLMBPTAX','CLNGNTAX','SPWLNTAX')] <- 'HABT_PT'
+  scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('NTOLPIND','TL23NTAX','TL23PTAX','TL23PIND')] <- 'TOLR_PT'
+  scored.mets$PARAMETER[scored.mets$PARAMETER %in% c('CRUSNTAX','EPT_NTAX','EPOTNTAX')] <- 'RICH_PT'
+  # scored.mets$PARAMETER <- plyr::revalue(scored.mets$PARAMETER
+  #                                        ,c('DIPTPIND'='COMP_PT','DIPTPTAX'='COMP_PT'
+  #                                        ,'NOINPIND'='COMP_PT','NOINPTAX'='COMP_PT','HPRIME'='DIVS_PT','CHIRDOM5PIND'='DIVS_PT'
+  #                                        ,'CHIRDOM3PIND'='DIVS_PT','SCRPNTAX'='FEED_PT','SHRDPIND'='FEED_PT'
+  #                                        ,'COGANTAX'='FEED_PT','PREDNTAX'='FEED_PT','CLMBPTAX'='HABT_PT','CLNGNTAX'='HABT_PT'
+  #                                        ,'SPWLNTAX'='HABT_PT','CRUSNTAX'='RICH_PT'
+  #                                        ,'EPT_NTAX'='RICH_PT','EPOTNTAX'='RICH_PT','NTOLPIND'='TOLR_PT','TL23NTAX'='TOLR_PT'
+  #                                        ,'TL23PTAX'='TOLR_PT','TL23PIND'='TOLR_PT'),warn_missing=F)
+
   ## Sum metrics scores for each sample and rescale total to 100-point scale
-  mmi.scores <- ddply(scored.mets,c('SAMPID','TOTLNIND','ECO_BIO'),summarise,PARAMETER='MMI_BENT'
-                      ,RESULT=round((100/60)*sum(RESULT),1))
+  mmi.scores <- aggregate(x = list(SUMMETS = scored.mets$RESULT), by = scored.mets[c('SAMPID','TOTLNIND','ECO9')], FUN = sum)
+
+  mmi.scores$PARAMETER <- "MMI_BENT"
+  mmi.scores$RESULT <- with(mmi.scores, round((100/60)*SUMMETS, 1))
+  mmi.scores$SUMMETS <- NULL
+  # mmi.scores <- ddply(scored.mets,c('SAMPID','TOTLNIND','ECO_BIO'),summarise,PARAMETER='MMI_BENT'
+  #                     ,RESULT=round((100/60)*sum(RESULT),1))
 
   ## Set condition class for each sample, which is based on ECO_BIO region
   # First create a table of thresholds by ECO_BIO
@@ -156,24 +179,37 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
 
   ## Merge MMI scores with thresholds by ECO_BIO region
   cond.mmi <- merge(mmi.scores,condTholds,by='ECO_BIO')
-  cond.mmi <- mutate(cond.mmi,ECO_BIO=as.character(ECO_BIO),PARAMETER='BENT_MMI_COND',MMI_BENT=RESULT
-                     ,RESULT=ifelse(is.na(MMI_BENT),'Not Assessed',ifelse(MMI_BENT>=gf,'Good',ifelse(MMI_BENT<fp,'Poor','Fair'))))
+  cond.mmi$ECO_BIO <- as.character(cond.mmi$ECO_BIO)
+  cond.mmi$PARAMETER <- 'BENT_MMI_COND'
+  cond.mmi$MMI_BENT <- cond.mmi$RESULT
+  cond.mmi$RESULT <- with(cond.mmi, ifelse(is.na(MMI_BENT),'Not Assessed',ifelse(MMI_BENT>=gf,'Good',ifelse(MMI_BENT<fp,'Poor','Fair'))))
+  # cond.mmi <- mutate(cond.mmi,ECO_BIO=as.character(ECO_BIO),PARAMETER='BENT_MMI_COND',MMI_BENT=RESULT
+  #                    ,RESULT=ifelse(is.na(MMI_BENT),'Not Assessed',ifelse(MMI_BENT>=gf,'Good',ifelse(MMI_BENT<fp,'Poor','Fair'))))
 
   ww <- rbind(subset(scored.mets,select=c('SAMPID','ECO_BIO','PARAMETER','RESULT'))
               ,subset(mmi.scores,select=c('SAMPID','ECO_BIO','PARAMETER','RESULT'))
               ,subset(cond.mmi,select=c('SAMPID','ECO_BIO','PARAMETER','RESULT')))
 
   # Finally, we can recast the metrics df into wide format for output
-  lside <- paste(paste('SAMPID',collapse='+'),'ECO_BIO',sep='+')
-  formula <- paste(lside,'~PARAMETER',sep='')
-  mmiOut <- data.table::dcast(ww,eval(formula),value.var='RESULT')
+  mmiOut <- reshape(ww, idvar = c('SAMPID','ECO_BIO'), direction = 'wide',
+                    v.names = 'RESULT', timevar = 'PARAMETER')
+  names(mmiOut) <- gsub('RESULT\\.', '', names(mmiOut))
+  # lside <- paste(paste('SAMPID',collapse='+'),'ECO_BIO',sep='+')
+  # formula <- paste(lside,'~PARAMETER',sep='')
+  # mmiOut <- data.table::dcast(ww,eval(formula),value.var='RESULT')
 
-  mmiOut.final <- merge(samples,mmiOut,by='SAMPID',all.x=TRUE) %>%
-    subset(select=c(sampID,'SAMPID','ECO_BIO','MMI_BENT','BENT_MMI_COND'
-                    ,names(mmiOut)[names(mmiOut) %nin% c(sampID,'SAMPID','ECO_BIO','MMI_BENT','BENT_MMI_COND')])) %>%
-    plyr::rename(c('ECO_BIO'=ecoreg)) %>%
-    dplyr::select(-SAMPID) %>%
-    mutate(BENT_MMI_COND=ifelse(is.na(MMI_BENT),'Not Assessed',BENT_MMI_COND))
+  mmiOut.final <- merge(samples,mmiOut,by='SAMPID')
+  mmiOut.final <- subset(mmiOut.final, select=c(sampID,'SAMPID','ECO_BIO','MMI_BENT','BENT_MMI_COND'
+                                                ,names(mmiOut)[names(mmiOut) %nin% c(sampID,'SAMPID','ECO_BIO','MMI_BENT','BENT_MMI_COND')]))
+  names(mmiOut.final)[names(mmiOut.final)=='ECO_BIO'] <- ecoreg
+  mmiOut.final$SAMPID <- NULL
+  mmiOut.final$BENT_MMI_COND <- with(mmiOut.final, ifelse(is.na(MMI_BENT), 'Not Assessed', BENT_MMI_COND))
+  # mmiOut.final <- merge(samples,mmiOut,by='SAMPID',all.x=TRUE) %>%
+  #   subset(select=c(sampID,'SAMPID','ECO_BIO','MMI_BENT','BENT_MMI_COND'
+  #                   ,names(mmiOut)[names(mmiOut) %nin% c(sampID,'SAMPID','ECO_BIO','MMI_BENT','BENT_MMI_COND')])) %>%
+  #   plyr::rename(c('ECO_BIO'=ecoreg)) %>%
+  #   dplyr::select(-SAMPID) %>%
+  #   mutate(BENT_MMI_COND=ifelse(is.na(MMI_BENT),'Not Assessed',BENT_MMI_COND))
 
   return(mmiOut.final)
 
