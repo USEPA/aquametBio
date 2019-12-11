@@ -52,12 +52,18 @@ calcFishAnomMets <- function(indata, sampID='UID',
     return(print("Values for anomalies non-zero when count for species missing or zero. Cannot calculate metric correctly."))
   }
 
-  outMet <- plyr::ddply(indata, "SAMPID", summarise, ANOMPIND=round(sum(ANOM_CT,na.rm=T)/sum(TOTAL,na.rm=T)*100,2))
+  outMet <- aggregate(x = list(ANOMNIND = indata$ANOM_CT, TOTLNIND = indata$TOTAL), by = indata[c('SAMPID')], FUN = function(x){sum(x, na.rm=T)})
+  outMet$ANOMPIND <- with(outMet, round(ANOMNIND/TOTLNIND*100, 2))
+  outMet <- subset(outMet, select = c('SAMPID','ANOMPIND'))
+  # outMet <- plyr::ddply(indata, "SAMPID", summarise, ANOMPIND=round(sum(ANOM_CT,na.rm=T)/sum(TOTAL,na.rm=T)*100,2))
 
-  outMet.1 <- merge(samples,outMet,by='SAMPID') %>%
-    plyr::mutate(ANOMPIND=ifelse(is.na(ANOMPIND),0,ANOMPIND))
+  outMet.1 <- merge(samples, outMet, by = 'SAMPID', all.x=TRUE)
+  outMet.1$ANOMPIND <- with(outMet.1, ifelse(is.na(ANOMPIND),0,ANOMPIND))
+  # outMet.1 <- merge(samples,outMet,by='SAMPID') %>%
+  #   plyr::mutate(ANOMPIND=ifelse(is.na(ANOMPIND),0,ANOMPIND))
 
-  outAll <- dplyr::select(outMet.1,-SAMPID)
+  outAll <- subset(outMet.1, select = -SAMPID)
+  # outAll <- dplyr::select(outMet.1,-SAMPID)
 
   return(outAll)
 
