@@ -248,7 +248,7 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   # Melt df to create metric names, then recast into wide format with metric
   # names
   outLong <- reshape(outMet, idvar = c('SAMPID','TRAIT'), direction = 'long',
-                     varying = c('PIND','PTAX','NTAX'), times = 'variable',
+                     varying = c('PIND','PTAX','NTAX'), timevar = 'variable',
                      v.names = 'value', times = c('PIND','PTAX','NTAX'))
   # outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')

@@ -9,9 +9,14 @@ test_that("Fish tolerance metric values correct",
                              ,taxa_id='TAXA_ID',tol='TOLERANCE_NRSA',tolval='TOL_VAL_EMAPW'
                              ,vel='VEL_NRSA',habitat='HABITAT_NRSA',trophic='TROPHIC_NRSA'
                              ,migr='MIGR_NRSA',nonnat='NON_NATIVE')
-  testOut.long <- data.table::melt(testOut,id.vars=c('UID')
-                                 ,variable.name='PARAMETER',value.name='RESULT') %>%
-    plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
+  varLong <- names(testOut)[names(testOut) %nin% c('UID','SAMPLE_TYPE','SAMPLE_CAT')]
+  testOut.long <- reshape(testOut, idvar = c('UID','SAMPLE_TYPE','SAMPLE_CAT'), direction = 'long',
+                          varying = varLong,timevar = 'PARAMETER',
+                          v.names = 'RESULT', times = varLong)
+  testOut.long$RESULT <- as.numeric(testOut.long$RESULT)
+  # testOut.long <- data.table::melt(testOut,id.vars=c('UID')
+  #                                ,variable.name='PARAMETER',value.name='RESULT') %>%
+  #   plyr::mutate(PARAMETER=as.character(PARAMETER),RESULT=as.numeric(RESULT))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
   expect_true(nrow(compOut)==740)
   expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001)
