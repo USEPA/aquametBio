@@ -112,10 +112,17 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
                          ,stringsAsFactors=F)
 
 
- matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO9','LWSAREA'),measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
-                             ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
-   merge(metnames,by=c('PARAMETER','ECO9')) %>%
-   mutate(PARAMETER=as.character(PARAMETER))
+ varLong <- names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
+
+ matchMets <- reshape(inMets, idvar = c('SAMPID','ECO9','LWSAREA'), direction = 'long',
+                      varying = varLong, times = varLong, timevar = 'PARAMETER', v.names = 'RESULT')
+ matchMets <- matchMets[!is.na(matchMets$value),]
+ matchMets <- merge(matchMets, metnames, by = c('PARAMETER','ECO9'))
+
+   # matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO9','LWSAREA'),measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
+   #                           ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
+   # merge(metnames,by=c('PARAMETER','ECO9')) %>%
+   # mutate(PARAMETER=as.character(PARAMETER))
 
  # Run a check to make sure there are exactly 8 rows per sites in the matched dataset
  numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>% subset(Freq<8)
@@ -158,11 +165,19 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
                        ,stringsAsFactors=F)
 
  # Now merge fish data with watershed regression info and adjust necessary metrics
- fish.ws <- merge(matchMets,wsMets,by=c('ECO9','PARAMETER'),all.x=T) %>%
-   plyr::mutate(RESULT=as.numeric(RESULT)) %>%
-   plyr::mutate(RESULT_WS=ifelse(is.na(int),NA,int+slope*LWSAREA),RESULT_NEW=ifelse(is.na(slope),RESULT,round(RESULT-RESULT_WS,3))
-          ,PARAMETER=ifelse(is.na(slope),PARAMETER,paste(PARAMETER,'WS',sep='_'))) %>%
-   dplyr::select(-RESULT,-RESULT_WS) %>% plyr::rename(c('RESULT_NEW'='RESULT'))
+fish.ws <- merge(matchMets, wsMets, by = c('ECO9','PARAMETER'), all.x = TRUE)
+fish.ws$RESULT <- as.numeric(fish.ws$RESULT)
+fish.ws$RESULT_WS <- with(fish.ws, ifelse(is.na(int),NA,int+slope*LWSAREA))
+fish.ws$RESULT_NEW <- with(fish.ws, ifelse(is.na(slope),RESULT,round(RESULT-RESULT_WS,3)))
+fish.ws$PARAMETER <- ifelse(is.na(slope),PARAMETER,paste(PARAMETER,'WS',sep='_'))
+fish.ws <- subset(fish.ws, select = c(-RESULT, -RESULT_WS))
+names(fish.ws)[names(fish.ws)=='RESULT_NEW'] <- 'RESULT'
+
+# fish.ws <- merge(matchMets,wsMets,by=c('ECO9','PARAMETER'),all.x=T) %>%
+#    plyr::mutate(RESULT=as.numeric(RESULT)) %>%
+#    plyr::mutate(RESULT_WS=ifelse(is.na(int),NA,int+slope*LWSAREA),RESULT_NEW=ifelse(is.na(slope),RESULT,round(RESULT-RESULT_WS,3))
+#           ,PARAMETER=ifelse(is.na(slope),PARAMETER,paste(PARAMETER,'WS',sep='_'))) %>%
+#    dplyr::select(-RESULT,-RESULT_WS) %>% plyr::rename(c('RESULT_NEW'='RESULT'))
 
 
   cfVal <- data.frame(ECO9=c(rep('CPL',8),rep('NAP',8),rep('NPL',8),rep('SAP',8),rep('SPL',8)
@@ -233,18 +248,30 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
  print('Metric scores calculated.')
 
  # Calculate the vector of MMI scores at all sites, as sum of scored metrics, rescaled to a 0-100 range
- mmi <- plyr::ddply(scored.mets,c('SAMPID','ECO9'),summarise,RESULT=round(sum(RESULT)*(10/8),2),PARAMETER='MMI_FISH')
+ mmi <- aggregate(x = list(RESULT = scored.mets$RESULT), by = scored.mets[c('SAMPID', 'ECO9')],
+                  FUN = function(x){round(sum(x)*(10/8), 2)})
+ mmi$PARAMETER <- 'MMI_FISH'
+
+ # mmi <- plyr::ddply(scored.mets,c('SAMPID','ECO9'),summarise,RESULT=round(sum(RESULT)*(10/8),2),PARAMETER='MMI_FISH')
 
  ## Create long format dfs with metric values and metric residuals for modeled metrics
  adj.mets <- subset(ww[grep('_WS',ww$PARAMETER),],select=c('SAMPID','ECO9','PARAMETER','RESULT'))
 
  ## Now combine with metric scores and widen
- dfOut.1 <-rbind(mmi,scored.mets,adj.mets) %>% dcast(SAMPID+ECO9~PARAMETER,value.var='RESULT')
+ dfOut.1 <- rbind(mmi, scores.mets, adj.mets)
+ dfOut.1.wide <- reshape(dfOut.1, idvar = c('SAMPID','ECO9'), direction = 'wide',
+                         v.names = 'RESULT', times = 'PARAMETER')
+ # dfOut.1 <-rbind(mmi,scored.mets,adj.mets) %>% dcast(SAMPID+ECO9~PARAMETER,value.var='RESULT')
  # Reorder columns
- dfOut.2 <- merge(samples,dfOut.1,by='SAMPID') %>%
-   subset(select=c(sampID,'SAMPID','ECO9','MMI_FISH',names(dfOut.1)[names(dfOut.1) %nin% c(sampID,'SAMPID','ECO9','MMI_FISH')])) %>%
-   plyr::rename(c('ECO9'=ecoreg)) %>%
-   dplyr::select(-SAMPID)
+ dfOut.2 <- merge(samples, dfOut.1.wide, by = 'SAMPID')
+ dfOut.2 <- subset(dfOut.2, select = c(sampID, 'SAMPID', 'ECO9', 'MMI_FISH', names(dfOut.1.wide[names(dfOut.1.wide) %nin% c(sampID, 'SAMPID', 'ECO9', 'MMI_FISH')])))
+ dfOut.2$SAMPID <- NULL
+ names(dfOut.2)[names(dfOut.2)=='ECO9'] <- ecoreg
+
+ # dfOut.2 <- merge(samples,dfOut.1,by='SAMPID') %>%
+ #   subset(select=c(sampID,'SAMPID','ECO9','MMI_FISH',names(dfOut.1)[names(dfOut.1) %nin% c(sampID,'SAMPID','ECO9','MMI_FISH')])) %>%
+ #   plyr::rename(c('ECO9'=ecoreg)) %>%
+ #   dplyr::select(-SAMPID)
 
  print("Done calculating MMI score.")
  return(dfOut.2)

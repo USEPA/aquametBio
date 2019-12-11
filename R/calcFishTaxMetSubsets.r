@@ -199,8 +199,10 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   inTaxa.2 <- subset(inTaxa.1,select=names(inTaxa.1) %in% c('TAXA_ID',params))
 
+  params.use <- names(inTaxa.2)[names(inTaxa.2) %in% params]
+
   taxalong <- reshape(inTaxa.2, idvar = c('TAXA_ID'), direction = 'long',
-                      varying = params, times = params, v.names = 'value', timevar = 'TRAIT')
+                      varying = params.use, times = params.use, v.names = 'value', timevar = 'TRAIT')
   taxalong <- subset(taxalong, !is.na(value))
   # taxalong <- data.table::melt(inTaxa.2,id.vars='TAXA_ID',variable.name='TRAIT',na.rm=TRUE) %>%
   #   plyr::mutate(TRAIT=as.character(TRAIT))
@@ -209,7 +211,6 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
                       FUN = sum)
 
   inCts.2 <- merge(inCts.1, totals, by = 'SAMPID')
-  inCts.2 <- merge(inCts.2, totals, by = 'SAMPID')
   inCts.2$CALCPIND <- with(inCts.2, TOTAL/TOTLNIND)
   inCts.2$CALCPTAX <- with(inCts.2, IS_DISTINCT/TOTLNTAX)
 

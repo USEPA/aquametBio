@@ -5,10 +5,6 @@
 #'
 #' @importFrom Hmisc "%nin%" capitalize
 #' @importFrom gtools smartbind
-#' @importFrom plyr ddply mutate summarize summarise rename revalue
-#' @importFrom dplyr filter select "%>%" group_by
-#' @importFrom data.table dcast melt
-#' @importFrom stringr str_detect
 #' @importFrom stats aggregate approx
 #' @importFrom utils head
 #' @keywords package
