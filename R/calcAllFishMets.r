@@ -169,8 +169,10 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   # anom.1 <- data.table::melt(anomMet,id.vars=sampID)
   print("Done calculating anomaly metrics.")
 
-  mets <- rbind(tax.1, tol.1, trop.1, oth.1, nat.1, anom.1) %>%
-    unique()
+  mets <- rbind(tax.1, tol.1, trop.1, oth.1, nat.1, anom.1)
+  mets <- unique(mets)
+  # mets <- rbind(tax.1, tol.1, trop.1, oth.1, nat.1, anom.1) %>%
+  #   unique()
   # Finally, we can recast the metrics df into wide format for output
   metOut <- reshape(mets, idvar = c(sampID), direction = 'wide',
                     v.names = 'value', timevar = 'variable')

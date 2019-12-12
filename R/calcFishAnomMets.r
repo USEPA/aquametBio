@@ -43,7 +43,9 @@ calcFishAnomMets <- function(indata, sampID='UID',
   names(indata)[names(indata)==ct] <- 'TOTAL'
   names(indata)[names(indata)==anomct] <- 'ANOM_CT'
 
-  indata <- plyr::mutate(indata,ANOM_CT=as.numeric(ANOM_CT),TOTAL=as.numeric(TOTAL))
+  indata$ANOM_CT <- with(indata, as.numeric(ANOM_CT))
+  indata$TOTAL <- with(indata, as.numeric(TOTAL))
+  # indata <- plyr::mutate(indata,ANOM_CT=as.numeric(ANOM_CT),TOTAL=as.numeric(TOTAL))
 
   # Make sure ANOM_CT value not present when TOTAL is missing or 0
   checkAnom <- subset(indata,is.na(TOTAL)|TOTAL==0 & !is.na(ANOM_CT) & ANOM_CT!=0)

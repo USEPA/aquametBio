@@ -140,8 +140,10 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
   cond.mmi.1 <- subset(cond.mmi.1, select=c(-gf, -fp))
 
 
-  condOut <- subset(cond.mmi.1, select = c(sampID, 'FISH_MMI_COND')) %>%
-    merge(inMMI, by = c(sampID))
+  condOut <- subset(cond.mmi.1, select = c(sampID, 'FISH_MMI_COND'))
+  condOut <- merge(condOut, inMMI, by = c(sampID))
+  # condOut <- subset(cond.mmi.1, select = c(sampID, 'FISH_MMI_COND')) %>%
+  #   merge(inMMI, by = c(sampID))
 
   return(condOut)
 

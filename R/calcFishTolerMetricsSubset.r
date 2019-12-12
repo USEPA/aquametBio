@@ -473,7 +473,7 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
         #   select(-TOTLNTAX,-TOTLNIND)
 
       }else{
-        outWide.1 <- outwide
+        outWide.1 <- outWide
         outWide.1$TOTLNTAX <- NULL
         outWide.1$TOTLNIND <- NULL
         # outWide.1 <- select(outWide,-TOTLNTAX,-TOTLNIND)
