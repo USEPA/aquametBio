@@ -116,7 +116,7 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
 
  matchMets <- reshape(inMets, idvar = c('SAMPID','ECO9','LWSAREA'), direction = 'long',
                       varying = varLong, times = varLong, timevar = 'PARAMETER', v.names = 'RESULT')
- matchMets <- matchMets[!is.na(matchMets$value),]
+ matchMets <- matchMets[!is.na(matchMets$RESULT),]
  matchMets <- merge(matchMets, metnames, by = c('PARAMETER','ECO9'))
 
    # matchMets <- data.table::melt(inMets,id.vars=c('SAMPID','ECO9','LWSAREA'),measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
@@ -125,7 +125,10 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'
    # mutate(PARAMETER=as.character(PARAMETER))
 
  # Run a check to make sure there are exactly 8 rows per sites in the matched dataset
- numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>% subset(Freq<8)
+ numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID))
+ numMets <- subset(numMets, Freq < 8)
+
+ # numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>% subset(Freq<8)
  if(nrow(numMets)>0){
    return(print(paste("Missing metrics values for these samples: ",paste(numMets$SAMPID,collapse=','),
                       ". Check input data frame against required metric list.",sep='')))
@@ -169,7 +172,7 @@ fish.ws <- merge(matchMets, wsMets, by = c('ECO9','PARAMETER'), all.x = TRUE)
 fish.ws$RESULT <- as.numeric(fish.ws$RESULT)
 fish.ws$RESULT_WS <- with(fish.ws, ifelse(is.na(int),NA,int+slope*LWSAREA))
 fish.ws$RESULT_NEW <- with(fish.ws, ifelse(is.na(slope),RESULT,round(RESULT-RESULT_WS,3)))
-fish.ws$PARAMETER <- ifelse(is.na(slope),PARAMETER,paste(PARAMETER,'WS',sep='_'))
+fish.ws$PARAMETER <- with(fish.ws, ifelse(is.na(slope),PARAMETER,paste(PARAMETER,'WS',sep='_')))
 fish.ws <- subset(fish.ws, select = c(-RESULT, -RESULT_WS))
 names(fish.ws)[names(fish.ws)=='RESULT_NEW'] <- 'RESULT'
 
@@ -258,9 +261,11 @@ names(fish.ws)[names(fish.ws)=='RESULT_NEW'] <- 'RESULT'
  adj.mets <- subset(ww[grep('_WS',ww$PARAMETER),],select=c('SAMPID','ECO9','PARAMETER','RESULT'))
 
  ## Now combine with metric scores and widen
- dfOut.1 <- rbind(mmi, scores.mets, adj.mets)
+ dfOut.1 <- rbind(mmi, scored.mets, adj.mets)
+
  dfOut.1.wide <- reshape(dfOut.1, idvar = c('SAMPID','ECO9'), direction = 'wide',
-                         v.names = 'RESULT', times = 'PARAMETER')
+                         v.names = 'RESULT', timevar = 'PARAMETER')
+ names(dfOut.1.wide) <- gsub("RESULT\\.", "", names(dfOut.1.wide))
  # dfOut.1 <-rbind(mmi,scored.mets,adj.mets) %>% dcast(SAMPID+ECO9~PARAMETER,value.var='RESULT')
  # Reorder columns
  dfOut.2 <- merge(samples, dfOut.1.wide, by = 'SAMPID')

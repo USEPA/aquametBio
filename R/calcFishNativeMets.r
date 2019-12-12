@@ -76,7 +76,8 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
                       FUN = sum)
 
   inCts.1 <- merge(inCts, totals, by = 'SAMPID')
-  inCts.1$ALIEN <- with(inCts.1, ifelse(NONNATIVE=='Y',1,NA),NAT=ifelse(NONNATIVE=='N',1,NA))
+  inCts.1$ALIEN <- with(inCts.1, ifelse(NONNATIVE=='Y',1,NA))
+  inCts.1$NAT <- with(inCts.1, ifelse(NONNATIVE=='N',1,NA))
   # inCts.1 <- plyr::ddply(inCts, "SAMPID", mutate, TOTLNIND=sum(TOTAL),TOTLNTAX=sum(IS_DISTINCT)) %>%
   #   mutate(ALIEN=ifelse(NONNATIVE=='Y',1,NA),NAT=ifelse(NONNATIVE=='N',1,NA))
 
@@ -93,7 +94,7 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
   inCts.1$natpind <- with(inCts.1, TOTAL*NAT/TOTLNIND)
   inCts.1$natptax <- with(inCts.1, IS_DISTINCT*NAT/TOTLNTAX)
 
-  outMet.1 <- with(inCts.1, aggregate(x = list(ALIENNTAX = alienntax, NAT_NTAX = natntax, NAT_NIND = natnind),
+  outMet.1 <- with(inCts.1, aggregate(x = list(ALIENNTAX = alienntax, NAT_TOTLNTAX = natntax, NAT_TOTLNIND = natnind),
                                       by = inCts.1[c('SAMPID')], FUN = function(x){sum(x, na.rm=T)}))
   outMet.2 <- with(inCts.1, aggregate(x = list(ALIENPIND = alienpind, ALIENPTAX = alienptax, NAT_PIND = natpind, NAT_PTAX = natptax),
                                       by = inCts.1[c('SAMPID')], FUN = function(x){round(sum(x, na.rm=T)*100, 2)}))

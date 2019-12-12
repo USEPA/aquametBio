@@ -416,20 +416,20 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
         inNative.tot <- merge(inNative, natTot, by = 'SAMPID')
         # inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(TOTAL),
         #                                      NAT_TOTLNTAX=sum(IS_DISTINCT))
-        totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])
+        # totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])
 
         natMets <- merge(inNative.tot, taxalong, by = 'TAXA_ID')
         natMets$CALCPIND <- with(natMets, TOTAL/NAT_TOTLNIND)
         natMets$CALCPTAX <- with(natMets, IS_DISTINCT/NAT_TOTLNTAX)
 
         natMets.1 <- aggregate(x = list(NTAX = natMets$IS_DISTINCT),
-                               by = natMets[c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')],
+                               by = natMets[c('SAMPID','TRAIT')],
                                FUN = sum)
         natMets.2 <- aggregate(x = list(PIND = natMets$CALCPIND, PTAX = natMets$CALCPTAX),
-                               by = natMets[c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')],
+                               by = natMets[c('SAMPID','TRAIT')],
                                FUN = function(x){round(sum(x)*100, 2)})
 
-        natMets.comb <- merge(natMets.1, natMets.2, by = c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND'))
+        natMets.comb <- merge(natMets.1, natMets.2, by = c('SAMPID','TRAIT'))
 
         # natMets <- merge(inNative.tot, taxalong, by='TAXA_ID') %>%
         #   plyr::ddply(c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND'),summarise,
@@ -473,12 +473,14 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
         #   select(-TOTLNTAX,-TOTLNIND)
 
       }else{
+        outWide.1 <- outwide
         outWide.1$TOTLNTAX <- NULL
         outWide.1$TOTLNIND <- NULL
         # outWide.1 <- select(outWide,-TOTLNTAX,-TOTLNIND)
       }
     }
     }else{
+      outWide.1 <- outWide
       outWide.1$TOTLNTAX <- NULL
       outWide.1$TOTLNIND <- NULL
       # outWide.1 <- select(outWide,-TOTLNTAX,-TOTLNIND)
@@ -494,7 +496,9 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outWide.all[is.na(outWide.all)] <- 0
+  # outWide.all[is.na(outWide.all)] <- 0
+  updNames <- names(outWide.all)[names(outWide.all) %nin% c('WTD_TV','NAT_WTD_TV','SAMPID')]
+  outWide.all[,updNames] <- lapply(outWide.all[,updNames], function(x){ifelse(is.na(x), 0, x)})
   # outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
   #   plyr::mutate(value=ifelse(is.na(value) & variable %nin% c('WTD_TV','NAT_WTD_TV'),0,value))
   #

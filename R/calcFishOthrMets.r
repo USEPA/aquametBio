@@ -277,10 +277,10 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
   #                        TOTLNTAX=sum(IS_DISTINCT))
 
   if(CALCNAT=='Y'){
-    inCts.2 <- inCts.2[,c('SAMPID','TOTAL','IS_DISTINCT','TAXA_ID','TOTLNTAX','TOTLNIND','NONNATIVE')]
+    inCts.2 <- inCts.2[,c('SAMPID','TOTAL','IS_DISTINCT','TAXA_ID','TOTLNTAX','TOTLNIND','NONNATIVE','CALCPIND','CALCPTAX')]
 #    inCts.2 <- dplyr::select(inCts.2,SAMPID,TOTAL,IS_DISTINCT,TAXA_ID,TOTLNTAX,TOTLNIND,NONNATIVE)
   }else{
-    inCts.2 <- inCts.2[,c('SAMPID','TOTAL','IS_DISTINCT','TAXA_ID','TOTLNTAX','TOTLNIND')]
+    inCts.2 <- inCts.2[,c('SAMPID','TOTAL','IS_DISTINCT','TAXA_ID','TOTLNTAX','TOTLNIND','CALCPIND','CALCPTAX')]
 #    inCts.2 <- dplyr::select(inCts.2, SAMPID,TOTAL,IS_DISTINCT,TAXA_ID,TOTLNTAX,TOTLNIND)
   }
 
@@ -292,7 +292,7 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
 
   # Calculate no. individuals, % individuals, no. taxa, and % taxa for each
   # trait in taxalist
-  outMet.1 <- aggregate(x = list(NIND = traitDF$TOTAL, NTAX = traitDF$IS_DISTINCT),
+  outMet.1 <- aggregate(x = list(NTAX = traitDF$IS_DISTINCT),
                         by = traitDF[c('SAMPID','TRAIT')],
                         FUN = sum)
   outMet.2 <- aggregate(x = list(PIND = traitDF$CALCPIND, PTAX = traitDF$CALCPTAX),
@@ -309,8 +309,8 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
   # Melt df to create metric names, then recast into wide format with metric
   # names
   outLong <- reshape(outMet, idvar = c('SAMPID','TRAIT'), direction = 'long',
-                     varying = c('PIND','PTAX','NIND','NTAX'), timevar = 'variable',
-                     v.names = 'value', times = c('PIND','PTAX','NIND','NTAX'))
+                     varying = c('PIND','PTAX','NTAX'), timevar = 'variable',
+                     v.names = 'value', times = c('PIND','PTAX','NTAX'))
 #  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
   outLong$TRAIT <- NULL
@@ -337,20 +337,20 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
         inNative.tot <- merge(inNative, natTot, by = 'SAMPID')
         # inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(TOTAL),
         #                             NAT_TOTLNTAX=sum(IS_DISTINCT))
-        totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])
+        # totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])
 
         natMets <- merge(inNative.tot, taxalong, by = 'TAXA_ID')
         natMets$CALCPIND <- with(natMets, TOTAL/NAT_TOTLNIND)
         natMets$CALCPTAX <- with(natMets, IS_DISTINCT/NAT_TOTLNTAX)
 
         natMets.1 <- aggregate(x = list(NTAX = natMets$IS_DISTINCT),
-                               by = traitDF[c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')],
+                               by = natMets[c('SAMPID','TRAIT')],
                                FUN = sum)
         natMets.2 <- aggregate(x = list(PIND = natMets$CALCPIND, PTAX = natMets$CALCPTAX),
-                              by = traitDF[c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')],
+                              by = natMets[c('SAMPID','TRAIT')],
                               FUN = function(x){round(sum(x)*100, 2)})
 
-        natMets.comb <- merge(natMets.1, natMets.2, by = c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND'))
+        natMets.comb <- merge(natMets.1, natMets.2, by = c('SAMPID','TRAIT'))
         # natMets <- merge(inNative.tot, taxalong, by='TAXA_ID') %>%
         #   plyr::ddply(c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND'),summarise,
         #               NTAX=sum(IS_DISTINCT),
@@ -360,14 +360,17 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
         natMets.long <- reshape(natMets.comb, idvar = c('SAMPID','TRAIT'), direction = 'long',
                                 varying = c('NTAX', 'PIND', 'PTAX'), timevar = 'variable', v.names = 'value',
                                 times = c('NTAX', 'PIND', 'PTAX'))
-        natMets.long$variable <- with(natMets.long, variable = paste('NAT_',TRAIT,variable,sep=''))
+        natMets.long$variable <- with(natMets.long, paste('NAT_',TRAIT,variable,sep=''))
+
         natMets.long$TRAIT <- NULL
         # natMets.long <- data.table::melt(natMets,id.vars=c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')) %>%
         #   mutate(variable=paste('NAT_',TRAIT,variable,sep=''))
 
         natMets.fin <- reshape(natMets.long, idvar = c('SAMPID'), direction = 'wide',
                                v.names = 'value', timevar = 'variable')
-        natMets.fin <- merge(natMets.fin, totals.nat, by = 'SAMPID', all.y=TRUE)
+        names(natMets.fin) <- gsub("value\\.", "", names(natMets.fin))
+
+        natMets.fin <- merge(natMets.fin, natTot, by = 'SAMPID', all.y=TRUE)
         # natMets.1 <- data.table::dcast(natMets.long,SAMPID~variable,value.var='value') %>%
         #   merge(totals.nat,by='SAMPID',all.y=T)
 
@@ -382,12 +385,14 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
         #   select(-TOTLNTAX,-TOTLNIND)
 
       }else{
+        outWide.1 <- outWide
         outWide.1$TOTLNTAX <- NULL
         outWide.1$TOTLNIND <- NULL
         # outWide.1 <- select(outWide,-TOTLNTAX,-TOTLNIND)
       }
     }
   }else{
+    outWide.1 <- outWide
     outWide.1$TOTLNTAX <- NULL
     outWide.1$TOTLNIND <- NULL
     # outWide.1 <- select(outWide,-TOTLNTAX,-TOTLNIND)
