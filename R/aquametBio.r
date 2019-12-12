@@ -5,7 +5,7 @@
 #'
 #' @importFrom Hmisc "%nin%" capitalize
 #' @importFrom gtools smartbind
-#' @importFrom stats aggregate approx
+#' @importFrom stats aggregate approx reshape
 #' @importFrom utils head
 #' @keywords package
 #' @title aquametBio
