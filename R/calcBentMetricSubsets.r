@@ -949,7 +949,9 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value')
   #
   # outWide.fin <- dplyr::select(outWide.fin, -SAMPID)
-  outWide.all[is.na(outWide.all)] <- 0
+  updNames <- names(outWide.all)[names(outWide.all) %nin% c('WTD_TV','NAT_WTD_TV','SAMPID')]
+  outWide.all[,updNames] <- lapply(outWide.all[,updNames], function(x){ifelse(is.na(x), 0, x)})
+  # outWide.all[is.na(outWide.all)] <- 0
   # # Finally, we can recast the metrics df into wide format for output
   outWide.fin <- outWide.all
   outWide.fin$SAMPID <- NULL
