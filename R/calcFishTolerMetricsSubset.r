@@ -449,7 +449,7 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
         natMets.fin <- reshape(natMets.long, idvar = c('SAMPID'), direction = 'wide',
                                v.names = 'value', timevar = 'variable')
         names(natMets.fin) <- gsub("value\\.", "", names(natMets.fin))
-        natMets.fin <- merge(natMets.fin, totals.nat, by = 'SAMPID', all.y=TRUE)
+        natMets.fin <- merge(natMets.fin, natTot, by = 'SAMPID', all.y=TRUE)
 
         # natMets.1 <- data.table::dcast(natMets.long,SAMPID~variable,value.var='value') %>%
         #   merge(totals.nat,by='SAMPID',all.y=T)
