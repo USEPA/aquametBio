@@ -85,17 +85,13 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
 
      names(inMMI.1)[names(inMMI.1)==wsarea] <- 'WSAREA'
      names(inMMI.1)[names(inMMI.1)==totlnind] <- 'TOTLNIND'
-    #
-    # inMMI.1 <- plyr::mutate(inMMI.1, WSAREA = as.numeric(WSAREA),
-    #                       TOTLNIND = as.numeric(TOTLNIND))
 
     inMMI.1$WSAREA <- as.numeric(inMMI.1$WSAREA)
     inMMI.1$TOTLNIND <- as.numeric(inMMI.1$TOTLNIND)
   }
 
-  # names(inMMI.1)[names(inMMI.1)==ecoreg] <- 'ECO9'
   names(inMMI.1)[names(inMMI.1)==mmi] <- 'MMI_FISH'
-  # inMMI.1 <- plyr::mutate(inMMI.1, MMI_FISH = as.numeric(MMI_FISH))
+
   inMMI.1$MMI_FISH <- as.numeric(inMMI.1$MMI_FISH)
 
   # Check to make sure ecoregion variable is included in the input data frame
@@ -110,23 +106,11 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
 
   ## Now we need to set condition class for each sample, which is based on ECO9
   # First create a table of thresholds by ECO9
-  # cond.tholds <- data.frame(ECO9=c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER')
-  #                           ,gf=c(57.1,57.5,45.4,59.3,50.0,57.9,37.5,75.7,76.6)
-  #                           ,fp=c(46.4,46.8,34.6,48.6,39.3,47.1,26.8,65.0,65.9),stringsAsFactors=F)
   cond.tholds <- data.frame(ECO9=c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER')
                             ,gf=c(57.3,57.6,46.3,60.3,50.2,58.0,39.8,75.9,76.8)
                             ,fp=c(46.8,47.1,35.8,49.8,39.7,47.5,29.3,65.4,66.2),stringsAsFactors=FALSE)
 
   # Need to account for cases where no missing MMI_FISH
-  # cond.mmi.1 <- merge(inMMI.1,cond.tholds,by='ECO9',all.x=TRUE) %>%
-  #   plyr::mutate(FISH_MMI_COND = ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good'
-  #                         , ifelse(MMI_FISH < fp, 'Poor'
-  #                         , ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA)))) %>%
-  #   plyr::mutate(FISH_MMI_COND=ifelse(!is.na(FISH_MMI_COND), FISH_MMI_COND
-  #                        , ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), 'Not Assessed'
-  #                        , ifelse(is.na(MMI_FISH) & TOTLNIND==0 & WSAREA > 2, 'Poor'
-  #                                 , 'Not Assessed')))) %>%
-  #   dplyr::select(-gf, -fp)
   cond.mmi.1 <- merge(inMMI.1, cond.tholds, by.x=ecoreg, by.y='ECO9')
   cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1,
                                    ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good'
@@ -142,8 +126,6 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
 
   condOut <- subset(cond.mmi.1, select = c(sampID, 'FISH_MMI_COND'))
   condOut <- merge(condOut, inMMI, by = c(sampID))
-  # condOut <- subset(cond.mmi.1, select = c(sampID, 'FISH_MMI_COND')) %>%
-  #   merge(inMMI, by = c(sampID))
 
   return(condOut)
 

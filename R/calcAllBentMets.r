@@ -58,7 +58,6 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
 
   # Make sure all taxa match to taxalist and send error if not
   checkTaxa <- indf[indf$TAXA_ID %in% setdiff(indf$TAXA_ID, inTaxa$TAXA_ID),]
-  #checkTaxa <- dplyr::anti_join(indf,inTaxa,by='TAXA_ID')
   if(nrow(checkTaxa)>0){
     return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
@@ -120,7 +119,6 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
                                                                       ,'TANYNTAX','TANYPIND'
                                                                       ,'TANYPTAX','TRICNTAX','TRICPIND','TRICPTAX'
                                                                       ,'TUBINAIDNTAX','TUBINAIDPIND','TUBINAIDPTAX','ORTHCHIRPIND'))
-  # tax.1 <- data.table::melt(taxMet,id.vars=sampID)
 
   ffgMet <- calcBentFFGmets(indf,inTaxa,sampID,dist,ct,taxa_id,ffg)
   ffg.1 <- reshape(ffgMet, idvar = sampID, direction = 'long', varying = c('COFINTAX','COFIPIND','COFIPTAX'
@@ -135,7 +133,6 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
                                                                       ,'PREDNTAX','PREDPIND','PREDPTAX'
                                                                       ,'SCRPNTAX','SCRPPIND','SCRPPTAX'
                                                                       ,'SHRDNTAX','SHRDPIND','SHRDPTAX'))
-  # ffg.1 <- data.table::melt(ffgMet,id.vars=sampID)
 
   habitMet <- calcBentHabitMets(indf,inTaxa,sampID,dist,ct,taxa_id,habit)
   habit.1 <- reshape(habitMet, idvar = sampID, direction = 'long', varying = c('BURRNTAX','BURRPIND','BURRPTAX'
@@ -148,7 +145,6 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
                                                                         ,'CLNGNTAX','CLNGPIND','CLNGPTAX'
                                                                         ,'SPWLNTAX','SPWLPIND','SPWLPTAX'
                                                                         ,'SWIMNTAX','SWIMPIND','SWIMPTAX'))
-  # habit.1 <- data.table::melt(habitMet,id.vars=sampID)
 
   tolMet <- calcBentTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,ptv)
   tol.1 <- reshape(tolMet, idvar = sampID, direction = 'long', varying = c('FACLNTAX','FACLPIND','FACLPTAX'
@@ -171,7 +167,6 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
                                                                       ,'TL67NTAX','TL67PIND','TL67PTAX'
                                                                       ,'TOLRNTAX','TOLRPIND','TOLRPTAX'
                                                                       ,'WTD_TV'))
-  # tol.1 <- data.table::melt(tolMet,id.vars=sampID)
 
   domMet <- calcBentDominMets(indf,inTaxa,sampID,dist,ct,taxa_id)
   # Still working on this below - do I know the set variable names ahead of time?
@@ -179,7 +174,6 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
                                                                        'CHIRDOM1PIND','CHIRDOM3PIND','CHIRDOM5PIND'),
                    v.names='value', timevar='variable', times=c('HPRIME','DOM1PIND','DOM3PIND','DOM5PIND','CHIRDOM1PIND',
                                                                 'CHIRDOM3PIND','CHIRDOM5PIND'))
-  # dom.1 <- data.table::melt(domMet,id.vars=sampID)
 
   names(indf)[names(indf)==ct] <- 'FINAL_CT'
   names(indf)[names(indf)==dist] <- 'IS_DISTINCT'
@@ -194,18 +188,12 @@ calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
   # Now melt the above using variable and value?
   totals.long <- reshape(totals, idvar = sampID, direction='long', varying=c('TOTLNIND','TOTLNTAX'),v.names='value',timevar='variable',times=c('TOTLNIND','TOTLNTAX'))
 
-  # totals <- plyr::ddply(indf, sampID, summarise, TOTLNIND=sum(FINAL_CT),
-  #                                  TOTLNTAX=sum(IS_DISTINCT)) %>%
-  #   melt(id.vars=sampID)
 
   mets <- rbind(tax.1, ffg.1, habit.1, tol.1, dom.1,totals.long)
 
   # Finally, we can recast the metrics df into wide format for output
-  # lside <- paste(paste(sampID,collapse='+'),sep='+')
-  # form <- paste(lside,'~variable',sep='')
   metOut <- reshape(mets, direction = 'wide', idvar = sampID,  timevar = 'variable')
   names(metOut) <- gsub("value\\.", "", names(metOut))
-  # metOut <- data.table::dcast(mets,eval(form),value.var='value')
 
   return(metOut)
 }

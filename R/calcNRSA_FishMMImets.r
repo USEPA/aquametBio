@@ -209,7 +209,6 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   indata.1 <- subset(indata,!is.na(TAXA_ID) & !is.na(TOTAL) & TOTAL!=0)
 
   indata.2 <- subset(indata.1, select = c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT','NONNATIVE'))
-  # indata.2 <- dplyr::select(indata.1,SAMPID, TAXA_ID, TOTAL, IS_DISTINCT, NONNATIVE)
 
   inTaxa.1 <- inTaxa
   inTaxa.1$BENTINV <- with(inTaxa.1, ifelse(HABITAT=='B' & TROPHIC=='I',1,NA))
@@ -238,32 +237,6 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   inTaxa.1$SALM <- with(inTaxa.1, ifelse(toupper(FAMILY)=='SALMONIDAE',1,NA))
   inTaxa.1$TOLR <- with(inTaxa.1, ifelse(TOLERANCE=='T',1,NA))
 
-  # inTaxa.1 <- plyr::mutate(inTaxa, BENTINV=ifelse(HABITAT=='B' & TROPHIC=='I',1,NA)
-  #                          ,CARN=ifelse(TROPHIC=='C',1,NA)
-  #                          ,CENT=ifelse(toupper(FAMILY)=='CENTRARCHIDAE' & toupper(GENUS)!='MICROPTERUS',1,NA)
-  #                          ,CYPR=ifelse(toupper(FAMILY)=='CYPRINIDAE' & toupper(NAME) %nin%
-  #                                         c('COMMON CARP','GOLDFISH','BIGHEAD CARP','GRASS CARP','MIRROR CARP'),1,NA)
-  #                          ,HERB=ifelse(TROPHIC=='H',1,NA)
-  #                          ,INTL=ifelse(TOLERANCE=='S',1,NA)
-  #                          ,INTLINV=ifelse(INTL==1 & TROPHIC=='I',1,NA)
-  #                          ,INTLLOT=ifelse(INTL==1 & VELOCITY %in% c('R','O'),1,NA)
-  #                          ,INTLMIGR=ifelse(INTL==1 & MIGRATORY=='Y',1,NA)
-  #                          ,INV=ifelse(TROPHIC %in% c('I'),1,NA)
-  #                          ,LITH=ifelse(REPROD=='C',1,NA)
-  #                          ,LOT=ifelse(VELOCITY %in% c('R','O'),1,NA)
-  #                          ,MIGR=ifelse(MIGRATORY=='Y',1,NA)
-  #                          ,CATO=ifelse(toupper(FAMILY)=='CATOSTOMIDAE',1,NA)
-  #                          ,ICTA=ifelse(toupper(FAMILY)=='ICTALURIDAE',1,NA)
-  #                          ,NTOL=ifelse(TOLERANCE %in% c('S','I'),1,NA)
-  #                          ,NTOLBENT=ifelse(NTOL==1 & HABITAT=='B',1,NA)
-  #                          ,RHEO=ifelse(VELOCITY=='R',1,NA)
-  #                          ,RBCATO=ifelse(toupper(GENUS) %in% c('MOXOSTOMA', 'HYPENTELIUM'
-  #                                                               , 'MINYTREMA', 'ERIMYZON' , 'CATOSTOMUS', 'CYCLEPTUS'
-  #                                                               , 'PANTOSTEUS' , 'THOBURNIA'),1,NA)
-  #                          ,SALM=ifelse(toupper(FAMILY)=='SALMONIDAE',1,NA)
-  #                          ,TOLR=ifelse(TOLERANCE=='T',1,NA)
-  #                          )
-
   params<-c('BENTINV','CARN','CENT','CYPR','HERB','INV','INTLINV','INTLLOT','INTLMIGR','INTL','LITH','LOT','MIGR','CATO'
           ,'ICTA','NTOLBENT','NTOL','RHEO','RBCATO','SALM','TOLR')
 
@@ -275,18 +248,12 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
                       varying = params.use, times = params.use, v.names = 'value', timevar = 'TRAIT')
   taxalong <- subset(taxalong, !is.na(value))
 
-  # taxalong <- data.table::melt(inTaxa.2,id.vars='TAXA_ID',variable.name='TRAIT',na.rm=TRUE) %>%
-  #   plyr::mutate(TRAIT=as.character(TRAIT))
-
   totals <- aggregate(x = list(TOTLNIND = indata.2$TOTAL, TOTLNTAX = indata.2$IS_DISTINCT), by = indata.2[c('SAMPID')],
                       FUN = sum)
 
   indata.3 <- merge(indata.2, totals, by = 'SAMPID')
   indata.3$CALCPIND <- with(indata.3, TOTAL/TOTLNIND)
   indata.3$CALCPTAX <- with(indata.3, IS_DISTINCT/TOTLNTAX)
-
-  # indata.3 <- plyr::ddply(indata.2, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
-  #                        TOTLNTAX=sum(IS_DISTINCT))
 
   # Merge the count data with the taxalist containing only the traits of
   # interest
@@ -303,18 +270,12 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
 
   outMet <- merge(outMet.1, outMet.2, by = c('SAMPID','TRAIT'))
 
-  # outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT"), summarise,
-  #                       NTAX=sum(IS_DISTINCT),
-  #                       PIND=round(sum(TOTAL/TOTLNIND)*100,2),
-  #                       PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
-
   # Melt df to create metric names, then recast into wide format with metric
   # names
   outLong <- reshape(outMet, idvar = c('SAMPID','TRAIT'), direction = 'long',
                      varying = c('PIND','PTAX','NTAX'), timevar = 'variable',
                      v.names = 'value', times = c('PIND','PTAX','NTAX'))
 
-  # outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
   outLong$TRAIT <- NULL
 
@@ -324,22 +285,16 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
 
   outWide <- merge(outWide, totals, by = 'SAMPID', all.y=TRUE)
 
-  # outWide <- data.table::dcast(outLong,SAMPID~variable,value.var='value')
-
   # Calculate metrics based on native status and other traits
   if(any(unique(indata.3$NON_NATIVE) %nin% c('Y','N'))){
     return(print("No native and alien datasets were created because NON_NATIVE must only be 'Y' or 'N' values"))
   }else{
     inNative <- subset(indata.3,NONNATIVE=='N')
     if(length(inNative)>0){
-      # inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(TOTAL),
-      #                             NAT_TOTLNTAX=sum(IS_DISTINCT))
       natTot <- aggregate(x = list(NAT_TOTLNIND = inNative$TOTAL, NAT_TOTLNTAX = inNative$IS_DISTINCT),
                           by = inNative[c('SAMPID')], FUN = sum)
 
       inNative.tot <- merge(inNative, natTot, by = 'SAMPID')
-
-      # totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])
 
       natMets <- merge(inNative.tot, taxalong, by = 'TAXA_ID')
       natMets$CALCPIND <- with(natMets, TOTAL/NAT_TOTLNIND)
@@ -354,28 +309,17 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
 
       natMets.comb <- merge(natMets.1, natMets.2, by = c('SAMPID','TRAIT'))
 
-      # natMets <- merge(inNative.tot, taxalong, by='TAXA_ID') %>%
-      #   plyr::ddply(c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND'),summarise,
-      #               NTAX=sum(IS_DISTINCT),
-      #               PIND=round(sum(TOTAL/NAT_TOTLNIND)*100,2),
-      #               PTAX=round(sum(IS_DISTINCT/NAT_TOTLNTAX)*100,2), .progress='tk')
-
       natMets.long <- reshape(natMets.comb, idvar = c('SAMPID','TRAIT'), direction = 'long',
                               varying = c('NTAX', 'PIND', 'PTAX'), timevar = 'variable', v.names = 'value',
                               times = c('NTAX', 'PIND', 'PTAX'))
       natMets.long$variable <- with(natMets.long, paste('NAT_',TRAIT,variable,sep=''))
       natMets.long$TRAIT <- NULL
 
-      # natMets.long <- data.table::melt(natMets,id.vars=c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')) %>%
-      #   mutate(variable=paste('NAT_',TRAIT,variable,sep=''))
-
       natMets.fin <- reshape(natMets.long, idvar = c('SAMPID'), direction = 'wide',
                              v.names = 'value', timevar = 'variable')
       names(natMets.fin) <- gsub("value\\.", "", names(natMets.fin))
-      # natMets.1 <- data.table::dcast(natMets.long,SAMPID~variable,value.var='value')
 
       outWide.1 <- merge(outWide, natMets.fin, all=TRUE)
-      # outWide.1 <- merge(outWide,natMets.1,all=T)
 
     }else{
       outWide.1 <- outWide
@@ -384,12 +328,6 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
 
 
   # Metrics relying only on native status
-  # natTot <- aggregate(x = list(TOTLNIND = indata.3$TOTAL, TOTLNTAX = indata.3$IS_DISTINCT),
-  #                    by = indata.3[c('SAMPID')], FUN = sum)
-
-
-  # inNat <- plyr::ddply(indata.3, "SAMPID", mutate, TOTLNIND=sum(TOTAL),TOTLNTAX=sum(IS_DISTINCT)) %>%
-  #   mutate(ALIEN=ifelse(NONNATIVE=='Y',1,NA),NAT=ifelse(NONNATIVE=='N',1,NA))
 
   inNat <- indata.3
   inNat$ALIEN <- with(inNat, ifelse(NONNATIVE=='Y',1,NA))
@@ -408,22 +346,10 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
 
   outNat <- merge(outNat.1, outNat.2, by = 'SAMPID')
 
-  # outNat <- plyr::ddply(inNat, c("SAMPID"), summarise,
-  #                       ALIENNTAX=sum(IS_DISTINCT*ALIEN,na.rm=T),
-  #                       ALIENPIND=round(sum(TOTAL*ALIEN/TOTLNIND,na.rm=T)*100,2),
-  #                       NAT_TOTLNTAX=sum(IS_DISTINCT*NAT,na.rm=T),
-  #                       NAT_PIND=round(sum(TOTAL*NAT/TOTLNIND,na.rm=T)*100,2),
-  #                       NAT_PTAX=round(sum(IS_DISTINCT*NAT/TOTLNTAX,na.rm=T)*100,2),.progress='tk')
-
   outAll <- merge(outWide.1, outNat, by = 'SAMPID', all=TRUE)
   outAll <- merge(outAll, empty_base, all=TRUE)
   outAll <- subset(outAll, !is.na(SAMPID))
   outAll <- merge(outAll, samples, by='SAMPID', all.y=TRUE)
-
-  # outAll <- merge(outWide.1,outNat,by='SAMPID',all=T) %>%
-  #   merge(empty_base, all=TRUE) %>%
-  #   filter(!is.na(SAMPID)) %>%
-  #   merge(samples,by='SAMPID',all.y=T)
 
   varLong <- names(outAll)[names(outAll) %nin% c(sampID, ecoreg, 'SAMPID')]
   outLong <- reshape(outAll, idvar = c(sampID, ecoreg, 'SAMPID'), direction = 'long',
@@ -431,14 +357,8 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   outLong$value <- with(outLong, ifelse(is.na(value),0,value))
   outLong <- merge(outLong, metnames, by.x = c(ecoreg, 'variable'), by.y = c('ECO', 'METRIC'))
 
-  # outLong <- data.table::melt(outAll,id.vars=c(sampID,ecoreg,'SAMPID')) %>%
-  #   plyr::mutate(value=ifelse(is.na(value),0,value)) %>%
-  #   merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC'))
-
   ckMetnum <- as.data.frame(table(SAMPID=outLong$SAMPID))
   ckMetnum <- subset(ckMetnum, Freq!=8)
-  # ckMetnum <- as.data.frame(table(SAMPID=outLong$SAMPID)) %>%
-  #   dplyr::filter(Freq!=8)
   if(nrow(ckMetnum)>0){
     print("Error in output! Wrong number of metrics per site!")
     print(ckMetnum)
@@ -451,12 +371,6 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
 
   metOut <- merge(metOut, unique(indata.3[,c('SAMPID','TOTLNIND')]), by='SAMPID')
   metOut$SAMPID <- NULL
-
-  # lside <- paste('SAMPID',paste(sampID,collapse='+'),ecoreg,sep='+')
-  # formula <- paste(lside,'~variable',sep='')
-  # metOut <- data.table::dcast(outLong,eval(formula),value.var='value') %>%
-  #   merge(unique(indata.3[,c('SAMPID','TOTLNIND')]),by='SAMPID') %>%
-  #   dplyr::select(-SAMPID)
 
   return(metOut)
 }

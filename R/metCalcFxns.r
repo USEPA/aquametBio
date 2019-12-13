@@ -26,10 +26,6 @@ Dominance<-function(df, topN=1){
 
  ss <- merge(rr, totals, by = 'SAMPID')
 
-
-# rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
-
-
 	tt <- stats::aggregate(list(domN=ss$TOTAL)
 			,list(SAMPID=ss$SAMPID)
 			,function(x){
@@ -39,10 +35,8 @@ Dominance<-function(df, topN=1){
 	)
 	uu <- merge(tt,unique(ss[,c('SAMPID','TOTSUM')]),by="SAMPID")
 	uu$dompind <- with(uu, round(domN/TOTSUM*100,2))
-	# uu <- plyr::mutate(uu,dompind=round(domN/TOTSUM*100,2))
 	uu <- subset(uu,select=c('SAMPID','dompind'))
 	names(uu)[names(uu) == 'dompind'] <- paste('DOM', topN, 'PIND', sep = '')
-	#uu <- plyr::rename(uu,c('dompind'=paste("DOM",topN,"PIND",sep='')))
 
 	return(uu)
 }
@@ -60,8 +54,6 @@ ShanDiversity <- function(indata){
 	rr$CALC <- with(rr,(TOTAL/TOTSUM)*(log(TOTAL/TOTSUM)))
 
 	tt <- aggregate(x = list(HPRIME = rr$CALC), by = rr[c('SAMPID')], FUN = function(x){ round(-1*sum(x), 2)})
-	# rr <- plyr::ddply(rr,"SAMPID",mutate,TOTSUM=sum(TOTAL))
-	# tt <- plyr::ddply(rr,"SAMPID",summarise,HPRIME=round(-1*sum((TOTAL/TOTSUM)*(log(TOTAL/TOTSUM))),2))
 
 	return(tt)
 }
@@ -75,9 +67,6 @@ ShanDiversity <- function(indata){
 tolindex<-function(indata, taxalist){
 	tv_taxa <- taxalist[taxalist$TRAIT %in% c('PTV','TOL_VAL'),]
 	rr <- aggregate(x = list(SUMCT = indata$TOTAL), by = indata[c('SAMPID')], FUN = sum)
-	# indata1 <- merge(indata, rr, by = 'SAMPID')
-
-	# indata1 <- plyr::ddply(indata,"SAMPID",mutate,SUMCT=sum(TOTAL))
 	#This allows us to sum across only those taxa with TVs
 	tv_cts <- merge(indata,tv_taxa,by="TAXA_ID")
 	# Redo this to match order of operations of original code - get total separately
@@ -85,7 +74,6 @@ tolindex<-function(indata, taxalist){
 	tvOut <- aggregate(x = list(SUMCALC = tv_cts$CALC), by = tv_cts[c('SAMPID')], FUN = sum)
 	outTV <- merge(tvOut, rr, by = c('SAMPID'))
 	outTV$WTD_TV <- with(outTV, round(SUMCALC/SUMCT, 2))
-	# outTV <- plyr::ddply(tv_cts,"SAMPID",summarise,WTD_TV=round(sum(TOTAL*as.numeric(value))/unique(SUMCT),2))
 	return(outTV)
 }
 
@@ -104,8 +92,5 @@ tolindexFish<-function(indata, taxalist){
 	ss$CALC <- with(ss, TOTAL*as.numeric(TOL_VAL)/TOTSUM)
 
 	outTV <- aggregate(x = list(WTD_TV = ss$CALC), by = ss[c('SAMPID')], FUN = function(x){ round(sum(x), 2)})
-# 	outTV <- dplyr::filter(tv_cts,!is.na(TOTAL) & !is.na(TOL_VAL)) %>%
-#     plyr::ddply("SAMPID", summarise,
-# 	   WTD_TV=round(sum(TOTAL*as.numeric(TOL_VAL,na.rm=T))/sum(TOTAL),2))
 	return(outTV)
 }

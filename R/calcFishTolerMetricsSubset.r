@@ -181,7 +181,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
     indata.2 <- merge(maxDist, sumTot, by = c('SAMPID','TAXA_ID','NONNATIVE'))
 
-    # indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID','NONNATIVE'),summarise,IS_DISTINCT=max(IS_DISTINCT),TOTAL=sum(TOTAL))
     CALCNAT <- 'Y'
   }else{
     maxDist <- aggregate(x = list(IS_DISTINCT = indata.1$IS_DISTINCT), by = indata.1[c('SAMPID','TAXA_ID')],
@@ -190,7 +189,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
     indata.2 <- merge(maxDist, sumTot, by = c('SAMPID','TAXA_ID'))
 
-        # indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID'),summarise,IS_DISTINCT=max(IS_DISTINCT),TOTAL=sum(TOTAL))
     CALCNAT <- 'N'
   }
   # Find all samples with a missing TAXA_ID, which means there are no counts for the site, and output the rows so the user can
@@ -204,19 +202,13 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   inCts <- indata.2
   inCts$TOTAL <- with(inCts, as.numeric(TOTAL))
   inCts$IS_DISTINCT <- with(inCts, as.integer(IS_DISTINCT))
-  # inCts <- plyr::mutate(indata.2,TOTAL=as.numeric(TOTAL),IS_DISTINCT=as.integer(IS_DISTINCT))
 
   inCts.1 <- inCts[inCts$TAXA_ID %in% inTaxa$TAXA_ID,]
-  # inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID')
 
   if(CALCNAT=='Y'){
     inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL>0,c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT','NONNATIVE')]
-    # inCts.1 <- dplyr::select(inCts.1,SAMPID, TAXA_ID, TOTAL, IS_DISTINCT,NONNATIVE) %>%
-    # subset(!is.na(TOTAL) & TOTAL>0)
   }else{
     inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL>0,c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')]
-    # inCts.1 <- dplyr::select(inCts.1,SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
-    #   subset(!is.na(TOTAL) & TOTAL>0)
   }
   # Now create indicator variables
   inTaxa.1 <- inTaxa
@@ -225,11 +217,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   inTaxa.1$MTOL <- with(inTaxa.1, ifelse(TOLERANCE=='I',1,NA))
   inTaxa.1$TOLR <- with(inTaxa.1, ifelse(TOLERANCE=='T',1,NA))
 
-  # inTaxa.1 <- plyr::mutate(inTaxa,NTOL=ifelse(TOLERANCE %in% c('S','I'),1,NA)
-  #                    ,INTL=ifelse(TOLERANCE=='S',1,NA)
-  #                    ,MTOL=ifelse(TOLERANCE=='I',1,NA)
-  #                    ,TOLR=ifelse(TOLERANCE=='T',1,NA)
-  #                    )
   # Create empty data frames with all metric names in it
   empty_base <- data.frame(t(rep(NA,13)),stringsAsFactors=F)
   names(empty_base) <- c('INTLNTAX','INTLPIND','INTLPTAX',
@@ -250,9 +237,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   if('VELOCITY' %in% names(inTaxa.1)){
     inTaxa.1$INTLRHEO <- with(inTaxa.1, ifelse(INTL==1 & VELOCITY=='R',1,NA))
     inTaxa.1$INTLLOT <- with(inTaxa.1, ifelse(INTL==1 & VELOCITY %in% c('R','O'),1,NA))
-    # inTaxa.1 <- plyr::mutate(inTaxa.1, INTLRHEO=ifelse(INTL==1 & VELOCITY=='R',1,NA)
-    #                    ,INTLLOT=ifelse(INTL==1 & VELOCITY %in% c('R','O'),1,NA)
-    #                    )
 
     empty_vel <- data.frame(t(rep(NA,6)),stringsAsFactors=F)
     names(empty_vel) <- c('INTLRHEONTAX','INTLRHEOPIND','INTLRHEOPTAX',
@@ -268,7 +252,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   if('HABITAT' %in% names(inTaxa.1)){
     inTaxa.1$NTOLBENT <- with(inTaxa.1, ifelse(NTOL==1 & HABITAT=='B',1,NA))
-    # inTaxa.1 <- plyr::mutate(inTaxa.1, NTOLBENT=ifelse(NTOL==1 & HABITAT=='B',1,NA))
 
     empty_hab <- data.frame(t(rep(NA,3)),stringsAsFactors=F)
     names(empty_hab) <- c('NTOLBENTNTAX','NTOLBENTPIND','NTOLBENTPTAX')
@@ -288,11 +271,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
     inTaxa.1$INTLINV <- with(inTaxa.1, ifelse(INTL==1 & TROPHIC=='I',1,NA))
     inTaxa.1$NTOLINV <- with(inTaxa.1, ifelse(NTOL==1 & TROPHIC=='I',1,NA))
 
-    # inTaxa.1 <- plyr::mutate(inTaxa.1, NTOLCARN=ifelse(NTOL==1 & TROPHIC=='C',1,NA)
-    #                    ,INTLCARN=ifelse(INTL==1 & TROPHIC=='C',1,NA)
-    #                    ,INTLINV=ifelse(INTL==1 & TROPHIC=='I',1,NA)
-    #                    ,NTOLINV=ifelse(NTOL==1 & TROPHIC=='I',1,NA))
-
     empty_trop <- data.frame(t(rep(NA,12)),stringsAsFactors=F)
     names(empty_trop) <- c('INTLINVNTAX','INTLINVPIND','INTLINVPTAX'
                            ,'INTLCARNNTAX','INTLCARNPIND','INTLCARNPTAX'
@@ -309,7 +287,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   if('MIGRATORY' %in% names(inTaxa.1)){
     inTaxa.1$INTLMIGR <- with(inTaxa.1, ifelse(INTL==1 & MIGRATORY=='Y',1,NA))
-    # inTaxa.1 <- plyr::mutate(inTaxa.1,INTLMIGR=ifelse(INTL==1 & MIGRATORY=='Y',1,NA))
 
     empty_migr <- data.frame(t(rep(NA,3)),stringsAsFactors=F)
     names(empty_migr) <- c('INTLMIGRNTAX','INTLMIGRPIND','INTLMIGRPTAX')
@@ -333,9 +310,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
                       varying = params.use, times = params.use, v.names = 'value', timevar = 'TRAIT')
   taxalong <- subset(taxalong, !is.na(value))
 
-  # taxalong <- data.table::melt(inTaxa.2,id.vars='TAXA_ID',variable.name='TRAIT',na.rm=TRUE) %>%
-  #   plyr::mutate(TRAIT=as.character(TRAIT))
-
   totals <- aggregate(x = list(TOTLNIND = inCts.1$TOTAL, TOTLNTAX = inCts.1$IS_DISTINCT), by = inCts.1[c('SAMPID')],
                       FUN = sum)
 
@@ -343,18 +317,11 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   inCts.2$CALCPIND <- with(inCts.2, TOTAL/TOTLNIND)
   inCts.2$CALCPTAX <- with(inCts.2, IS_DISTINCT/TOTLNTAX)
 
-  # inCts.2 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
-  #                        TOTLNTAX=sum(IS_DISTINCT))
-
   if(CALCNAT=='Y'){
     inCts.2 <- inCts.2[,c('SAMPID','TOTAL','IS_DISTINCT','TAXA_ID','TOTLNTAX','TOTLNIND','NONNATIVE','CALCPIND','CALCPTAX')]
-    # inCts.2 <- dplyr::select(inCts.2,SAMPID,TOTAL,IS_DISTINCT,TAXA_ID,TOTLNTAX,TOTLNIND,NONNATIVE)
   }else{
     inCts.2 <- inCts.2[,c('SAMPID','TOTAL','IS_DISTINCT','TAXA_ID','TOTLNTAX','TOTLNIND','CALCPIND','CALCPTAX')]
-    # inCts.2 <- dplyr::select(inCts.2, SAMPID,TOTAL,IS_DISTINCT,TAXA_ID,TOTLNTAX,TOTLNIND)
   }
-
-  # totals <- unique(inCts.2[,c('SAMPID','TOTLNTAX','TOTLNIND')])
 
   # Merge the count data with the taxalist containing only the traits of
   # interest
@@ -372,19 +339,12 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   outMet <- merge(outMet.1, outMet.2, by = c('SAMPID','TRAIT'))
 
-
-  # outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT"), summarise,
-  #                 NTAX=sum(IS_DISTINCT),
-  #                 PIND=round(sum(TOTAL/TOTLNIND)*100,2),
-  #                 PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
-
   # Melt df to create metric names, then recast into wide format with metric
   # names
   outLong <- reshape(outMet, idvar = c('SAMPID','TRAIT'), direction = 'long',
                      varying = c('NTAX','PIND','PTAX'), timevar = 'variable',
                      v.names = 'value', times = c('NTAX','PIND','PTAX'))
 
-  # outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
   outLong$TRAIT <- NULL
 
@@ -393,9 +353,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   names(outWide) <- gsub("value\\.", "", names(outWide))
 
   outWide <- merge(outWide, totals, by = 'SAMPID', all.y=TRUE)
-
-  # outWide <- data.table::dcast(outLong,SAMPID~variable,value.var='value') %>%
-  #   merge(totals,by='SAMPID',all.y=T)
 
   if(nrow(subset(inTaxa,!is.na(TOL_VAL)))>0){
     TVI <- tolindexFish(inCts.2,inTaxa)
@@ -414,9 +371,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
                             by = inNative[c('SAMPID')], FUN = sum)
 
         inNative.tot <- merge(inNative, natTot, by = 'SAMPID')
-        # inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(TOTAL),
-        #                                      NAT_TOTLNTAX=sum(IS_DISTINCT))
-        # totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])
 
         natMets <- merge(inNative.tot, taxalong, by = 'TAXA_ID')
         natMets$CALCPIND <- with(natMets, TOTAL/NAT_TOTLNIND)
@@ -431,37 +385,22 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
         natMets.comb <- merge(natMets.1, natMets.2, by = c('SAMPID','TRAIT'))
 
-        # natMets <- merge(inNative.tot, taxalong, by='TAXA_ID') %>%
-        #   plyr::ddply(c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND'),summarise,
-        #                           NTAX=sum(IS_DISTINCT),
-        #                           PIND=round(sum(TOTAL/NAT_TOTLNIND)*100,2),
-        #                           PTAX=round(sum(IS_DISTINCT/NAT_TOTLNTAX)*100,2), .progress='tk')
-
         natMets.long <- reshape(natMets.comb, idvar = c('SAMPID','TRAIT'), direction = 'long',
                                 varying = c('NTAX', 'PIND', 'PTAX'), timevar = 'variable', v.names = 'value',
                                 times = c('NTAX', 'PIND', 'PTAX'))
         natMets.long$variable <- with(natMets.long, paste('NAT_',TRAIT,variable,sep=''))
         natMets.long$TRAIT <- NULL
 
-        # natMets.long <- data.table::melt(natMets,id.vars=c('SAMPID','TRAIT','NAT_TOTLNTAX','NAT_TOTLNIND')) %>%
-        #   mutate(variable=paste('NAT_',TRAIT,variable,sep=''))
-
         natMets.fin <- reshape(natMets.long, idvar = c('SAMPID'), direction = 'wide',
                                v.names = 'value', timevar = 'variable')
         names(natMets.fin) <- gsub("value\\.", "", names(natMets.fin))
         natMets.fin <- merge(natMets.fin, natTot, by = 'SAMPID', all.y=TRUE)
 
-        # natMets.1 <- data.table::dcast(natMets.long,SAMPID~variable,value.var='value') %>%
-        #   merge(totals.nat,by='SAMPID',all.y=T)
-
         outWide.1 <- merge(outWide, natMets.fin, all = TRUE)
-        # outWide.1 <- merge(outWide,natMets.1,all=T)
 
         if(nrow(subset(inTaxa,!is.na(TOL_VAL)))>0){
           TVI <- tolindexFish(inNative,inTaxa)
           names(TVI)[names(TVI)=='WTD_TV'] <- 'NAT_WTD_TV'
-          # TVI <- tolindexFish(inNative,inTaxa) %>%
-          #   plyr::rename(c('WTD_TV'='NAT_WTD_TV'))
           outWide.1 <- merge(outWide.1,TVI,by="SAMPID",all.x=TRUE)
         }
 
@@ -469,50 +408,32 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
         outWide.1$NAT_PIND <- with(outWide.1, round((NAT_TOTLNIND/TOTLNIND)*100,2))
         outWide.1$TOTLNTAX <- NULL
         outWide.1$TOTLNIND <- NULL
-        # outWide.1 <- plyr::mutate(outWide.1,NAT_PTAX=round((NAT_TOTLNTAX/TOTLNTAX)*100,2),NAT_PIND=round((NAT_TOTLNIND/TOTLNIND)*100,2)) %>%
-        #   select(-TOTLNTAX,-TOTLNIND)
 
       }else{
         outWide.1 <- outWide
         outWide.1$TOTLNTAX <- NULL
         outWide.1$TOTLNIND <- NULL
-        # outWide.1 <- select(outWide,-TOTLNTAX,-TOTLNIND)
       }
     }
     }else{
       outWide.1 <- outWide
       outWide.1$TOTLNTAX <- NULL
       outWide.1$TOTLNIND <- NULL
-      # outWide.1 <- select(outWide,-TOTLNTAX,-TOTLNIND)
       }
 
   outWide.all <- merge(outWide.1, subset(empty_base), all = TRUE)
   outwide.all <- outWide.all[!is.na(outWide.all$SAMPID),]
   outWide.all <- merge(outWide.all, samples, by = 'SAMPID', all.y = TRUE)
 
-  # outWide.all <- merge(outWide.1,empty_base,all=TRUE) %>%
-  #   filter(!is.na(SAMPID)) %>%
-  #   merge(samples,by='SAMPID',all.y=T)
-
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  # outWide.all[is.na(outWide.all)] <- 0
   updNames <- names(outWide.all)[names(outWide.all) %nin% c('WTD_TV','NAT_WTD_TV','SAMPID')]
   outWide.all[,updNames] <- lapply(outWide.all[,updNames], function(x){ifelse(is.na(x), 0, x)})
-  # outLong.1 <- data.table::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
-  #   plyr::mutate(value=ifelse(is.na(value) & variable %nin% c('WTD_TV','NAT_WTD_TV'),0,value))
-  #
-  # # Finally, we can recast the metrics df into wide format for output
-  # lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
-  # formula <- paste(lside,'~variable',sep='')
-  # outWide.2 <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   # Merge metrics with the original indata so that those without metrics because
   # no sample was collected are still output with missing values
   outAll <- merge(outWide.all, totals, by = 'SAMPID', all.x = TRUE)
   outAll$SAMPID <- NULL
-  # outAll <- merge(outWide.2,totals,by='SAMPID',all.x=T) %>%
-  #   dplyr::select(-SAMPID)
 
   return(outAll)
 

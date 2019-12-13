@@ -45,7 +45,6 @@ calcFishAnomMets <- function(indata, sampID='UID',
 
   indata$ANOM_CT <- with(indata, as.numeric(ANOM_CT))
   indata$TOTAL <- with(indata, as.numeric(TOTAL))
-  # indata <- plyr::mutate(indata,ANOM_CT=as.numeric(ANOM_CT),TOTAL=as.numeric(TOTAL))
 
   # Make sure ANOM_CT value not present when TOTAL is missing or 0
   checkAnom <- subset(indata,is.na(TOTAL)|TOTAL==0 & !is.na(ANOM_CT) & ANOM_CT!=0)
@@ -57,15 +56,11 @@ calcFishAnomMets <- function(indata, sampID='UID',
   outMet <- aggregate(x = list(ANOMNIND = indata$ANOM_CT, TOTLNIND = indata$TOTAL), by = indata[c('SAMPID')], FUN = function(x){sum(x, na.rm=T)})
   outMet$ANOMPIND <- with(outMet, round(ANOMNIND/TOTLNIND*100, 2))
   outMet <- subset(outMet, select = c('SAMPID','ANOMPIND'))
-  # outMet <- plyr::ddply(indata, "SAMPID", summarise, ANOMPIND=round(sum(ANOM_CT,na.rm=T)/sum(TOTAL,na.rm=T)*100,2))
 
   outMet.1 <- merge(samples, outMet, by = 'SAMPID', all.x=TRUE)
   outMet.1$ANOMPIND <- with(outMet.1, ifelse(is.na(ANOMPIND),0,ANOMPIND))
-  # outMet.1 <- merge(samples,outMet,by='SAMPID') %>%
-  #   plyr::mutate(ANOMPIND=ifelse(is.na(ANOMPIND),0,ANOMPIND))
 
   outAll <- subset(outMet.1, select = -SAMPID)
-  # outAll <- dplyr::select(outMet.1,-SAMPID)
 
   return(outAll)
 

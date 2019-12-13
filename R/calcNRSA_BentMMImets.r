@@ -77,15 +77,11 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
 
   # Make sure all taxa match to taxalist and send error if not
   checkTaxa <- inCts[!(inCts$TAXA_ID %in% inTaxa$TAXA_ID),]
-#  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID')
   if(nrow(checkTaxa)>0){
     return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
 
-  # if(is.null(inTaxa)) {
-  #   inTaxa <- bentTaxa
   inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
-  # }
 
   ctVars <- c(sampID,dist,ct,taxa_id,ecoreg)
   if(any(ctVars %nin% names(inCts))){
@@ -149,9 +145,6 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
 
   inCts.1 <- inCts[inCts$TAXA_ID %in% inTaxa$TAXA_ID, c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')]
   inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL>0,]
-  # inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%
-  #   dplyr::select(SAMPID, TAXA_ID, TOTAL, IS_DISTINCT) %>%
-  #   subset(!is.na(TOTAL) & TOTAL>0)
 
   inTaxa.1 <- inTaxa
   inTaxa.1$EPT_ <- with(inTaxa.1, ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA))
@@ -166,19 +159,6 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
   inTaxa.1$INTL <- with(inTaxa.1, ifelse(PTV <= 3, 1, NA))
   inTaxa.1$NTOL <- with(inTaxa.1, ifelse(PTV < 6, 1, NA))
   inTaxa.1$STOL <- with(inTaxa.1, ifelse(PTV >= 8, 1, NA))
-  # inTaxa.1 <- mutate(inTaxa, EPT_=ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
-  #                    ,EPHE=ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA)
-  #                    ,CHIR=ifelse(FAMILY %in% c('CHIRONOMIDAE'),1,NA)
-  #                    ,NOIN=ifelse(CLASS %nin% c('INSECTA'),1,NA)
-  #                    ,SHRD=ifelse(stringr::str_detect(FFG,'SH'), 1, NA)
-  #                    ,SCRP=ifelse(stringr::str_detect(FFG,'SC'), 1, NA)
-  #                    ,BURR=ifelse(stringr::str_detect(HABIT,'BU'), 1, NA)
-  #                    ,CLNG=ifelse(stringr::str_detect(HABIT,'CN'), 1, NA)
-  #                    ,TOLR=ifelse(PTV >= 7, 1, NA)
-  #                    ,INTL=ifelse(PTV <= 3, 1, NA)
-  #                    ,NTOL=ifelse(PTV < 6, 1, NA)
-  #                    ,STOL=ifelse(PTV >= 8, 1, NA)
-  # )
 
   # Drop non-target taxa if included in taxalist
   if(length(grep('NON_TARGET',names(inTaxa.1)))>0) {
@@ -193,7 +173,6 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
 
   taxalong <- taxalong[!is.na(taxalong$value),]
 
-#  taxalong <- data.table::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 
   totals <- aggregate(x = list(TOTLNIND = inCts.1$TOTAL, TOTLNTAX = inCts.1$IS_DISTINCT), by = inCts.1[c('SAMPID')],
@@ -202,12 +181,6 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
   inCts.1 <- merge(inCts.1, totals, by = 'SAMPID')
   inCts.1$CALCPIND <- with(inCts.1, TOTAL/TOTLNIND)
   inCts.1$CALCPTAX <- with(inCts.1, IS_DISTINCT/TOTLNTAX)
-  #  taxalong$TRAIT <- as.character(taxalong$TRAIT)
-
-  # inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(TOTAL),
-  #                        TOTLNTAX=sum(IS_DISTINCT))
-
-  # totals <- dplyr::select(inCts.1,SAMPID,TOTLNIND) %>% unique()
 
   # Merge the count data with the taxalist containing only the traits of
   # interest
@@ -224,17 +197,11 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
 
   outMet <- merge(outMet.1, outMet.2, by = c('SAMPID','TRAIT','TOTLNTAX'))
 
-  # outMet <- plyr::ddply(traitDF, c("SAMPID", "TRAIT","TOTLNTAX"), summarise,
-  #                       NIND=sum(TOTAL), NTAX=sum(IS_DISTINCT),
-  #                       PIND=round(sum(TOTAL/TOTLNIND)*100,2),
-  #                       PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')
-
   outLong <- reshape(outMet, idvar = c('SAMPID','TOTLNTAX','TRAIT'), direction = 'long',
                      varying = names(outMet)[!names(outMet) %in% c('SAMPID','TOTLNTAX','TRAIT')],
                      timevar = 'variable', v.names = 'value',
                      times = names(outMet)[!names(outMet) %in% c('SAMPID','TOTLNTAX','TRAIT')])
 
-#  outLong <- data.table::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
   outLong$TRAIT <- NULL
 
@@ -245,14 +212,9 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
 
   outWide <- merge(outWide, samples, by='SAMPID')
 
-  # outWide <-data.table::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
-  #   merge(samples,by='SAMPID')
-
   shanMet <- ShanDiversity(inCts.1)
   domMet <- Dominance(inCts.1, 5)
   domMet$DOM5PIND <- with(domMet, ifelse(is.na(DOM5PIND), 100, DOM5PIND))
-  # domMet <- Dominance(inCts.1,5) %>%
-  #   mutate(DOM5PIND=ifelse(is.na(DOM5PIND),100,DOM5PIND))
 
   outAll <- merge(outWide,shanMet,by='SAMPID')
   outAll <- merge(outAll,domMet,by='SAMPID')
@@ -264,16 +226,11 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
 
   outLong.2 <- merge(outLong.1, metnames, by.x = c(ecoreg, 'variable'), by.y = c('ECO', 'METRIC'))
 
-  # outLong.1 <- data.table::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg)) %>%
-  #   merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC')) %>%
-  #   plyr::mutate(value=ifelse(is.na(value),0,value))
   outLong.2$value[is.na(outLong.2$value)] <- 0
 
   ckMetnum <- as.data.frame(table(SAMPID=outLong.2$SAMPID))
 
   ckMetnum <- subset(ckMetnum, Freq!=6)
-  # ckMetnum <- as.data.frame(table(SAMPID=outLong.1$SAMPID)) %>%
-  #   dplyr::filter(Freq!=6)
   if(nrow(ckMetnum)>0){
     print("Error in output! Wrong number of metrics per site!")
   }
@@ -287,12 +244,6 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
 
   outWide.fin <- merge(outWide.fin, totals[,c('SAMPID','TOTLNIND')], by = 'SAMPID')
   outWide.fin$SAMPID <- NULL
-
-  # lside <- paste(paste(sampID,collapse='+'),'SAMPID',ecoreg,sep='+')
-  # formula <- paste(lside,'~variable',sep='')
-  # outWide.fin <- data.table::dcast(outLong.1,eval(formula),value.var='value') %>%
-  #   merge(totals,by='SAMPID') %>%
-  #   dplyr::select(-SAMPID)
 
   return(outWide.fin)
 

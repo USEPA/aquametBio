@@ -63,10 +63,6 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
   sumTot <- aggregate(x = list(TOTAL = indata.1$TOTAL), by = indata.1[c('SAMPID','TAXA_ID','NONNATIVE')], FUN = sum)
 
   inCts <- merge(maxDist, sumTot, by = c('SAMPID','TAXA_ID','NONNATIVE'))
-#  indata.2 <- plyr::ddply(indata.1,c('SAMPID','TAXA_ID','NONNATIVE'),summarise,IS_DISTINCT=max(IS_DISTINCT),TOTAL=sum(TOTAL))
-
-  # Make sure all necessary columns in inCts are numeric
-#  inCts <- plyr::mutate(indata.2,TOTAL=as.numeric(TOTAL),IS_DISTINCT=as.integer(IS_DISTINCT))
 
   if(any(unique(inCts$NON_NATIVE) %nin% c('Y','N'))){
     return(print("No native and alien datasets were created because NON_NATIVE must only be 'Y' or 'N' values"))
@@ -78,10 +74,6 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
   inCts.1 <- merge(inCts, totals, by = 'SAMPID')
   inCts.1$ALIEN <- with(inCts.1, ifelse(NONNATIVE=='Y',1,NA))
   inCts.1$NAT <- with(inCts.1, ifelse(NONNATIVE=='N',1,NA))
-  # inCts.1 <- plyr::ddply(inCts, "SAMPID", mutate, TOTLNIND=sum(TOTAL),TOTLNTAX=sum(IS_DISTINCT)) %>%
-  #   mutate(ALIEN=ifelse(NONNATIVE=='Y',1,NA),NAT=ifelse(NONNATIVE=='N',1,NA))
-
-  # totals <- unique(inCts.1[,c('SAMPID','TOTLNTAX','TOTLNIND')])
 
   empty_base <- data.frame(t(rep(NA,7)),stringsAsFactors=F)
   names(empty_base) <- c('NAT_TOTLNIND','NAT_TOTLNTAX','NAT_PIND','NAT_PTAX','ALIENPIND','ALIENNTAX','ALIENPTAX')
@@ -100,39 +92,19 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
                                       by = inCts.1[c('SAMPID')], FUN = function(x){round(sum(x, na.rm=T)*100, 2)}))
 
   outMet <- merge(outMet.1, outMet.2, by = 'SAMPID')
-  # outMet <- plyr::ddply(inCts.1, c("SAMPID"), summarise,
-  #                       ALIENNTAX=sum(IS_DISTINCT*ALIEN,na.rm=T),
-  #                       ALIENPIND=round(sum(TOTAL*ALIEN/TOTLNIND,na.rm=T)*100,2),
-  #                       ALIENPTAX=round(sum(IS_DISTINCT*ALIEN/TOTLNTAX,na.rm=T)*100,2),
-  #                       NAT_NTAX=sum(IS_DISTINCT*NAT,na.rm=T),
-  #                       NAT_NIND=sum(TOTAL*NAT,na.rm=T),
-  #                       NAT_PIND=round(sum(TOTAL*NAT/TOTLNIND,na.rm=T)*100,2),
-  #                       NAT_PTAX=round(sum(IS_DISTINCT*NAT/TOTLNTAX,na.rm=T)*100,2),.progress='tk')
 
   outMet.3 <- merge(outMet,empty_base,all=TRUE)
   outMet.3 <- outMet.3[!is.na(outMet.3$SAMPID),]
   outMet.3 <- merge(outMet.3, samples, by = 'SAMPID', all.y=T)
 
-  # outMet.1 <- merge(outMet,empty_base,all=TRUE) %>%
-  #   dplyr::filter(!is.na(SAMPID)) %>%
-  #   merge(samples,by='SAMPID',all.y=T)
   outWide <- outMet.3
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
   outWide[is.na(outWide)] <- 0
-  # outLong.1 <- data.table::melt(outMet.1,id.vars=c(sampID,'SAMPID')) %>%
-  #   plyr::mutate(value=ifelse(is.na(value),0,value))
-
-  # # Finally, we can recast the metrics df into wide format for output
-  # lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
-  # formula <- paste(lside,'~variable',sep='')
-  # outWide <- data.table::dcast(outLong.1,eval(formula),value.var='value')
 
   outAll <- merge(outWide,totals,by='SAMPID',all.x=T)
   outAll$SAMPID <- NULL
-  # outAll <- merge(outWide,totals,by='SAMPID',all.x=T) %>%
-  #   dplyr::select(-SAMPID)
 
   return(outAll)
 

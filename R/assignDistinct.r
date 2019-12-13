@@ -67,12 +67,6 @@ assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.
   # First count number of taxa at each taxonomic level in taxlevels argument
   for(i in 1:length(taxlevels)){
     print(taxlevels[i])
-    # freqLevel <- as.data.frame(table(SAMP_ID=cc.1$SAMP_ID, TAXON=cc.1[,taxlevels[i]])
-    #                            ,responseName=paste('n',taxlevels[i],sep=''),stringsAsFactors=F) %>%
-    #   plyr::rename(c('TAXON'=taxlevels[i]))
-    # cc.1 <- merge(cc.1, freqLevel, by=c('SAMP_ID',taxlevels[i]),all.x=T)
-    # freqLevel <- plyr::ddply(cc.1,c('SAMP_ID',taxlevels[1:i]),summarise,n=length(SAMP_ID)) %>%
-    #   plyr::rename(c('n'=paste('n',taxlevels[i],sep='')))
 
     freqLevel <- aggregate(x=cc.1$SAMP_ID, by = cc.1[c('SAMP_ID',taxlevels[1:i])], FUN
                            =length)
@@ -105,8 +99,6 @@ assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.
 
   outdata <- subset(cc.1,select=c(names(cc),'IS_DISTINCT'))
   outdata$SAMP_ID <- NULL
-  # outdata<-subset(cc.1,select=c(names(cc),'IS_DISTINCT')) %>%
-  #   subset(select=-SAMP_ID)
 
   return(outdata)
 }

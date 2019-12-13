@@ -127,7 +127,6 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   varLong <- names(taxMet)[names(taxMet) %nin% c(sampID)]
   tax.1 <- reshape(taxMet, idvar = sampID, direction = 'long', varying = varLong,
                    v.names = 'value', timevar = 'variable', times = varLong)
-  # tax.1 <- data.table::melt(taxMet,id.vars=sampID)
   print("Done calculating taxonomic metrics.")
 
   tolMet <- calcFishTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,tol,tolval,
@@ -135,7 +134,6 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   varLong <- names(tolMet)[names(tolMet) %nin% c(sampID)]
   tol.1 <- reshape(tolMet, idvar = sampID, direction = 'long', varying = varLong,
                    v.names = 'value', timevar = 'variable', times = varLong)
-  # tol.1 <- data.table::melt(tolMet,id.vars=sampID)
   print("Done calculating tolerance metrics.")
 
   tropMet <- calcFishTrophicMets(indf,inTaxa,sampID,dist,ct,taxa_id,habitat
@@ -143,7 +141,6 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   varLong <- names(tropMet)[names(tropMet) %nin% c(sampID)]
   trop.1 <- reshape(tropMet, idvar = sampID, direction = 'long', varying = varLong,
                    v.names = 'value', timevar = 'variable', times = varLong)
-  # trop.1 <- data.table::melt(tropMet,id.vars=sampID)
   print("Done calculating trophic metrics.")
 
   othMet <- calcFishOtherMets(indf,inTaxa,sampID,dist,ct,taxa_id,vel,migr
@@ -152,34 +149,26 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   varLong <- names(othMet)[names(othMet) %nin% c(sampID)]
   oth.1 <- reshape(othMet, idvar = sampID, direction = 'long', varying = varLong,
                    v.names = 'value', timevar = 'variable', times = varLong)
-  # oth.1 <- data.table::melt(othMet,id.vars=sampID)
   print("Done calculating other metrics.")
 
   natMet <- calcFishNativeMets(indf,sampID,dist,ct,taxa_id,nonnat)
   varLong <- names(natMet)[names(natMet) %nin% c(sampID)]
   nat.1 <- reshape(natMet, idvar = sampID, direction = 'long', varying = varLong,
                    v.names = 'value', timevar = 'variable', times = varLong)
-  # nat.1 <- data.table::melt(natMet,id.vars=sampID)
   print("Done calculating native metrics.")
 
   anomMet <- calcFishAnomMets(indf,sampID,ct,anomct)
   varLong <- names(anomMet)[names(anomMet) %nin% c(sampID)]
   anom.1 <- reshape(anomMet, idvar = sampID, direction = 'long', varying = varLong,
                    v.names = 'value', timevar = 'variable', times = varLong)
-  # anom.1 <- data.table::melt(anomMet,id.vars=sampID)
   print("Done calculating anomaly metrics.")
 
   mets <- rbind(tax.1, tol.1, trop.1, oth.1, nat.1, anom.1)
   mets <- unique(mets)
-  # mets <- rbind(tax.1, tol.1, trop.1, oth.1, nat.1, anom.1) %>%
-  #   unique()
   # Finally, we can recast the metrics df into wide format for output
   metOut <- reshape(mets, idvar = c(sampID), direction = 'wide',
                     v.names = 'value', timevar = 'variable')
   names(metOut) <- gsub("value\\.", "", names(metOut))
-  # lside <- paste(paste(sampID,collapse='+'),sep='+')
-  # formula <- paste(lside,'~variable',sep='')
-  # metOut <- data.table::dcast(mets,eval(formula),value.var='value')
 
   return(metOut)
 }
