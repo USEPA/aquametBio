@@ -87,7 +87,8 @@ prepBentCts_WSA <- function(inCts,inTaxa=bentTaxa_nrsa,sampID='UID',ct='TOTAL'
 
   inCts.4 <- assignDistinct(inCts.3,c(sampID),taxlevels=c('PHYLUM','CLASS','ORDER','FAMILY','GENUS')
                             ,final.name='TARGET_TAXON'
-                            ,special.taxa=c('THIENEMANNIMYIA GENUS GR.', 'CERATOPOGONINAE', 'CRICOTOPUS/ORTHOCLADIUS'))
+                           # ,special.taxa=c('THIENEMANNIMYIA GENUS GR.', 'CERATOPOGONINAE', 'CRICOTOPUS/ORTHOCLADIUS')
+                           )
   inCts.4$IS_DISTINCT <- with(inCts.4, ifelse(is.na(IS_DISTINCT),0,IS_DISTINCT))
 
   outCts <- subset(inCts.4,select=c(sampID,'TAXA_ID','TOTAL','IS_DISTINCT'))

@@ -68,10 +68,10 @@ assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.
   for(i in 1:length(taxlevels)){
     print(taxlevels[i])
 
-    freqLevel <- aggregate(x=cc.1$SAMP_ID, by = cc.1[c('SAMP_ID',taxlevels[1:i])], FUN
+    freqLevel <- aggregate(x=list(n = cc.1$SAMP_ID), by = cc.1[c('SAMP_ID',taxlevels[1:i])], FUN
                            =length)
 
-    names(freqLevel)[names(freqLevel)=='x'] <- paste('n',taxlevels[i],sep='')
+    names(freqLevel)[names(freqLevel)=='n'] <- paste('n',taxlevels[i],sep='')
 
 
     cc.1 <- merge(cc.1,freqLevel,by=c('SAMP_ID',taxlevels[1:i]),all.x=T)

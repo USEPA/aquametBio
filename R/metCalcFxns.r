@@ -27,7 +27,8 @@ Dominance<-function(df, topN=1){
  ss <- merge(rr, totals, by = 'SAMPID')
 
 	tt <- stats::aggregate(list(domN=ss$TOTAL)
-			,list(SAMPID=ss$SAMPID)
+			,by = ss[c('SAMPID')]
+			#list(SAMPID=ss$SAMPID)
 			,function(x){
 				sum(x[order(x,decreasing=TRUE)[1:topN]]
 				)
