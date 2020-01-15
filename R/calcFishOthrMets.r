@@ -181,7 +181,7 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
   inTaxa.1 <- inTaxa
 
   # Create empty data frames with all metric names in it
-  empty_base <- data.frame(SAMPID=samples$SAMPID,stringsAsFactors=F)
+  empty_base <- data.frame(SAMPID=NA,stringsAsFactors=F)
 
   if('VELOCITY' %in% names(inTaxa.1)){
     inTaxa.1$RHEO <- with(inTaxa.1, ifelse(VELOCITY=='R',1,NA))
@@ -352,7 +352,7 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
     outWide.1$TOTLNIND <- NULL
   }
 
-  outWide.all <- merge(outWide.1, subset(empty_base, select = -SAMPID), all = TRUE)
+  outWide.all <- merge(outWide.1, empty_base, all = TRUE)
   outwide.all <- outWide.all[!is.na(outWide.all$SAMPID),]
   outWide.all <- merge(outWide.all, samples, by = 'SAMPID', all.y = TRUE)
 
