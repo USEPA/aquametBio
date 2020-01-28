@@ -75,6 +75,7 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
                   ,dist="IS_DISTINCT",ct="TOTAL",taxa_id='TAXA_ID'
                   ,ffg='FFG',habit='HABIT',ptv='PTV'){
 
+  inCts <- as.data.frame(inCts)
   # Make sure all taxa match to taxalist and send error if not
   checkTaxa <- inCts[!(inCts$TAXA_ID %in% inTaxa$TAXA_ID),]
   if(nrow(checkTaxa)>0){
@@ -160,10 +161,10 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
   inTaxa.1$NTOL <- with(inTaxa.1, ifelse(PTV < 6, 1, NA))
   inTaxa.1$STOL <- with(inTaxa.1, ifelse(PTV >= 8, 1, NA))
 
-  # Drop non-target taxa if included in taxalist
-  if(length(grep('NON_TARGET',names(inTaxa.1)))>0) {
-    inTaxa.1 <- subset(inTaxa.1,is.na(NON_TARGET)|NON_TARGET=='')
-  }
+  # # Drop non-target taxa if included in taxalist
+  # if(length(grep('NON_TARGET',names(inTaxa.1)))>0) {
+  #   inTaxa.1 <- subset(inTaxa.1,is.na(NON_TARGET)|NON_TARGET=='')
+  # }
 
   params<-c('EPT_','EPHE','CHIR','NOIN','SCRP','SHRD','BURR','CLNG','TOLR','INTL','NTOL','STOL')
 

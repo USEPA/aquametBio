@@ -117,6 +117,8 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
                                  ,reprod='REPROD', family='FAMILY', genus='GENUS'
                                  ,comname='NAME'){
 
+  indata <- as.data.frame(indata)
+
   if(is.null(inTaxa)) {
     inTaxa <- fishTaxa
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")

@@ -68,6 +68,7 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
                   ,dist="IS_DISTINCT",ct="TOTAL",taxa_id='TAXA_ID'
                   ,ffg='FFG',habit='HABIT',ptv='PTV'){
 
+  inCts <- as.data.frame(inCts)
     # Run quick check to make sure all taxa in counts are in the taxalist
   # Make sure all taxa match to taxalist and send error if not
   checkTaxa <- inCts[!(inCts$TAXA_ID %in% inTaxa$TAXA_ID),]
