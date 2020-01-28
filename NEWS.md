@@ -1,3 +1,7 @@
+# aquametBio 2.0.1
+
+* 1/28/2020 Corrected some issues with updated functions.
+
 # aquametBio 2.0
 
 * 12/12/2019 Updated all code to remove functions from plyr, dplyr, reshape2/data.table to simplify 

@@ -161,8 +161,11 @@ test_that("NRSA Benthic MMI scores correct",
   expect_true(nrow(compOut)==73)
   compOut.cond <- subset(compOut, PARAMETER=='BENT_COND')
   expect_equal(compOut.cond$RESULT.x,compOut.cond$RESULT.y)
-  compOut.res <- subset(compOut,PARAMETER!='BENT_COND') %>%
-    plyr::mutate(RESULT.x=as.numeric(RESULT.x),RESULT.y=as.numeric(RESULT.y))
+  compOut.res <- subset(compOut,PARAMETER!='BENT_COND')
+  compOut.res$RESULT.x <- as.numeric(compOut.res$RESULT.x)
+  compOut.res$RESULT.y <- as.numeric(compOut.res$RESULT.y)
+  # compOut.res <- subset(compOut,PARAMETER!='BENT_COND') %>%
+  #   plyr::mutate(RESULT.x=as.numeric(RESULT.x),RESULT.y=as.numeric(RESULT.y))
   expect_equal(compOut.res$RESULT.x,compOut.res$RESULT.y,tolerance=0.01)
 
 })
