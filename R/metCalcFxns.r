@@ -15,11 +15,14 @@
 #   03/05/14 tmk: Removed call to the require() function.
 ###############################################################################
 
-
-# This function calculates % dominant organisms metric
-# df <-- input data frame, containing UID as variable identifying unique samples
-# topN <-- number specifying the top number of species to include in calculation
-
+#' @export
+#' @keywords internal
+#' @title Dominance metric calculation function
+#' @description This function calculates % dominant organisms metric
+#' @param df Input data frame, containing SAMPID as variable identifying unique samples
+#' @param topN Number specifying the top number of species to include in calculation
+#' @return A data frame with SAMPID and the metric containing the % individuals in the
+#' dominant (topN) taxa
 Dominance<-function(df, topN=1){
  rr <- subset(df,IS_DISTINCT==1)
  totals <- aggregate(list(TOTSUM = rr$TOTAL), by = rr[c('SAMPID')], FUN = sum )
@@ -42,6 +45,14 @@ Dominance<-function(df, topN=1){
 	return(uu)
 }
 
+#' @export
+#' @keywords internal
+#' @title Shannon Diversity function
+#' @description This function calculates the Shannon Diversity metric as used in NARS
+#' @param indata Input data frame, containing SAMPID as variable identifying unique samples,
+#' IS_DISTINCT numeric variable indicating taxonomic distinctness as 0 or 1,
+# 		and TOTAL as the count variable
+#' @return A data frame with SAMPID and the metric HPRIME
 
 # Function calculates Shannon Diversity metric
 # indata <-- data frame containing unique sample identifier (UID), IS_DISTINCT numeric variable indicating taxonomic distinctness as 0 or 1,
@@ -59,6 +70,16 @@ ShanDiversity <- function(indata){
 	return(tt)
 }
 
+
+#' @export
+#' @keywords internal
+#' @title Weight tolerance value function
+#' @description This function calculates the the WTD_TV metric as used in NARS benthic data
+#' @param indata Input data frame, containing SAMPID as variable identifying unique samples, TOTAL,
+#' and TAXA_ID
+#' @param taxalist A taxalist with TAXA_ID and tolerance values (TVs)
+#' as RESULT and PARAMETER as either PTV or TOL_VAL
+#' @return A data frame with SAMPID and the metric WTD_TV
 
 # Function to calculate weighted tolerance value index (e.g., HBI) as the sum of the proportion of a taxon multiplied by the tolerance value
 #		for that taxon. All taxa included in proportion calculations, not just those with PTVs.
@@ -78,7 +99,16 @@ tolindex<-function(indata, taxalist){
 	return(outTV)
 }
 
-
+#' @export
+#' @keywords internal
+#' @title Weight tolerance value function for fish
+#' @description This function calculates the fish WTD_TV metric as used in NARS.
+#' Only taxa with TVs are included in the proportion calculations.
+#' @param indata Input data frame, containing SAMPID as variable identifying
+#' unique samples, TOTAL, and TAXA_ID
+#' @param taxalist A taxalist with TAXA_ID and tolerance values (TVs)
+#' as RESULT and PARAMETER as either PTV or TOL_VAL
+#' @return A data frame with SAMPID and the metric WTD_TV
 # Original version: Only taxa with TVs are included in the proportion
 # calculations.
 tolindexFish<-function(indata, taxalist){

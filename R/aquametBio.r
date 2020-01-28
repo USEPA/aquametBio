@@ -7,8 +7,6 @@
 #' @importFrom gtools smartbind
 #' @importFrom stats aggregate approx reshape formula
 #' @importFrom utils head
-#' @keywords package
-#' @title aquametBio
 #'
 #' @keywords package
 #' @title aquametBio
