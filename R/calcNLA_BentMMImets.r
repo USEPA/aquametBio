@@ -77,6 +77,7 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
   }
 
   inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" | NON_TARGET=='N')
+  inTaxa[,c(ptv,taxa_id)] <- lapply(inTaxa[,c(ptv,taxa_id)],as.numeric)
 
   ctVars <- c(sampID,dist,ct,taxa_id,ecoreg)
   if(any(ctVars %nin% names(inCts))){
