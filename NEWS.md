@@ -1,3 +1,7 @@
+# aquametBio 2.0.2
+
+* 1/29/2020 Updated taxalists included in package.
+
 # aquametBio 2.0.1
 
 * 1/28/2020 Corrected some issues with updated functions.
