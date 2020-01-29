@@ -76,7 +76,10 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
     return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
 
-  inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" | NON_TARGET=='N')
+  if('NON_TARGET' %in% names(inTaxa)){
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  }
+  # inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" | NON_TARGET=='N')
   inTaxa[,c(ptv,taxa_id)] <- lapply(inTaxa[,c(ptv,taxa_id)],as.numeric)
 
   ctVars <- c(sampID,dist,ct,taxa_id,ecoreg)

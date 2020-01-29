@@ -82,7 +82,10 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
     return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
 
-  inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+  if('NON_TARGET' %in% names(inTaxa)){
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  }
+  # inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
   inTaxa[,c(ptv,taxa_id)] <- lapply(inTaxa[,c(ptv,taxa_id)],as.numeric)
 
   ctVars <- c(sampID,dist,ct,taxa_id,ecoreg)
@@ -173,7 +176,7 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
                       varying = params, timevar = 'TRAIT', v.names = 'value',
                       times = params)
 
-  taxalong <- taxalong[!is.na(taxalong$value),]
+  taxalong <- taxalong[!is.na(taxalong$value) & taxalong$value!='',]
 
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
 

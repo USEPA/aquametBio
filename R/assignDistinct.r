@@ -61,8 +61,8 @@ assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.
   # Set all names to uppercase
   for(f in 1:length(taxlevels)){
     cc.1[,taxlevels[f]] <- toupper(cc.1[,taxlevels[f]])
-
   }
+  cc.1[,taxlevels] <- lapply(cc.1[,taxlevels], function(x){ifelse(is.na(x),'',x)})
 
   # First count number of taxa at each taxonomic level in taxlevels argument
   for(i in 1:length(taxlevels)){
