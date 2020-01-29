@@ -3,6 +3,7 @@
 \docType{package}
 \name{aquametBio}
 \alias{aquametBio}
+\alias{aquametBio-package}
 \title{aquametBio}
 \description{
 aquametBio: Calculate fish and benthic macroinvertebrate metrics used in NRSA and NLA

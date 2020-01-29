@@ -4,14 +4,8 @@
 \alias{calcFishNativeMets}
 \title{Calculate all native status metrics}
 \usage{
-calcFishNativeMets(
-  indata,
-  sampID = "UID",
-  dist = "IS_DISTINCT",
-  ct = "TOTAL",
-  taxa_id = "TAXA_ID",
-  nonnat = "NONNATIVE"
-)
+calcFishNativeMets(indata, sampID = "UID", dist = "IS_DISTINCT",
+  ct = "TOTAL", taxa_id = "TAXA_ID", nonnat = "NONNATIVE")
 }
 \arguments{
 \item{indata}{Input data frame containing variables as identified

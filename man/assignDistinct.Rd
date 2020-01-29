@@ -4,13 +4,8 @@
 \alias{assignDistinct}
 \title{Assign distinctness to each taxon}
 \usage{
-assignDistinct(
-  cc,
-  sampleID = "UID",
-  taxlevels,
-  final.name = NULL,
-  special.taxa = NULL
-)
+assignDistinct(cc, sampleID = "UID", taxlevels, final.name = NULL,
+  special.taxa = NULL)
 }
 \arguments{
 \item{cc}{Data frame containing all taxonomic fields specified

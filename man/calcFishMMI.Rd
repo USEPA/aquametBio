@@ -4,7 +4,8 @@
 \alias{calcFishMMI}
 \title{Calculate NRSA Fish MMI}
 \usage{
-calcFishMMI(inMets, sampID = "UID", ecoreg = "ECOREG", lwsarea = "LWSAREA")
+calcFishMMI(inMets, sampID = "UID", ecoreg = "ECOREG",
+  lwsarea = "LWSAREA")
 }
 \arguments{
 \item{inMets}{A data frame containing, at minimum, the variables

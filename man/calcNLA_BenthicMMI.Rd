@@ -4,12 +4,8 @@
 \alias{calcNLA_BenthicMMI}
 \title{Calculate the NLA benthic macroinvertebrate MMI}
 \usage{
-calcNLA_BenthicMMI(
-  inMets,
-  sampID = "UID",
-  ecoreg = "ECOREG",
-  totlnind = "TOTLNIND"
-)
+calcNLA_BenthicMMI(inMets, sampID = "UID", ecoreg = "ECOREG",
+  totlnind = "TOTLNIND")
 }
 \arguments{
 \item{inMets}{A data frame containing, at minimum, the variables

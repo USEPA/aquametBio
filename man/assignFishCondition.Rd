@@ -4,14 +4,8 @@
 \alias{assignFishCondition}
 \title{Assign fish assemblage condition}
 \usage{
-assignFishCondition(
-  inMMI,
-  sampID = "UID",
-  ecoreg = "ECOREG",
-  mmi = "MMI_FISH",
-  wsarea = "WSAREA",
-  totlnind = "TOTLNIND"
-)
+assignFishCondition(inMMI, sampID = "UID", ecoreg = "ECOREG",
+  mmi = "MMI_FISH", wsarea = "WSAREA", totlnind = "TOTLNIND")
 }
 \arguments{
 \item{inMMI}{Input data frame which must contain the

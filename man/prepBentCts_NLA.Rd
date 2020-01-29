@@ -5,13 +5,8 @@
 \title{Aggregate benthic macroinvertebrate data for use
 with NLA benthic metrics and MMIs}
 \usage{
-prepBentCts_NLA(
-  inCts,
-  inTaxa = bentTaxa_nla,
-  sampID = "UID",
-  ct = "TOTAL",
-  taxa_id = "TAXA_ID"
-)
+prepBentCts_NLA(inCts, inTaxa = bentTaxa_nla, sampID = "UID",
+  ct = "TOTAL", taxa_id = "TAXA_ID")
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables
