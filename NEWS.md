@@ -15,9 +15,13 @@ keeping up with changes to packages.
 
 * 11/27/2019 Updated to use data.table package instead of reshape2, which has been deprecated.
 
+# aquametBio 1.1 
+
+* 8/14/2018 Updated assignDistinct function to work more broadly across
+        other datasets. 
+
 # aquametBio 1.0
 
 * Added a `NEWS.md` file to track changes to the package.
-
 
 
