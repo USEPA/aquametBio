@@ -73,8 +73,11 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   # Combine all values in sampID into one sampID in df
   for(i in 1:length(sampID)){
-    if(i==1) indata$SAMPID <- indata[,sampID[i]]
-    else indata$SAMPID <- paste(indata$SAMPID,indata[,sampID[i]],sep='.')
+    if(i==1) {
+      indata$SAMPID <- indata[, sampID[i]]
+    }else{
+      indata$SAMPID <- paste(indata$SAMPID,indata[,sampID[i]],sep='.')
+    }
   }
   # Keep data frame with crosswalk info between sampID and SAMPID
   samples <- unique(subset(indata,select=c(sampID,'SAMPID')))
@@ -114,7 +117,8 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   ## Now sum by TAXA_ID for ANOM_CT and for TOTAL for each sample
   # Two approaches depending on whether or not NON_NATIVE occurs in the counts data frame
   if('NONNATIVE' %in% names(indata.1)){
-    maxDist <- aggregate(x = list(IS_DISTINCT = indata.1$IS_DISTINCT), by = indata.1[c('SAMPID','TAXA_ID','NONNATIVE')],
+    maxDist <- aggregate(x = list(IS_DISTINCT = indata.1$IS_DISTINCT),
+                         by = indata.1[,c('SAMPID','TAXA_ID','NONNATIVE')],
                          FUN = function(x){max(as.integer(x))})
     sumTot <- aggregate(x = list(TOTAL = indata.1$TOTAL), by = indata.1[c('SAMPID','TAXA_ID','NONNATIVE')], FUN = sum)
 
