@@ -153,9 +153,9 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
 
   ## Set condition class for each sample, which is based on ECO_BIO region
   # First create a table of thresholds by ECO_BIO
-  condTholds <- data.frame(ECO_BIO=c('CPL','EHIGH','PLAINS','UMW','WMTNS')
-                           ,gf=c(53.0,50.3,41.5,57.6,54.8)
-                           ,fp=c(41.0,38.3,29.5,45.6,42.8),stringsAsFactors=FALSE)
+  condTholds <- data.frame(ECO_BIO=c('CPL','EHIGH','PLAINS','UMW','WMTNS'),
+                           gf=c(51.8, 44.5, 39.5, 51.4, 47.6),
+                           fp=c(40.4, 31.4, 26.6, 37.2, 32.6), stringsAsFactors=F)
 
   ## Merge MMI scores with thresholds by ECO_BIO region
   cond.mmi <- merge(mmi.scores,condTholds,by='ECO_BIO')

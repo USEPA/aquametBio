@@ -1,3 +1,7 @@
+# aquametBio 2.1
+
+* 12/14/2021 Updated MMI condition thresholds for NLA Benthic MMI.
+
 # aquametBio 2.0.2
 
 * 1/29/2020 Updated taxalists included in package.
