@@ -113,14 +113,14 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
   # Need to account for cases where no missing MMI_FISH
   cond.mmi.1 <- merge(inMMI.1, cond.tholds, by.x=ecoreg, by.y='ECO9')
   cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1,
-                                   ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good'
-                                       , ifelse(MMI_FISH < fp, 'Poor'
-                                           , ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA))))
+                                   ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good',
+                                       ifelse(MMI_FISH < fp, 'Poor',
+                                         ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA))))
 
-  cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1, ifelse(!is.na(FISH_MMI_COND), FISH_MMI_COND
-                                                  , ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), 'Not Assessed'
-                                                      , ifelse(is.na(MMI_FISH) & TOTLNIND==0 & WSAREA > 2, 'Poor'
-                                                         , 'Not Assessed'))))
+  cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1, ifelse(!is.na(FISH_MMI_COND) & MMI_FISH!=0, FISH_MMI_COND,
+                                                  ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), 'Not Assessed',
+                                                      ifelse((is.na(MMI_FISH)|MMI_FISH==0) & TOTLNIND==0 & WSAREA > 2, 'Poor',
+                                                         'Not Assessed'))))
   cond.mmi.1 <- subset(cond.mmi.1, select=c(-gf, -fp))
 
 
