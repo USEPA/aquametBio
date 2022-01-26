@@ -4,7 +4,8 @@
 \name{bentTaxa_nla}
 \alias{bentTaxa_nla}
 \title{NLA Benthic Macroinvertebrate Taxalist}
-\format{A data frame with 711 observations on the following 14 variables:
+\format{
+A data frame with 711 observations on the following 14 variables:
   \describe{
   \item{PUBLICATION_DATE}{date the dataset was published.}
   \item{TAXA_ID}{the taxa ID.}
@@ -23,7 +24,8 @@
   \item{HABIT}{Behavioral habit trait (AT=attached,BU=burrower,CB=climber,
   CN=clinger,DV=diver,PK=planktonic,SK=skater,SP=sprawler,SW=swimmer).}
   \item{PTV}{Pollution Tolerant Value.}
-}}
+}
+}
 \usage{
 bentTaxa_nla
 }

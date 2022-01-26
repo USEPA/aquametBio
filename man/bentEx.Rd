@@ -4,7 +4,8 @@
 \name{bentEx}
 \alias{bentEx}
 \title{Example Benthic Invertebrate Counts}
-\format{A data frame with 92 rows and the following 6 columns:
+\format{
+A data frame with 92 rows and the following 6 columns:
   \describe{
   \item{UID}{unique site visit ID.}
   \item{SAMPLE_TYPE}{sampling method used to collect sample,
@@ -14,7 +15,8 @@
   \item{TAXA_ID}{the taxa ID number corresponding to bentTaxa list.}
   \item{TOTAL}{number of individuals counted in sample for a given taxon.}
   \item{IS_DISTINCT}{indicator variable for distinctness in sample (0/1).}
-  }}
+  }
+}
 \usage{
 bentEx
 }
