@@ -64,6 +64,10 @@ calcFishTrophicMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DIST
                             , ct='TOTAL', taxa_id='TAXA_ID', habitat='HABITAT'
                             , trophic='TROPHIC', nonnat='NONNATIVE'){
 
+  # Convert data into data frames just in case
+  indata <- as.data.frame(indata)
+  inTaxa <- as.data.frame(inTaxa)
+
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(indata))){
     msgTraits <- which(ctVars %nin% names(indata))

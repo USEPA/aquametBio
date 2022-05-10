@@ -31,6 +31,9 @@
 calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
                               , ct='TOTAL', taxa_id='TAXA_ID', nonnat='NONNATIVE'){
 
+  # Convert data into data frames just in case
+  indata <- as.data.frame(indata)
+
   ctVars <- c(sampID,dist,ct,taxa_id,nonnat)
   if(any(ctVars %nin% names(indata))){
     msgTraits <- which(ctVars %nin% names(indata))

@@ -23,6 +23,8 @@
 #'
 calcFishAnomMets <- function(indata, sampID='UID',
                              ct='TOTAL', anomct='ANOM_CT'){
+  # Convert data into data frames just in case
+  indata <- as.data.frame(indata)
 
   ctVars <- c(sampID,ct,anomct)
   if(any(ctVars %nin% names(indata))){

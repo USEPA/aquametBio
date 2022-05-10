@@ -59,6 +59,9 @@
 #' @keywords survey
 calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'){
 
+  # Convert data into data frames just in case
+  inMets <- as.data.frame(inMets)
+
   necTraits <- c(sampID,ecoreg,lwsarea)
   if(any(necTraits %nin% names(inMets))){
     msgTraits <- which(necTraits %nin% names(inMets))

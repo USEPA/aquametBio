@@ -56,6 +56,10 @@
 calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ct="TOTAL",taxa_id='TAXA_ID',ffg='FFG',habit='HABIT',ptv='PTV'){
 
+  # Convert data into data frames just in case
+  indf <- as.data.frame(indf)
+  inTaxa <- as.data.frame(inTaxa)
+
   # Make sure all taxa match to taxalist and send error if not
   checkTaxa <- indf[indf$TAXA_ID %in% setdiff(indf$TAXA_ID, inTaxa$TAXA_ID),]
   if(nrow(checkTaxa)>0){

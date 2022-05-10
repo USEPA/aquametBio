@@ -69,6 +69,9 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
                             , ct='TOTAL', taxa_id='TAXA_ID', vel='VELOCITY'
                             , migr='MIGRATORY', reprod='REPROD', temp='TEMP'
                             , nonnat='NONNATIVE'){
+  # Convert data into data frames just in case
+  indata <- as.data.frame(indata)
+  inTaxa <- as.data.frame(inTaxa)
 
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(indata))){

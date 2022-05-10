@@ -43,6 +43,9 @@
 #' @keywords survey
 calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='TOTLNIND'){
 
+  # Convert data into data frames just in case
+  inMets <- as.data.frame(inMets)
+
   necTraits <- c(sampID,ecoreg,totlnind)
   if(any(necTraits %nin% names(inMets))){
     msgTraits <- which(necTraits %nin% names(inMets))

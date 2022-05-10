@@ -75,6 +75,7 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nrsa, sampID="UID",ecoreg
                   ,dist="IS_DISTINCT",ct="TOTAL",taxa_id='TAXA_ID'
                   ,ffg='FFG',habit='HABIT',ptv='PTV'){
 
+  inTaxa <- as.data.frame(inTaxa)
   inCts <- as.data.frame(inCts)
   # Make sure all taxa match to taxalist and send error if not
   checkTaxa <- inCts[!(inCts$TAXA_ID %in% inTaxa$TAXA_ID),]

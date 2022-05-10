@@ -142,7 +142,7 @@ test_that("NRSA Benthic MMI scores correct",
   testOut.long <- reshape(testOut, idvar = c('SITE_ID'), direction = 'long',
                           varying = varLong,timevar = 'PARAMETER',
                           v.names = 'RESULT', times = varLong)
-  testOut.long$PARAMETER <- with(testOut.long, ifelse(PARAMETER=='MMI_BENT','MMI_BENT_NLA12',ifelse(PARAMETER=='BENT_MMI_COND','BENT_COND',PARAMETER)))
+  # testOut.long$PARAMETER <- with(testOut.long, ifelse(PARAMETER=='MMI_BENT','MMI_BENT_NLA12',ifelse(PARAMETER=='BENT_MMI_COND','BENT_COND',PARAMETER)))
   testOut.long <- subset(testOut.long, !is.na(RESULT))
   # testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID','ECO_BIO')
   #                                ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
@@ -159,9 +159,9 @@ test_that("NRSA Benthic MMI scores correct",
   #   dplyr::filter(PARAMETER %nin% c('ECO_BIO','TOTLNIND'))
   compOut <- merge(bentMMI_NLA_test.long,testOut.long,by=c('SITE_ID','PARAMETER'))
   expect_true(nrow(compOut)==73)
-  compOut.cond <- subset(compOut, PARAMETER=='BENT_COND')
+  compOut.cond <- subset(compOut, PARAMETER=='BENT_MMI_COND')
   expect_equal(compOut.cond$RESULT.x,compOut.cond$RESULT.y)
-  compOut.res <- subset(compOut,PARAMETER!='BENT_COND')
+  compOut.res <- subset(compOut,PARAMETER!='BENT_MMI_COND')
   compOut.res$RESULT.x <- as.numeric(compOut.res$RESULT.x)
   compOut.res$RESULT.y <- as.numeric(compOut.res$RESULT.y)
   # compOut.res <- subset(compOut,PARAMETER!='BENT_COND') %>%

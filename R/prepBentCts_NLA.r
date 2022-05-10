@@ -31,6 +31,10 @@
 prepBentCts_NLA <- function(inCts,inTaxa=bentTaxa_nla,sampID='UID',ct='TOTAL'
                             ,taxa_id='TAXA_ID'){
 
+  # Convert data into data frames just in case
+  inCts <- as.data.frame(inCts)
+  inTaxa <- as.data.frame(inTaxa)
+
   ctVars <- c(sampID,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
     msgTraits <- which(ctVars %nin% names(inCts))

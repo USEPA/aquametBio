@@ -118,6 +118,7 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
                                  ,comname='NAME'){
 
   indata <- as.data.frame(indata)
+  inTaxa <- as.data.frame(inTaxa)
 
   if(is.null(inTaxa)) {
     inTaxa <- fishTaxa

@@ -99,9 +99,11 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                             , trophic='TROPHIC', migr='MIGRATORY', nonnat='NONNATIVE'
                             , reprod='REPROD', temp='TEMP', family='FAMILY', genus='GENUS'
                             , comname='NAME'){
+# Convert incoming data to data frames just in case they are tibbles or data.tables
+  indf <- as.data.frame(indf)
 
   if(is.null(inTaxa)) {
-    inTaxa <- fishTaxa
+    inTaxa <- as.data.frame(fishTaxa)
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
   }
 

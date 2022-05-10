@@ -44,6 +44,10 @@
 calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                              ct="TOTAL",taxa_id='TAXA_ID'){
 
+  # Convert data into data frames just in case
+  inCts <- as.data.frame(inCts)
+  inTaxa <- as.data.frame(inTaxa)
+
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
     msgTraits <- which(ctVars %nin% names(inCts))
@@ -268,6 +272,11 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
 calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ct="TOTAL",taxa_id='TAXA_ID',ffg='FFG'){
+
+  # Convert data into data frames just in case
+  inCts <- as.data.frame(inCts)
+  inTaxa <- as.data.frame(inTaxa)
+
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
     msgTraits <- which(ctVars %nin% names(inCts))
@@ -456,6 +465,10 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id='TAXA_ID',habit='HABIT'){
 
+  # Convert data into data frames just in case
+  inCts <- as.data.frame(inCts)
+  inTaxa <- as.data.frame(inTaxa)
+
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
     msgTraits <- which(ctVars %nin% names(inCts))
@@ -632,6 +645,10 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
 calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id='TAXA_ID',ptv='PTV'){
+  # Convert data into data frames just in case
+  inCts <- as.data.frame(inCts)
+  inTaxa <- as.data.frame(inTaxa)
+
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
     msgTraits <- which(ctVars %nin% names(inCts))
@@ -827,6 +844,9 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
 
 calcBentDominMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id="TAXA_ID"){
+  # Convert data into data frames just in case
+  inCts <- as.data.frame(inCts)
+  inTaxa <- as.data.frame(inTaxa)
 
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
