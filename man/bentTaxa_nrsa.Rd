@@ -4,7 +4,8 @@
 \name{bentTaxa_nrsa}
 \alias{bentTaxa_nrsa}
 \title{NRSA Benthic Macroinvertebrate Taxalist}
-\format{A data frame with 1334 observations on the following 21 variables:
+\format{
+A data frame with 1334 observations on the following 21 variables:
   \describe{
   \item{PUBLICATION_DATE}{date the dataset was published.}
   \item{TAXA_ID}{the taxa ID.}
@@ -34,7 +35,8 @@
   \item{PTV_WSA}{Pollution Tolerance Values used in WSA and NRSA calculations.}
   \item{VOLTINISM}{Number of generations per year}
   \item{ITISTSN}{ITIS taxonomic serial number}
-}}
+}
+}
 \usage{
 bentTaxa_nrsa
 }

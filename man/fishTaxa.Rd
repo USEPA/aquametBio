@@ -4,7 +4,8 @@
 \name{fishTaxa}
 \alias{fishTaxa}
 \title{Fish Taxa}
-\format{A data frame with 851 rows and the following 16 columns:
+\format{
+A data frame with 851 rows and the following 16 columns:
   \describe{
   \item{PUBLICATION_DATE}{date the dataset was published.}
   \item{TAXA_ID}{the taxa ID.}
@@ -25,7 +26,8 @@
   \item{TROPHIC_NRSA}{Trophic guild as used in NRSA (C=carnivore,I=invertivore,
   H=herbivore,O=omnivore).}
   \item{VEL_NRSA}{Velocity preference as used in NRSA (R=rheophil,P=pool,O=other).}
-  }}
+  }
+}
 \usage{
 fishTaxa
 }

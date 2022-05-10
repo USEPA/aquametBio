@@ -4,7 +4,7 @@
 #' taxalist, including taxonomic and autecology information.
 #'
 #' @name bentTaxa_nrsa
-#' @format A data frame with 1334 observations on the following 21 variables:
+#' @format A data frame with 1373 observations on the following 19 variables:
 #'   \describe{
 #'   \item{PUBLICATION_DATE}{date the dataset was published.}
 #'   \item{TAXA_ID}{the taxa ID.}
@@ -14,8 +14,6 @@
 #'   \item{PHYLUM}{taxonomic phylum name.}
 #'   \item{CLASS}{taxonomic class name.}
 #'   \item{ORDER}{taxonomic order name.}
-#'   \item{OTU_NRSA}{Operational taxonomic unit as used in NRSA O/E modeling.}
-#'   \item{OTU_NRSA_CODE}{OTU code as used in NRSA analyses.}
 #'   \item{FAMILY}{taxonomic family name.}
 #'   \item{SUBFAMILY}{taxonomic subfamily name.}
 #'   \item{TRIBE}{taxonomic tribe name.}

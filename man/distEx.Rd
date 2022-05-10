@@ -4,7 +4,8 @@
 \name{distEx}
 \alias{distEx}
 \title{Example Distinctness Input Benthic Dataset}
-\format{A data frame with 92 observations on the following 11 variables:
+\format{
+A data frame with 92 observations on the following 11 variables:
   \describe{
   \item{TAXA_ID}{the taxa ID number corresponding to fishTaxa list.}
   \item{UID}{unique site visit ID.}
@@ -19,7 +20,8 @@
   \item{GENUS}{taxonomic genus name.}
   \item{SAMPID}{variable to uniquely identify samples, here the
   concatenation of UID and SAMPLE_TYPE}
-  }}
+  }
+}
 \usage{
 distEx
 }

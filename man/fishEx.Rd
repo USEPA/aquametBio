@@ -4,7 +4,8 @@
 \name{fishEx}
 \alias{fishEx}
 \title{Example Fish Count Dataset}
-\format{A data frame with 22 observations on the following 6 variables.
+\format{
+A data frame with 22 observations on the following 6 variables.
   \describe{
   \item{UID}{unique site visit ID.}
   \item{TAXA_ID}{the taxa ID number corresponding to fishTaxa list.}
@@ -12,7 +13,8 @@
   \item{ANOM_CT}{number of anomalies observed for a given taxon.}
   \item{IS_DISTINCT}{indicator variable for distinctness in sample (0/1).}
   \item{NON_NATIVE}{Indicator variable of site-specific non-native status (Y/N).}
-  }}
+  }
+}
 \usage{
 fishEx
 }
