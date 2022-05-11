@@ -100,7 +100,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
 
   # Convert data into data frames just in case
   indata <- as.data.frame(indata)
-  inTaxa <- as.data.frame(inTaxa)
 
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(indata))){
@@ -124,6 +123,8 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   # If inTaxa is not specified, the default is the included fishTaxa dataset
   if(is.null(inTaxa)) {
     inTaxa <- fishTaxa
+  }else{
+    inTaxa <- as.data.frame(inTaxa)
   }
 
   # Taxonomy and traits checks

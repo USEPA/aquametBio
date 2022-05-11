@@ -148,7 +148,7 @@ test_that("NRSA Benthic MMI scores correct",
   #                                ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
   #   plyr::mutate(PARAMETER=as.character(PARAMETER)) %>%
   #   plyr::mutate(PARAMETER=plyr::revalue(PARAMETER,c('MMI_BENT'='MMI_BENT_NLA12','BENT_MMI_COND'='BENT_COND')))
-  varLong.1 <- names(bentMMI_NLA_test)[names(bentMMI_NLA_test) %nin% c('SITE_ID','ECO_BIO')]
+  varLong.1 <- names(bentMMI_NLA_test)[names(bentMMI_NLA_test) %nin% c('SITE_ID','ECO_BIO','TOTLNIND')]
   bentMMI_NLA_test.long <- reshape(bentMMI_NLA_test, idvar = 'SITE_ID', direction = 'long',
                                    varying = varLong.1, times = varLong.1, timevar = 'PARAMETER',
                                    v.names = 'RESULT')
@@ -157,7 +157,7 @@ test_that("NRSA Benthic MMI scores correct",
   #                                     ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
   #   plyr::mutate(PARAMETER=as.character(PARAMETER)) %>%
   #   dplyr::filter(PARAMETER %nin% c('ECO_BIO','TOTLNIND'))
-  compOut <- merge(bentMMI_NLA_test.long,testOut.long,by=c('SITE_ID','PARAMETER'))
+  compOut <- merge(bentMMI_NLA_test.long, testOut.long, by=c('SITE_ID','PARAMETER'))
   expect_true(nrow(compOut)==73)
   compOut.cond <- subset(compOut, PARAMETER=='BENT_MMI_COND')
   expect_equal(compOut.cond$RESULT.x,compOut.cond$RESULT.y)

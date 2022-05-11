@@ -11,7 +11,7 @@ Description: This package calculates fish and macroinvertebrate metrics used
     taxa lists as used in NRSA 2013-14 for fish and macroinvertebrates are 
     included in the package.
 Depends:
-    R (>= 3.4)
+    R (>= 3.5)
 Imports:
     Hmisc,
     gtools,
