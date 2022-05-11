@@ -1,3 +1,7 @@
+# aquametBio 2.1.2
+
+* 5/11/2022 Updated test dataset for NLA benthic MMI testing.
+
 # aquametBio 2.1
 
 * 12/14/2021 Updated MMI condition thresholds for NLA Benthic MMI.
