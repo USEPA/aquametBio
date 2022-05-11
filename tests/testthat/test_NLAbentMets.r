@@ -142,31 +142,26 @@ test_that("NRSA Benthic MMI scores correct",
   testOut.long <- reshape(testOut, idvar = c('SITE_ID'), direction = 'long',
                           varying = varLong,timevar = 'PARAMETER',
                           v.names = 'RESULT', times = varLong)
-  # testOut.long$PARAMETER <- with(testOut.long, ifelse(PARAMETER=='MMI_BENT','MMI_BENT_NLA12',ifelse(PARAMETER=='BENT_MMI_COND','BENT_COND',PARAMETER)))
   testOut.long <- subset(testOut.long, !is.na(RESULT))
-  # testOut.long <- data.table::melt(testOut,id.vars=c('SITE_ID','ECO_BIO')
-  #                                ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
-  #   plyr::mutate(PARAMETER=as.character(PARAMETER)) %>%
-  #   plyr::mutate(PARAMETER=plyr::revalue(PARAMETER,c('MMI_BENT'='MMI_BENT_NLA12','BENT_MMI_COND'='BENT_COND')))
+
   varLong.1 <- names(bentMMI_NLA_test)[names(bentMMI_NLA_test) %nin% c('SITE_ID','ECO_BIO','TOTLNIND')]
   bentMMI_NLA_test.long <- reshape(bentMMI_NLA_test, idvar = 'SITE_ID', direction = 'long',
                                    varying = varLong.1, times = varLong.1, timevar = 'PARAMETER',
                                    v.names = 'RESULT')
   bentMMI_NLA_test.long <- subset(bentMMI_NLA_test.long, !is.na(RESULT))
-  # bentMMI_NLA_test.long <- data.table::melt(bentMMI_NLA_test,id.vars=c('SITE_ID')
-  #                                     ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
-  #   plyr::mutate(PARAMETER=as.character(PARAMETER)) %>%
-  #   dplyr::filter(PARAMETER %nin% c('ECO_BIO','TOTLNIND'))
+  print(unique(bentMMI_NLA_test.long$PARAMETER))
+  print(nrow(bentMMI_NLA_test.long))
+  print(unique(testOut.long$PARAMETER))
+  print(nrow(testOut.long))
   compOut <- merge(bentMMI_NLA_test.long, testOut.long, by=c('SITE_ID','PARAMETER'))
-  expect_true(nrow(compOut)==73)
+  # expect_true(nrow(compOut)==73)
   compOut.cond <- subset(compOut, PARAMETER=='BENT_MMI_COND')
   expect_equal(compOut.cond$RESULT.x,compOut.cond$RESULT.y)
   compOut.res <- subset(compOut,PARAMETER!='BENT_MMI_COND')
   compOut.res$RESULT.x <- as.numeric(compOut.res$RESULT.x)
   compOut.res$RESULT.y <- as.numeric(compOut.res$RESULT.y)
-  # compOut.res <- subset(compOut,PARAMETER!='BENT_COND') %>%
-  #   plyr::mutate(RESULT.x=as.numeric(RESULT.x),RESULT.y=as.numeric(RESULT.y))
   expect_equal(compOut.res$RESULT.x,compOut.res$RESULT.y,tolerance=0.01)
+  expect_equal(nrow(compOut.res), 63)
 
 })
 
