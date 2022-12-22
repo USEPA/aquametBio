@@ -42,7 +42,7 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
   inCts <- as.data.frame(inCts)
 
   necVars <- c(sampID, sampType, rawCt, biofactor, taxa_id,
-               tow_vol, vol_ctd, conc_vol, subsample)
+               tow_vol, vol_ctd, conc_vol)
   if(any(necVars %nin% names(inCts))){
     msgTraits <- which(necVars %nin% names(inCts))
     print(paste("Missing variables in input data frame:",
@@ -59,7 +59,7 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
   inCts$CORR_FACTOR <- (inCts[, conc_vol]/inCts[, vol_ctd])/inCts[, tow_vol]
 
   outCts <- inCts
-  outCts$BIOMASS <- outCts[, rawCt] * outCts[, biofactor]
+  outCts$BIOMASS <- outCts[, rawCt] * outCts[, biofactor] * outCts$CORR_FACTOR
 
 
   if(subsample == FALSE){
@@ -68,12 +68,12 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
     outCts.1 <- aggregate(x = list(COUNT = outCts[, rawCt],
                                  BIOMASS = outCts$BIOMASS,
                                  DENSITY = outCts$DENSITY),
-                        by = outCts[, c(sampID, sampType, taxa_id)],
+                        by = outCts[, c(sampID, sampType, taxa_id, 'CORR_FACTOR')],
                         FUN = sum)
   }else{
     outCts.1 <- aggregate(x = list(COUNT = outCts[, rawCt],
                                    BIOMASS = outCts$BIOMASS),
-                          by = outCts[, c(sampID, sampType, taxa_id)],
+                          by = outCts[, c(sampID, sampType, taxa_id, 'CORR_FACTOR')],
                           FUN = sum)
   }
 

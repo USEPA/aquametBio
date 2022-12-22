@@ -13,14 +13,6 @@
 #' @param inCts A data frame containing, at minimum, the variables
 #' specified in the arguments for sampID, ct, biomass, and taxa_id.
 #' Include density if the dataset includes density.
-#' @param inTaxa a data frame containing taxonomic information,
-#' including variables for PHYLUM, CLASS, SUBCLASS, ORDER, SUBORDER,
-#' FAMILY, GENUS, SPECIES, SUBSPECIES, as well as autecology traits
-#' with names that match those
-#' in the arguments ffg, habit, and ptv. In addition, there
-#' should be a variable with the name in argument \emph{taxa_id} that matches
-#' with all of those in the \emph{inCts} data frame. The default data frame
-#' is zoopTaxa_nla.
 #' @param sampID A character vector containing the names of all
 #' variables in indf that specify a unique sample. If not specified,
 #' the default is \emph{UID}.
@@ -43,21 +35,20 @@
 #' value is \emph{TAXA_ID}.
 #' @return A data frame containing the \emph{sampID} and \emph{sampType}
 #' fields, plus the \emph{taxa_id},
-#' \emph{biomass}, \emph{density}, and \emph{ct} fields,
-#' and IS_DISTINCT. Taxonomy is aggregated to the level
+#' \emph{biomass}, \emph{density}, and \emph{ct} fields.
+#' Taxonomy is aggregated to the level
 #' used for the NLA MMI and distinctness is recalculated on this
 #' aggregated dataset.To obtain a similar output for different
 #' variations on the count, biomass, and density variables.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
-prepZoopCombCts_NLA <- function(inCts, inTaxa=zoopTaxa_nla, sampID='UID',
+prepZoopCombCts_NLA <- function(inCts, sampID='UID',
                             sampType = 'SAMPLE_TYPE',
                             typeFine = 'ZOFN', typeCoarse='ZOCN',
                             ct='COUNT', biomass = 'BIOMASS',
                             density = NULL, taxa_id='TAXA_ID'){
 
   inCts <- as.data.frame(inCts)
-  inTaxa <- as.data.frame(inTaxa)
 
   necVars <- c(sampID, ct, biomass, sampType, taxa_id)
   if(any(necVars %nin% names(inCts))){
