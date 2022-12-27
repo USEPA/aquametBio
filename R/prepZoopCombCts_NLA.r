@@ -77,18 +77,23 @@ prepZoopCombCts_NLA <- function(inCts, sampID='UID',
   if(!is.null(density)){
     inCts[, c(biomass, density, ct)] <- lapply(inCts[, c(biomass, density, ct)], as.numeric)
 
-    outCts <- aggregate(x = list(COUNT = inCts$COUNT,
-                                 BIOMASS = inCts$BIOMASS,
-                                 DENSITY = inCts$DENSITY),
+    outCts <- aggregate(x = list(COUNT = inCts[, ct],
+                                 BIOMASS = inCts[, biomass],
+                                 DENSITY = inCts[, density]),
                         by = inCts[, c(sampID, taxa_id)],
                         FUN = sum)
+    names(outCts)[names(outCts)=='COUNT'] <- ct
+    names(outCts)[names(outCts)=='BIOMASS'] <- biomass
+    names(outCts)[names(outCts)=='DENSITY'] <- density
   }else{
     inCts[, c(biomass, ct)] <- lapply(inCts[, c(biomass, ct)], as.numeric)
 
-    outCts <- aggregate(x = list(COUNT = inCts$COUNT,
-                                 BIOMASS = inCts$BIOMASS),
+    outCts <- aggregate(x = list(COUNT = inCts[, ct],
+                                 BIOMASS = inCts[, biomass]),
                         by = inCts[, c(sampID, taxa_id)],
                         FUN = sum)
+    names(outCts)[names(outCts)=='COUNT'] <- ct
+    names(outCts)[names(outCts)=='BIOMASS'] <- biomass
   }
 
   outCts[, sampType] <- 'ZONW'

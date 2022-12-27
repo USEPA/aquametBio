@@ -100,8 +100,23 @@ zonwCts.300 <- prepZoopCombCts_NLA(zpCts.in.300, sampID = 'UID',
                                    typeCoarse = 'ZOCN', ct = 'COUNT_300',
                                    biomass = 'BIOMASS_300', taxa_id = 'TAXA_ID')
 
-
-
-
+# Now determine distinctness for each separate set of counts by UID, sample type
+# Combine ZONW, ZOCN, and ZOFN together for each sample size
 taxa <- dbGet('ALL_THE_NLA', 'tblTAXA', where = "ASSEMBLAGE_NAME='ZOOPLANKTON'") %>%
   pivot_wider(id_cols = c('TAXA_ID'), names_from='PARAMETER', values_from='RESULT')
+
+zpCts.all <- rbind(zonwCts, zpCts) %>%
+  filter(COUNT>0) %>%
+  merge(taxa, by = c('TAXA_ID'))
+
+zpCts.all.dist <- assignDistinct(zpCts.all, sampleID = c('UID', 'SAMPLE_TYPE'), taxlevels=c('PHYLUM','CLASS','SUBCLASS','ORDER','SUBORDER','FAMILY','GENUS','SPECIES','SUBSPECIES'))
+
+zpCts.all.300 <- rbind(zonwCts.300, zpCts.300) %>%
+  filter(COUNT_300>0) %>%
+  merge(taxa, by = c('TAXA_ID'))
+
+zpCts.all.300.dist <- assignDistinct(zpCts.all.300, sampleID = c('UID', 'SAMPLE_TYPE'), taxlevels=c('PHYLUM','CLASS','SUBCLASS','ORDER','SUBORDER','FAMILY','GENUS','SPECIES','SUBSPECIES')) %>%
+  plyr::rename(c('IS_DISTINCT' = 'IS_DISTINCT_300'))
+
+
+
