@@ -1,6 +1,7 @@
 # Test_ZooplanktonCode.r
 # Use this code to pull data and test functions to make sure the outputs
 # match up with values in database.
+options(scipen = 999)
 
 library(reshape2)
 library(plyr)
@@ -17,10 +18,14 @@ source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/db.r')
 source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/dd.r')
 source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/md.r')
 source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/sharedSupport.r')
+source("R/rarifyCounts.r")
+source("R/convertZoopCts_NLA.r")
+source("R/prepZoopCombCts_NLA.r")
 
-rawZp <- dbGet('ALL_THE_NLA', 'tblZOOPRAW', where = "PARAMETER IN('ABUNDANCE_TOTAL', 'BIOMASS_FACTOR', 'CONCENTRATED_VOLUME', 'VOLUME_COUNTED') AND
+rawZp <- dbGet('ALL_THE_NLA', 'tblZOOPRAW', where = "PARAMETER IN('ABUNDANCE_TOTAL', 'BIOMASS_FACTOR', 'CONCENTRATED_VOLUME', 'VOLUME_COUNTED', 'L_R_ABUND', 'LARGE_RARE_TAXA') AND
                SAMPLE_TYPE IN('ZOCN', 'ZOFN')") %>%
-  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'REP'), names_from='PARAMETER', values_from='RESULT')
+  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'REP'), names_from='PARAMETER', values_from='RESULT') %>%
+  filter(is.na(L_R_ABUND))
 
 towvol <- dbGet('ALL_THE_NLA', 'tblSAMPLES', where = "SAMPLE_TYPE IN('ZOCN', 'ZOFN') AND PARAMETER='TOW_VOLUME'") %>%
   pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE'), names_from='PARAMETER', values_from='RESULT')
@@ -43,8 +48,8 @@ compareCts <- pivot_longer(zpCts, cols=COUNT:DENSITY, names_to = 'PARAMETER', va
 diffCts <- filter(compareCts, abs(RESULT.x-RESULT.y)>0.01) %>%
   mutate(diffFactor = RESULT.x/RESULT.y) # 0 differences now
 
-msgCur <- filter(compareCts, is.na(RESULT.y))
-msgNew <- filter(compareCts, is.na(RESULT.x))
+msgCur <- filter(compareCts, is.na(RESULT.y) & !is.na(RESULT.x))
+msgNew <- filter(compareCts, is.na(RESULT.x) & !is.na(RESULT.y))
 
 # Keep only counts where both ZOFN and ZOCN samples are in counts
 numsamps <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE IN('ZOCN', 'ZOFN')") %>%
@@ -72,7 +77,29 @@ diffZONW <- filter(compareZONW, abs(RESULT.x-RESULT.y)>0.01) %>%
   mutate(diffFactor = RESULT.x/RESULT.y) # 0 differences now
 
 msgCur.zonw <- filter(compareZONW, is.na(RESULT.y))
-msgNew.zonw <- filter(compareZONW, is.na(RESULT.x))
+msgNew.zonw <- filter(compareZONW, is.na(RESULT.x)) # Only missing count for taxa_ID 9999, does not really matter because 9999 is for sample with 0 individuals in it.
+
+# Now we need to create the 300 count subsamples for each sample type, then combine only for BIOMASS and COUNT. Start with raw data
+rawZoop.300 <- rarifyCounts(rawZp.1, sampID = c('UID', 'SAMPLE_TYPE'),
+                            abund = 'ABUNDANCE_TOTAL',
+                            subsize = 300,
+                            seed = 1234)
+
+zpCts.300 <- convertZoopCts_NLA(rawZoop.300, sampID='UID', sampType='SAMPLE_TYPE',
+                                rawCt = 'ABUNDANCE_TOTAL', biofactor = 'BIOMASS_FACTOR',
+                                tow_vol = 'TOW_VOLUME', vol_ctd = 'VOLUME_COUNTED',
+                                conc_vol = 'CONCENTRATED_VOLUME',
+                                taxa_id = 'TAXA_ID', subsample=TRUE)
+
+zpCts.300 <- plyr::rename(zpCts.300, c('COUNT'='COUNT_300', 'BIOMASS' = 'BIOMASS_300'))
+
+zpCts.in.300 <- filter(zpCts.300, UID %in% keepSamps$UID)
+
+zonwCts.300 <- prepZoopCombCts_NLA(zpCts.in.300, sampID = 'UID',
+                                   sampType = 'SAMPLE_TYPE', typeFine = 'ZOFN',
+                                   typeCoarse = 'ZOCN', ct = 'COUNT_300',
+                                   biomass = 'BIOMASS_300', taxa_id = 'TAXA_ID')
+
 
 
 

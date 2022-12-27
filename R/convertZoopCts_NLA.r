@@ -52,15 +52,17 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
 
   inCts[, c(biofactor, rawCt, tow_vol, vol_ctd, conc_vol)] <-
     lapply(inCts[, c(biofactor, rawCt, tow_vol, vol_ctd, conc_vol)], as.numeric)
-  # Drop any missing counts or any records that have any missing volume or biofactor information
-  inCts <- subset(inCts, !is.na(eval(as.name(rawCt))) & !is.na(eval(as.name(tow_vol))) & !is.na(eval(as.name(vol_ctd))) &
-                    !is.na(eval(as.name(biofactor))) & !is.na(eval(as.name(conc_vol))))
+  # Drop any missing counts or any records that have any missing volume or count information
+  inCts <- subset(inCts, !is.na(eval(as.name(rawCt))))
+  # |!is.na(eval(as.name(vol_ctd)))|!is.na(eval(as.name(conc_vol)))) # This does not remove those with missing biofactor or missing abundance
 
   inCts$CORR_FACTOR <- (inCts[, conc_vol]/inCts[, vol_ctd])/inCts[, tow_vol]
 
   outCts <- inCts
   outCts$BIOMASS <- outCts[, rawCt] * outCts[, biofactor] * outCts$CORR_FACTOR
 
+  outCts[which(outCts[, rawCt] == 0), 'BIOMASS'] <- 0 # This indicates 0 individuals in sample, NLA taxa ID 9999
+  outCts[which(is.na(outCts[, biofactor]) & outCts[, rawCt]>0), 'BIOMASS'] <- NA
 
   if(subsample == FALSE){
     outCts$DENSITY <- outCts[, rawCt] * outCts$CORR_FACTOR
@@ -68,13 +70,14 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
     outCts.1 <- aggregate(x = list(COUNT = outCts[, rawCt],
                                  BIOMASS = outCts$BIOMASS,
                                  DENSITY = outCts$DENSITY),
-                        by = outCts[, c(sampID, sampType, taxa_id, 'CORR_FACTOR')],
-                        FUN = sum)
+                        by = outCts[, c(sampID, sampType, taxa_id)],
+                        FUN = function(x){sum(x, na.rm=TRUE)})
+
   }else{
     outCts.1 <- aggregate(x = list(COUNT = outCts[, rawCt],
                                    BIOMASS = outCts$BIOMASS),
-                          by = outCts[, c(sampID, sampType, taxa_id, 'CORR_FACTOR')],
-                          FUN = sum)
+                          by = outCts[, c(sampID, sampType, taxa_id)],
+                          FUN = function(x){sum(x, na.rm=TRUE)})
   }
 
   return(outCts.1)
