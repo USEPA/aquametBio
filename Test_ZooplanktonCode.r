@@ -24,8 +24,7 @@ source("R/prepZoopCombCts_NLA.r")
 
 rawZp <- dbGet('ALL_THE_NLA', 'tblZOOPRAW', where = "PARAMETER IN('ABUNDANCE_TOTAL', 'BIOMASS_FACTOR', 'CONCENTRATED_VOLUME', 'VOLUME_COUNTED', 'L_R_ABUND', 'LARGE_RARE_TAXA') AND
                SAMPLE_TYPE IN('ZOCN', 'ZOFN')") %>%
-  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'REP'), names_from='PARAMETER', values_from='RESULT') %>%
-  filter(is.na(L_R_ABUND))
+  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'REP'), names_from='PARAMETER', values_from='RESULT')
 
 towvol <- dbGet('ALL_THE_NLA', 'tblSAMPLES', where = "SAMPLE_TYPE IN('ZOCN', 'ZOFN') AND PARAMETER='TOW_VOLUME'") %>%
   pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE'), names_from='PARAMETER', values_from='RESULT')
@@ -37,11 +36,19 @@ zpCts <- convertZoopCts_NLA(rawZp.1, sampID='UID', sampType='SAMPLE_TYPE',
                             tow_vol = 'TOW_VOLUME', vol_ctd = 'VOLUME_COUNTED',
                             conc_vol = 'CONCENTRATED_VOLUME',
                             taxa_id = 'TAXA_ID', subsample=FALSE)
+# This version includes Large-rare taxa in the data (should only be for ZOCN samples)
+zpCts.lr <- convertZoopCts_NLA(rawZp.1, sampID='UID', sampType='SAMPLE_TYPE',
+                            rawCt = 'ABUNDANCE_TOTAL', biofactor = 'BIOMASS_FACTOR',
+                            tow_vol = 'TOW_VOLUME', vol_ctd = 'VOLUME_COUNTED',
+                            conc_vol = 'CONCENTRATED_VOLUME', lr_abund = 'L_R_ABUND',
+                            taxa_id = 'TAXA_ID', subsample=FALSE)
+
+filter(zpCts.lr, SAMPLE_TYPE!='ZOCN' & !is.na(L_R_ABUND))
 
 # Compare to values in database in tblZOOPCNT
-curCts <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "PARAMETER IN('BIOMASS', 'COUNT', 'DENSITY') AND SAMPLE_TYPE IN('ZOCN', 'ZOFN')")
+curCts <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "PARAMETER IN('BIOMASS', 'COUNT', 'DENSITY', 'L_R_ABUND') AND SAMPLE_TYPE IN('ZOCN', 'ZOFN')")
 
-compareCts <- pivot_longer(zpCts, cols=COUNT:DENSITY, names_to = 'PARAMETER', values_to='RESULT') %>%
+compareCts <- pivot_longer(zpCts.lr, cols=COUNT:L_R_ABUND, names_to = 'PARAMETER', values_to='RESULT') %>%
   merge(curCts, by=c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'PARAMETER'), all=TRUE) %>%
   mutate(RESULT.x=as.numeric(RESULT.x), RESULT.y=as.numeric(RESULT.y))
 
@@ -64,7 +71,7 @@ keepSamps <- filter(numsamps, NUM==2)
 # Now look at code to combine values from ZOCN and ZOFN samples
 zpCts.in <- filter(zpCts, UID %in% keepSamps$UID)
 
-zonwCts <- prepZoopCombCts_NLA(zpCts.in, sampID = 'UID', sampType = 'SAMPLE_TYPE', typeFine = 'ZOFN', typeCoarse = 'ZOCN', ct = 'COUNT', biomass = 'BIOMASS', density = 'DENSITY', taxa_id = 'TAXA_ID')
+zonwCts <- prepZoopCombCts_NLA(zpCts.in, sampID = 'UID', sampType = 'SAMPLE_TYPE', typeFine = 'ZOFN', typeCoarse = 'ZOCN', ct = 'COUNT', biomass = 'BIOMASS', density = 'DENSITY', taxa_id = 'TAXA_ID', lr_abund = 'L_R_ABUND')
 
 curZONW <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE = 'ZONW' AND PARAMETER IN('BIOMASS', 'COUNT', 'DENSITY')")
 
@@ -109,6 +116,9 @@ zpCts.all <- rbind(zonwCts, zpCts) %>%
   filter(COUNT>0) %>%
   merge(taxa, by = c('TAXA_ID'))
 
+# Add in large/rare taxa for ZOCN samples and ZONW samples and calculate distinctness, including L/R taxa
+
+
 zpCts.all.dist <- assignDistinct(zpCts.all, sampleID = c('UID', 'SAMPLE_TYPE'), taxlevels=c('PHYLUM','CLASS','SUBCLASS','ORDER','SUBORDER','FAMILY','GENUS','SPECIES','SUBSPECIES'))
 
 zpCts.all.300 <- rbind(zonwCts.300, zpCts.300) %>%
@@ -119,4 +129,28 @@ zpCts.all.300.dist <- assignDistinct(zpCts.all.300, sampleID = c('UID', 'SAMPLE_
   plyr::rename(c('IS_DISTINCT' = 'IS_DISTINCT_300'))
 
 
+# Compare IS_DISTINCT for full counts only (since we can't repeat the random subsampling exactly to match the database)
+curDist <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "PARAMETER IN('COUNT', 'IS_DISTINCT')") %>%
+  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID'), names_from='PARAMETER', values_from='RESULT')
+
+matchDist.full <- merge(curDist, zpCts.all.dist, by=c('UID', 'SAMPLE_TYPE', 'TAXA_ID'))
+
+diffs.Dist.full <- filter(matchDist.full, IS_DISTINCT.x!=IS_DISTINCT.y) # All of these were assigned distinctness by Dave Peck and all have subspecies in the same sample - see below
+
+table(diffs.Dist.full$TAXA_ID)
+
+curDist.sub1245 <- filter(curDist, TAXA_ID %in% c(1246, 1247, 1248, 1249)) %>%
+  merge(subset(diffs.Dist.full, TAXA_ID==1245), by=c('UID', 'SAMPLE_TYPE'))
+
+nrow(unique(curDist.sub1245[, c('UID', 'SAMPLE_TYPE')]))
+
+curDist.sub1254 <- filter(curDist, TAXA_ID %in% c(1255)) %>%
+  merge(subset(diffs.Dist.full, TAXA_ID==1254), by=c('UID', 'SAMPLE_TYPE'))
+
+nrow(unique(curDist.sub1254[, c('UID', 'SAMPLE_TYPE')]))
+
+curDist.sub1072 <- filter(curDist, TAXA_ID %in% c(1073, 1074)) %>%
+  merge(subset(diffs.Dist.full, TAXA_ID==1072), by=c('UID', 'SAMPLE_TYPE'))
+
+nrow(unique(curDist.sub1072[, c('UID', 'SAMPLE_TYPE')]))
 

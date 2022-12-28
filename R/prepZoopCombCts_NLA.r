@@ -33,6 +33,10 @@
 #' @param taxa_id A string with the name of the taxon ID variable
 #' in \emph{inCts} that matches that in \emph{inTaxa}. The default
 #' value is \emph{TAXA_ID}.
+#' @param lr_abund A string with the name of the large/rare
+#' abundance variable. This is only valid for coarse mesh samples
+#' and only full samples (not subsamples). It is optional, and the
+#' default value is NULL.
 #' @return A data frame containing the \emph{sampID} and \emph{sampType}
 #' fields, plus the \emph{taxa_id},
 #' \emph{biomass}, \emph{density}, and \emph{ct} fields.
@@ -46,7 +50,8 @@ prepZoopCombCts_NLA <- function(inCts, sampID='UID',
                             sampType = 'SAMPLE_TYPE',
                             typeFine = 'ZOFN', typeCoarse='ZOCN',
                             ct='COUNT', biomass = 'BIOMASS',
-                            density = NULL, taxa_id='TAXA_ID'){
+                            density = NULL, taxa_id='TAXA_ID',
+                            lr_abund = NULL){
 
   inCts <- as.data.frame(inCts)
 
@@ -71,8 +76,21 @@ prepZoopCombCts_NLA <- function(inCts, sampID='UID',
                 paste(necTypes[msgType], collapse=', ')))
   }
 
+  if(!is.null(lr_abund)){
+    if(lr_abund %nin% names(inCts)){
+      print("Missing variable named in lr_abund argument - either
+          change argument or add variable to input data.")
+
+      return(NULL)
+    }else{
+      inCts[, lr_abund] <- with(inCts, ifelse(eval(as.name(sampType)==typeFine & !is.na(eval(as.name(lr_abund))),
+                                                   NA, as.numeric(eval(as.name(lr_abund))))))
+    }
+  }
+
   inCts <- subset(inCts, select=names(inCts) %in% c(sampID, sampType, ct,
-                                                    biomass, density, taxa_id))
+                                                    biomass, density, taxa_id,
+                                                    lr_abund))
 
   if(!is.null(density)){
     inCts[, c(biomass, density, ct)] <- lapply(inCts[, c(biomass, density, ct)], as.numeric)
@@ -81,10 +99,11 @@ prepZoopCombCts_NLA <- function(inCts, sampID='UID',
                                  BIOMASS = inCts[, biomass],
                                  DENSITY = inCts[, density]),
                         by = inCts[, c(sampID, taxa_id)],
-                        FUN = sum)
+                        FUN = function(x){sum(x, na.rm=TRUE)})
     names(outCts)[names(outCts)=='COUNT'] <- ct
     names(outCts)[names(outCts)=='BIOMASS'] <- biomass
     names(outCts)[names(outCts)=='DENSITY'] <- density
+
   }else{
     inCts[, c(biomass, ct)] <- lapply(inCts[, c(biomass, ct)], as.numeric)
 
@@ -94,6 +113,16 @@ prepZoopCombCts_NLA <- function(inCts, sampID='UID',
                         FUN = sum)
     names(outCts)[names(outCts)=='COUNT'] <- ct
     names(outCts)[names(outCts)=='BIOMASS'] <- biomass
+  }
+
+  if(!is.null(lr_abund)){
+    inCts.lr <- subset(inCts, !is.na(eval(as.name(lr_abund))))
+    outLR <- aggregate(x = list(L_R_ABUND = inCts.lr[, lr_abund]),
+                       by = inCts.lr[, c(sampID, taxa_id)],
+                       FUN = function(x){sum(x, na.rm=TRUE)})
+
+    outCts <- merge(outCts, outLR, by = c(sampID, taxa_id), all=TRUE)
+    names(outCts)[names(outCts)=='L_R_ABUND'] <- lr_abund
   }
 
   outCts[, sampType] <- 'ZONW'
