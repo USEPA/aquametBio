@@ -40,19 +40,22 @@ zpCts <- convertZoopCts_NLA(rawZp.1, sampID='UID', sampType='SAMPLE_TYPE',
 zpCts.lr <- convertZoopCts_NLA(rawZp.1, sampID='UID', sampType='SAMPLE_TYPE',
                             rawCt = 'ABUNDANCE_TOTAL', biofactor = 'BIOMASS_FACTOR',
                             tow_vol = 'TOW_VOLUME', vol_ctd = 'VOLUME_COUNTED',
-                            conc_vol = 'CONCENTRATED_VOLUME', lr_abund = 'L_R_ABUND',
+                            conc_vol = 'CONCENTRATED_VOLUME', lr_taxon = 'LARGE_RARE_TAXA',
                             taxa_id = 'TAXA_ID', subsample=FALSE)
 
-filter(zpCts.lr, SAMPLE_TYPE!='ZOCN' & !is.na(L_R_ABUND))
 
 # Compare to values in database in tblZOOPCNT
-curCts <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "PARAMETER IN('BIOMASS', 'COUNT', 'DENSITY', 'L_R_ABUND') AND SAMPLE_TYPE IN('ZOCN', 'ZOFN')")
+curCts <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "PARAMETER IN('BIOMASS', 'COUNT', 'DENSITY', 'LARGE_RARE_TAXA') AND SAMPLE_TYPE IN('ZOCN', 'ZOFN')")
 
-compareCts <- pivot_longer(zpCts.lr, cols=COUNT:L_R_ABUND, names_to = 'PARAMETER', values_to='RESULT') %>%
-  merge(curCts, by=c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'PARAMETER'), all=TRUE) %>%
-  mutate(RESULT.x=as.numeric(RESULT.x), RESULT.y=as.numeric(RESULT.y))
+compareCts <- mutate(zpCts.lr, COUNT=as.character(COUNT), BIOMASS = as.character(BIOMASS),
+                     DENSITY = as.character(DENSITY)) %>%
+  pivot_longer(cols=COUNT:LARGE_RARE_TAXA, names_to = 'PARAMETER',
+                           values_to='RESULT', values_drop_na = TRUE) %>%
+  merge(curCts, by=c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'PARAMETER'), all=TRUE)
 
-diffCts <- filter(compareCts, abs(RESULT.x-RESULT.y)>0.01) %>%
+diffCts <- filter(compareCts, PARAMETER %in% c('BIOMASS', 'COUNTS', 'DENSITY')) %>%
+  mutate(RESULT.x = as.numeric(RESULT.x), RESULT.y = as.numeric(RESULT.y)) %>%
+  filter(abs(RESULT.x-RESULT.y)>0.01) %>%
   mutate(diffFactor = RESULT.x/RESULT.y) # 0 differences now
 
 msgCur <- filter(compareCts, is.na(RESULT.y) & !is.na(RESULT.x))
@@ -69,22 +72,25 @@ msgSamps <- filter(numsamps, NUM == 1)
 keepSamps <- filter(numsamps, NUM==2)
 
 # Now look at code to combine values from ZOCN and ZOFN samples
-zpCts.in <- filter(zpCts, UID %in% keepSamps$UID)
+zpCts.in <- filter(zpCts.lr, UID %in% keepSamps$UID)
 
-zonwCts <- prepZoopCombCts_NLA(zpCts.in, sampID = 'UID', sampType = 'SAMPLE_TYPE', typeFine = 'ZOFN', typeCoarse = 'ZOCN', ct = 'COUNT', biomass = 'BIOMASS', density = 'DENSITY', taxa_id = 'TAXA_ID', lr_abund = 'L_R_ABUND')
+zonwCts <- prepZoopCombCts_NLA(zpCts.in, sampID = 'UID', sampType = 'SAMPLE_TYPE', typeFine = 'ZOFN', typeCoarse = 'ZOCN', ct = 'COUNT', biomass = 'BIOMASS', density = 'DENSITY', taxa_id = 'TAXA_ID', lr_taxon = 'LARGE_RARE_TAXA')
 
-curZONW <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE = 'ZONW' AND PARAMETER IN('BIOMASS', 'COUNT', 'DENSITY')")
+curZONW <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE = 'ZONW' AND PARAMETER IN('BIOMASS', 'COUNT', 'DENSITY', 'LARGE_RARE_TAXA')")
 
-compareZONW <- pivot_longer(zonwCts, cols = COUNT:DENSITY, names_to='PARAMETER',
-                            values_to = 'RESULT') %>%
-  merge(curZONW, by=c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'PARAMETER'), all=TRUE) %>%
-  mutate(RESULT.x=as.numeric(RESULT.x), RESULT.y=as.numeric(RESULT.y))
+compareZONW <- mutate(zonwCts, COUNT=as.character(COUNT), BIOMASS = as.character(BIOMASS),
+                      DENSITY = as.character(DENSITY)) %>%
+  pivot_longer(cols = COUNT:LARGE_RARE_TAXA, names_to='PARAMETER',
+                            values_to = 'RESULT', values_drop_na = TRUE) %>%
+  merge(curZONW, by=c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'PARAMETER'), all=TRUE)
 
-diffZONW <- filter(compareZONW, abs(RESULT.x-RESULT.y)>0.01) %>%
+diffZONW <- filter(compareZONW, PARAMETER %in% c('BIOMASS', 'COUNTS', 'DENSITY')) %>%
+  mutate(RESULT.x = as.numeric(RESULT.x), RESULT.y = as.numeric(RESULT.y)) %>%
+  filter(abs(RESULT.x-RESULT.y)>0.01) %>%
   mutate(diffFactor = RESULT.x/RESULT.y) # 0 differences now
 
-msgCur.zonw <- filter(compareZONW, is.na(RESULT.y))
-msgNew.zonw <- filter(compareZONW, is.na(RESULT.x)) # Only missing count for taxa_ID 9999, does not really matter because 9999 is for sample with 0 individuals in it.
+msgCur.zonw <- filter(compareZONW, is.na(RESULT.y)) # Only missing count for taxa_ID 9999, does not really matter because 9999 is for sample with 0 individuals in it.
+msgNew.zonw <- filter(compareZONW, is.na(RESULT.x))
 
 # Now we need to create the 300 count subsamples for each sample type, then combine only for BIOMASS and COUNT. Start with raw data
 rawZoop.300 <- rarifyCounts(rawZp.1, sampID = c('UID', 'SAMPLE_TYPE'),
@@ -92,7 +98,9 @@ rawZoop.300 <- rarifyCounts(rawZp.1, sampID = c('UID', 'SAMPLE_TYPE'),
                             subsize = 300,
                             seed = 1234)
 
-zpCts.300 <- convertZoopCts_NLA(rawZoop.300, sampID='UID', sampType='SAMPLE_TYPE',
+rawZoop.300.sub <- filter(rawZoop.300, ABUNDANCE_TOTAL>0)
+
+zpCts.300 <- convertZoopCts_NLA(rawZoop.300.sub, sampID='UID', sampType='SAMPLE_TYPE',
                                 rawCt = 'ABUNDANCE_TOTAL', biofactor = 'BIOMASS_FACTOR',
                                 tow_vol = 'TOW_VOLUME', vol_ctd = 'VOLUME_COUNTED',
                                 conc_vol = 'CONCENTRATED_VOLUME',
@@ -112,12 +120,11 @@ zonwCts.300 <- prepZoopCombCts_NLA(zpCts.in.300, sampID = 'UID',
 taxa <- dbGet('ALL_THE_NLA', 'tblTAXA', where = "ASSEMBLAGE_NAME='ZOOPLANKTON'") %>%
   pivot_wider(id_cols = c('TAXA_ID'), names_from='PARAMETER', values_from='RESULT')
 
-zpCts.all <- rbind(zonwCts, zpCts) %>%
-  filter(COUNT>0) %>%
+zpCts.all <- rbind(zonwCts, zpCts.lr) %>%
+  filter(COUNT>0|!is.na(LARGE_RARE_TAXA)) %>%
   merge(taxa, by = c('TAXA_ID'))
 
 # Add in large/rare taxa for ZOCN samples and ZONW samples and calculate distinctness, including L/R taxa
-
 
 zpCts.all.dist <- assignDistinct(zpCts.all, sampleID = c('UID', 'SAMPLE_TYPE'), taxlevels=c('PHYLUM','CLASS','SUBCLASS','ORDER','SUBORDER','FAMILY','GENUS','SPECIES','SUBSPECIES'))
 
@@ -135,7 +142,7 @@ curDist <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "PARAMETER IN('COUNT', 'IS
 
 matchDist.full <- merge(curDist, zpCts.all.dist, by=c('UID', 'SAMPLE_TYPE', 'TAXA_ID'))
 
-diffs.Dist.full <- filter(matchDist.full, IS_DISTINCT.x!=IS_DISTINCT.y) # All of these were assigned distinctness by Dave Peck and all have subspecies in the same sample - see below
+diffs.Dist.full <- filter(matchDist.full, IS_DISTINCT.x!=IS_DISTINCT.y) # All of these were assigned distinctness by Dave Peck in 2012 and all have subspecies in the same sample - see below -
 
 table(diffs.Dist.full$TAXA_ID)
 
@@ -153,4 +160,25 @@ curDist.sub1072 <- filter(curDist, TAXA_ID %in% c(1073, 1074)) %>%
   merge(subset(diffs.Dist.full, TAXA_ID==1072), by=c('UID', 'SAMPLE_TYPE'))
 
 nrow(unique(curDist.sub1072[, c('UID', 'SAMPLE_TYPE')]))
+
+verif <- dbGet('ALL_THE_NLA', 'tblVERIFICATION', where = "PARAMETER = 'DATE_COL'") %>%
+  filter(UID %in% diffs.Dist.full$UID)
+range(verif$RESULT)
+
+# Cannot test for 300 subsample because we don't have exactly the same data, but we can pull the data
+# from the database, re-assign IS_DISTINCT, and compare to original.
+cur300 <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "PARAMETER IN('COUNT_300', 'IS_DISTINCT_300')")
+
+cur300.ct <- subset(cur300, PARAMETER == 'COUNT_300') %>%
+  mutate(RESULT = as.numeric(RESULT)) %>%
+  filter(RESULT >0) %>%
+  merge(taxa, by='TAXA_ID')
+
+cur300.addDist <- assignDistinct(cur300.ct, sampleID = c('UID', 'SAMPLE_TYPE'), taxlevels=c('PHYLUM','CLASS','SUBCLASS','ORDER','SUBORDER','FAMILY','GENUS','SPECIES','SUBSPECIES')) %>%
+  plyr::rename(c('IS_DISTINCT' = 'IS_DISTINCT_300'))
+
+matchDist.300 <- merge(filter(cur300, PARAMETER=='IS_DISTINCT_300'), cur300.addDist, by=c('UID', 'SAMPLE_TYPE', 'TAXA_ID'))
+
+diffs.300 <- filter(matchDist.300, RESULT.x!=IS_DISTINCT_300) # 242 records, same taxa as above (1072, 1245, 1254)
+
 

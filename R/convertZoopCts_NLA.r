@@ -28,11 +28,11 @@
 #' @param conc_vol A string specifying the name of the numeric variable
 #' with the concentrated volume of the sample in the same units as
 #' tow_vol and conc_vol.
-#' @param lr_abund A string specifying the name of the numeric variable
-#' for large/rare taxa. These do not have values for \emph{rawCt} and
-#' should only be in coarse mesh samples. This only applies to full
+#' @param lr_taxon A string specifying the name of the variable indicating
+#' a large/rare taxon. These do not have values for \emph{rawCt}.
+#' This only applies to full
 #' samples and not subsamples, since large/rare taxa should be ignored
-#' in creating subsamples.
+#' in creating subsamples. Value should be Y or missing (NA).
 #' @param taxa_id A string specifying the name of the variable indicating
 #' the taxon being used.
 #' @param subsample A logical operator to indicate whether the rawCt values
@@ -43,7 +43,7 @@
 #' BIOMASS, DENSITY, and COUNT fields.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
-                            tow_vol, vol_ctd, conc_vol, lr_abund=NULL,
+                            tow_vol, vol_ctd, conc_vol, lr_taxon=NULL,
                             taxa_id, subsample=FALSE){
   inCts <- as.data.frame(inCts)
 
@@ -56,16 +56,16 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
     return(NULL)
   }
 
-  if(!is.null(lr_abund)){
-    if(lr_abund %nin% names(inCts)){
-      print("Missing variable named in lr_abund argument - either
+  if(!is.null(lr_taxon)){
+    if(lr_taxon %nin% names(inCts)){
+      print("Missing variable named in lr_taxon argument - either
           change argument or add variable to input data.")
 
       return(NULL)
     }
   }
 
-  if(!is.null(lr_abund) & subsample==TRUE){
+  if(!is.null(lr_taxon) & subsample==TRUE){
     print("Large/rare taxa should not be included when creating
           random subsamples from the data.")
     return(NULL)
@@ -105,13 +105,13 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
   }
 
   # Now add back in large/rare abundances - no changes necessary, just leaves them in the data
-  if(!is.null(lr_abund) & subsample==FALSE){
-    lrCts <- subset(inCts, !is.na(eval(as.name(lr_abund))),
-                    select = names(inCts) %in% c(sampID, sampType, taxa_id, lr_abund))
+  if(!is.null(lr_taxon) & subsample==FALSE){
+    lrCts <- subset(inCts, !is.na(eval(as.name(lr_taxon))),
+                    select = names(inCts) %in% c(sampID, sampType, taxa_id, lr_taxon))
 
-    lrCts.out <- aggregate(x = list(L_R_ABUND = lrCts[, lr_abund]),
-                           by = lrCts[, c(sampID, sampType, taxa_id)],
-                           FUN = function(x){sum(as.numeric(x), na.rm=TRUE)})
+    lrCts.out <- lrCts
+
+    lrCts.out <- unique(lrCts.out)
 
     outCts.1 <- merge(outCts.1, lrCts.out, by = c(sampID, sampType, taxa_id), all=TRUE)
 
