@@ -182,3 +182,27 @@ matchDist.300 <- merge(filter(cur300, PARAMETER=='IS_DISTINCT_300'), cur300.addD
 diffs.300 <- filter(matchDist.300, RESULT.x!=IS_DISTINCT_300) # 242 records, same taxa as above (1072, 1245, 1254)
 
 
+# Test totals code with various inputs and arguments
+curZp <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE IN('ZOCN')") %>%
+  pivot_wider(id_cols = c("UID", "SAMPLE_TYPE", "TAXA_ID"), names_from='PARAMETER', values_from='RESULT')
+
+source("R/calcZoopTotals.r")
+
+testSum <- calcZoopTotals(indata = curZp, sampID = c('UID', 'SAMPLE_TYPE'),
+                          is_distinct = 'IS_DISTINCT',
+                          inputSums = c('COUNT', 'BIOMASS', 'DENSITY'),
+                          outputSums = c('TOTL_NIND', 'TOTL_BIO', 'TOTL_DEN'),
+                          outputTaxa = 'TOTL_NTAX')
+
+testSum.300 <- calcZoopTotals(curZp, c('UID', 'SAMPLE_TYPE'),
+                              'IS_DISTINCT',
+                            c('COUNT_300', 'BIOMASS_300'),
+                            c('TOTL300_NIND', 'TOTL300_BIO'),
+                            'TOTL300_NTAX')
+
+testSum.nat <- calcZoopTotals(indata = subset(curZp, is.na(NON_NATIVE)|NON_NATIVE=='N'),
+                              sampID = c('UID', 'SAMPLE_TYPE'),
+                              is_distinct = 'IS_DISTINCT',
+                              inputSums = c('COUNT', 'BIOMASS', 'DENSITY'),
+                              outputSums = c('TOTL_NAT_NIND', 'TOTL_NAT_BIO', 'TOTL_NAT_DEN'),
+                              outputTaxa = 'TOTL_NAT_NTAX')
