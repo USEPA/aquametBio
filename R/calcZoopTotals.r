@@ -1,4 +1,5 @@
 #' @export
+#' @keywords internal
 #' @title Calculate zooplankton totals
 #' @description This internal function calculates totals for
 #' counts, biomass, and density from inputs. This function is
