@@ -183,10 +183,11 @@ diffs.300 <- filter(matchDist.300, RESULT.x!=IS_DISTINCT_300) # 242 records, sam
 
 
 # Test totals code with various inputs and arguments
-curZp <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE IN('ZOCN')") %>%
+curZp <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE IN('ZONW')") %>%
   pivot_wider(id_cols = c("UID", "SAMPLE_TYPE", "TAXA_ID"), names_from='PARAMETER', values_from='RESULT')
 
 source("R/calcZoopTotals.r")
+source("R/calcZoopMetrics.r")
 
 testSum <- calcZoopTotals(indata = curZp, sampID = c('UID', 'SAMPLE_TYPE'),
                           is_distinct = 'IS_DISTINCT',
@@ -206,3 +207,51 @@ testSum.nat <- calcZoopTotals(indata = subset(curZp, is.na(NON_NATIVE)|NON_NATIV
                               inputSums = c('COUNT', 'BIOMASS', 'DENSITY'),
                               outputSums = c('TOTL_NAT_NIND', 'TOTL_NAT_BIO', 'TOTL_NAT_DEN'),
                               outputTaxa = 'TOTL_NAT_NTAX')
+
+# Run metrics code using current zp count data, then apply to native only
+taxa.clean <- filter(taxa, is.na(NON_TARGET))
+
+zpIn <- filter(curZp, TAXA_ID %in% taxa.clean$TAXA_ID)
+
+testMets <- calcZoopMetrics(zpIn, c('UID', 'SAMPLE_TYPE'), 'IS_DISTINCT',
+                                        'COUNT', 'BIOMASS', 'DENSITY',
+                                        taxa, taxa_id='TAXA_ID',
+                                        'FFG', 'CLADOCERA_SIZE',
+                                        'NET_SIZECLS_NEW',
+                                        nativeMetrics = FALSE)
+
+# Now try with only native data
+state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE')") %>%
+  pivot_wider(id_cols = c('UNIQUE_ID', 'DSGN_CYCLE', 'IND_DOMAIN'), names_from='PARAMETER', values_from='RESULT')
+
+verif <- dbGet('ALL_THE_NLA', 'tblVERIFICATION', where = "PARAMETER IN('SITE_ID')") %>%
+  pivot_wider(id_cols = 'UID', names_from='PARAMETER', values_from = 'RESULT')
+
+stateVerif <- merge(verif, state, by='SITE_ID')
+
+zpIn.nat <- merge(curZp, taxa.clean, by='TAXA_ID') %>%
+  merge(stateVerif, by=c('UID')) %>%
+  filter(is.na(NON_NATIVE.x)|NON_NATIVE.x=='N') %>%
+  filter(NON_NATIVE.y!= "ALL"|is.na(NON_NATIVE.y)) %>%
+  filter(str_detect(NON_NATIVE.y, PSTL_CODE)==FALSE|is.na(NON_NATIVE.y)) %>%
+  select(UID, TAXA_ID, SAMPLE_TYPE, COUNT, BIOMASS, DENSITY, IS_DISTINCT,
+         LARGE_RARE_TAXA)
+
+testMets.nat <- calcZoopMetrics(zpIn.nat, c('UID', 'SAMPLE_TYPE'),
+                                'IS_DISTINCT',
+                                'COUNT', 'BIOMASS', 'DENSITY',
+                                taxa, taxa_id='TAXA_ID',
+                                'FFG', 'CLADOCERA_SIZE',
+                                'NET_SIZECLS_NEW',
+                                nativeMetrics = TRUE)
+
+# Compare values to database, assuming all preparatory steps are being followed
+compMets <- dbGet('ALL_THE_NLA', 'tblZOOPMET') %>%
+  merge(testMets, by=c('UID', 'PARAMETER'))
+
+diffMets <- filter(compMets, abs(as.numeric(RESULT.x)-RESULT.y)>0.0001) %>%
+  mutate(DIFF = as.numeric(RESULT.x) - RESULT.y) # All within rounding limits
+
+
+
+

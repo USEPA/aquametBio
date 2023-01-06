@@ -28,7 +28,7 @@
 #'
 calcZoopTotals <- function(indata, sampID, is_distinct,
                            inputSums, outputSums,
-                           outputTaxa){
+                           outputTaxa = NULL){
   necVars <- c(sampID, inputSums)
   if(any(necVars %nin% names(indata))){
     msgTraits <- which(necVars %nin% names(indata))
@@ -48,17 +48,19 @@ calcZoopTotals <- function(indata, sampID, is_distinct,
                                    FUN = function(x){sum(x, na.rm=TRUE)})
 
     outdata <- merge(outdata, temp)
-    names(outdata)[names(outdata)==inputSums[i]] <- outputSums[i]
+    names(outdata)[names(outdata)=='x.out'] <- outputSums[i]
   }
 
   # now count distinct taxa using distinctness variable
-  ntax <- aggregate(x = list(ntax <- indata[, is_distinct]),
-                    by = indata[, sampID],
-                    FUN = function(x){sum(x, na.rm=TRUE)})
+  if(!is.null(outputTaxa)){
+    ntax <- aggregate(x = list(ntax = indata[, is_distinct]),
+                      by = indata[, sampID],
+                      FUN = function(x){sum(x, na.rm=TRUE)})
 
-  names(ntax)[names(ntax) == is_distinct] <- outputTaxa
+    names(ntax)[names(ntax) == 'ntax'] <- outputTaxa
 
-  outdata <- merge(outdata, ntax, by = sampID)
+    outdata <- merge(outdata, ntax, by = sampID)
+  }
 
   return(outdata)
 }
