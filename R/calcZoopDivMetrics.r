@@ -55,14 +55,14 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
                             ct, biomass = NULL, density = NULL){
   indata <- as.data.frame(indata)
 
-  necVars <- c(sampID, is_distinct, ct, taxa_id)
+  necVars <- c(sampID, is_distinct, ct)
   if(any(necVars %nin% names(indata))){
     msgTraits <- which(necVars %nin% names(indata))
     print(paste("Missing variables in input data frame:",
                 paste(necVars[msgTraits], collapse=',')))
     return(NULL)
   }else{
-    indata[, c(ct, biomass, is_distinct)] <- lapply(indata[, c(ct, biomass, is_distinct)], as.numeric)
+    indata[, c(ct, is_distinct)] <- lapply(indata[, c(ct, is_distinct)], as.numeric)
   }
 
   if(!is.null(density)){
@@ -112,16 +112,18 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
 
   # Calculate diversity for counts, biomass, and density separately to
   # accommodate all variations of calculation of indices
-  hprime <- aggregate(x=list(HPRIME_NIND = calcData[, prop.cnt]),
+  hprime <- aggregate(x=list(HPRIME_NIND = calcData[, 'prop.cnt']),
                              by = calcData[, c(sampID)],
                              FUN = function(x){round(-1*sum(x*log(x), na.rm=T), 4)})
 
-  simpson <- aggregate(x = list(SIMPSON_NIND = calcData[, prop.cnt]),
+  simpson <- aggregate(x = list(SIMPSON_NIND = calcData[, 'prop.cnt']),
                        by = calcData[, c(sampID)],
                        FUN = function(x){round(sum(x*x, na.rm=T), 4)})
 
   even <- merge(hprime, totals[, c(sampID, 'TOTL_NTAX')], by=sampID)
   even$EVEN_NIND <- with(even, round(HPRIME_NIND/log(TOTL_NTAX), 4))
+
+  even.1 <- subset(even, select = c(sampID, 'EVEN_NIND'))
 
   pie.in <- calcData
   pie.in$CALCPROP <- with(pie.in, prop.cnt*((TOTL_NIND - COUNT)/(TOTL_NIND-1)))
@@ -131,14 +133,15 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
               FUN = function(x){round(sum(x, na.rm=T), 4)})
 
   metsOut <- merge(hprime, simpson, by = sampID) |>
-    merge(pie, by = sampID)
+    merge(pie, by = sampID) %>%
+    merge(even.1, by = sampID)
 
   if(!is.null(density)){
-    hprime.den <- aggregate(x=list(HPRIME_DEN = calcData[, prop.den]),
+    hprime.den <- aggregate(x=list(HPRIME_DEN = calcData[, 'prop.den']),
                         by = calcData[, c(sampID)],
                         FUN = function(x){round(-1*sum(x*log(x), na.rm=T), 4)})
 
-    simpson.den <- aggregate(x = list(SIMPSON_DEN = calcData[, prop.den]),
+    simpson.den <- aggregate(x = list(SIMPSON_DEN = calcData[, 'prop.den']),
                          by = calcData[, c(sampID)],
                          FUN = function(x){round(sum(x*x, na.rm=T), 4)})
 
@@ -147,11 +150,11 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
   }
 
   if(!is.null(biomass)){
-    hprime.bio <- aggregate(x=list(HPRIME_BIO = calcData[, prop.bio]),
+    hprime.bio <- aggregate(x=list(HPRIME_BIO = calcData[, 'prop.bio']),
                         by = calcData[, c(sampID)],
                         FUN = function(x){round(-1*sum(x*log(x), na.rm=T), 4)})
 
-    simpson.bio <- aggregate(x = list(SIMPSON_BIO = calcData[, prop.bio]),
+    simpson.bio <- aggregate(x = list(SIMPSON_BIO = calcData[, 'prop.bio']),
                          by = calcData[, c(sampID)],
                          FUN = function(x){round(sum(x*x, na.rm=T), 4)})
 
@@ -160,15 +163,6 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
 
   }
 
-
-  # div <- ddply(indf.props, c('UID'), summarise,
-  #              HPRIME_NIND=round(-1*sum(prop.cnt*log(prop.cnt),na.rm=T),4),
-  #              HPRIME_BIO=round(-1*sum(prop.bio*log(prop.bio),na.rm=T),4),
-  #              HPRIME_DEN=round(-1*sum(prop.den*log(prop.den),na.rm=T),4),
-  #              SIMPSON_NIND=round(sum(prop.cnt*prop.cnt,na.rm=T),4),
-  #              SIMPSON_BIO=round(sum(prop.bio*prop.bio,na.rm=T),4),
-  #              SIMPSON_DEN=round(sum(prop.den*prop.den,na.rm=T),4),
-  #              PIE_NIND=round(sum(prop.cnt*((SUMCNT-COUNT)/(SUMCNT-1)),na.rm=T),4),
-  #              EVEN_NIND=round(HPRIME_NIND/log(unique(SUBTOTL_NTAX)),4))
+  return(metsOut)
 
 }

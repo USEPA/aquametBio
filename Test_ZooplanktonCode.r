@@ -21,6 +21,9 @@ source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/sharedSupport.r')
 source("R/rarifyCounts.r")
 source("R/convertZoopCts_NLA.r")
 source("R/prepZoopCombCts_NLA.r")
+source("R/calcZoopTotals.r")
+source("R/calcZoopBaseMetrics.r")
+source("R/calcZoopDivMetrics.r")
 
 rawZp <- dbGet('ALL_THE_NLA', 'tblZOOPRAW', where = "PARAMETER IN('ABUNDANCE_TOTAL', 'BIOMASS_FACTOR', 'CONCENTRATED_VOLUME', 'VOLUME_COUNTED', 'L_R_ABUND', 'LARGE_RARE_TAXA') AND
                SAMPLE_TYPE IN('ZOCN', 'ZOFN')") %>%
@@ -186,9 +189,6 @@ diffs.300 <- filter(matchDist.300, RESULT.x!=IS_DISTINCT_300) # 242 records, sam
 curZp <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE IN('ZONW')") %>%
   pivot_wider(id_cols = c("UID", "SAMPLE_TYPE", "TAXA_ID"), names_from='PARAMETER', values_from='RESULT')
 
-source("R/calcZoopTotals.r")
-source("R/calcZoopMetrics.r")
-
 testSum <- calcZoopTotals(indata = curZp, sampID = c('UID', 'SAMPLE_TYPE'),
                           is_distinct = 'IS_DISTINCT',
                           inputSums = c('COUNT', 'BIOMASS', 'DENSITY'),
@@ -253,5 +253,40 @@ diffMets <- filter(compMets, abs(as.numeric(RESULT.x)-RESULT.y)>0.0001) %>%
   mutate(DIFF = as.numeric(RESULT.x) - RESULT.y) # All within rounding limits
 
 
+# Zooplankton diversity metrics
+divMets <- calcZoopDivMetrics(zpIn, c('UID', 'SAMPLE_TYPE'), 'IS_DISTINCT',
+                              'COUNT', 'BIOMASS', 'DENSITY')
 
+divMets.long <- pivot_longer(divMets, cols = HPRIME_NIND:SIMPSON_BIO, names_to='PARAMETER',
+                             values_to='RESULT')
 
+compDivMets <- dbGet('ALL_THE_NLA', 'tblZOOPMET') %>%
+  merge(divMets.long, by=c('UID', 'PARAMETER'))
+
+diffMets.div <- filter(compDivMets, abs(as.numeric(RESULT.x)-RESULT.y)>0.0002) %>%
+  mutate(DIFF = as.numeric(RESULT.x) - RESULT.y) %>% # Only HPRIME and SIMPSON for BIO and DEN variations, up to 0.0010, these do not differ using the code
+  merge(stateVerif, by='UID') # Rounding changed with version 4 of R, so that might account for some of the variation that I cannot reproduce using the same code used for the original metric values.
+
+# indf.sums <- plyr::ddply(indata.1, c('UID'), mutate,
+#                    SUMBIO=sum(as.numeric(BIOMASS), na.rm=T),
+#                    SUMDEN=sum(as.numeric(DENSITY), na.rm=T))
+# indf.props <- mutate(indf.sums, prop.bio = BIOMASS/SUMBIO, prop.den = DENSITY/SUMDEN)
+#
+# test.props <- select(indf.props, UID, TAXA_ID, prop.bio, prop.den) %>%
+#   merge(select(calcData, UID, TAXA_ID, prop.bio, prop.den), by = c('UID', 'TAXA_ID'))
+#
+# test.div <- ddply(indf.props, c('UID'), summarise,
+#                   HPRIME_BIO=round(-1*sum(prop.bio*log(prop.bio),na.rm=T),4),
+#                   HPRIME_DEN=round(-1*sum(prop.den*log(prop.den),na.rm=T),4),
+#                   SIMPSON_BIO=round(sum(prop.bio*prop.bio,na.rm=T),4),
+#                   SIMPSON_DEN=round(sum(prop.den*prop.den,na.rm=T),4))
+#
+# filter(test.props, abs(prop.bio.x - prop.bio.y)>0.0001)
+# filter(test.props, abs(prop.den.x - prop.den.y) >0.0001)
+#
+# test.divMets <- merge(divMets, test.div, by='UID')
+#
+# filter(test.divMets, abs(HPRIME_BIO.x-HPRIME_BIO.y)>0.0001)
+# filter(test.divMets, abs(HPRIME_DEN.x-HPRIME_DEN.y)>0.0001)
+# filter(test.divMets, abs(SIMPSON_BIO.x-SIMPSON_BIO.y)>0.0001)
+# filter(test.divMets, abs(SIMPSON_DEN.x-SIMPSON_DEN.y)>0.0001)
