@@ -290,3 +290,5 @@ diffMets.div <- filter(compDivMets, abs(as.numeric(RESULT.x)-RESULT.y)>0.0002) %
 # filter(test.divMets, abs(HPRIME_DEN.x-HPRIME_DEN.y)>0.0001)
 # filter(test.divMets, abs(SIMPSON_BIO.x-SIMPSON_BIO.y)>0.0001)
 # filter(test.divMets, abs(SIMPSON_DEN.x-SIMPSON_DEN.y)>0.0001)
+
+# Test Dominance metrics code
