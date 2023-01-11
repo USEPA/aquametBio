@@ -228,15 +228,6 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
           met.2 <- merge(met.1a.nind, met.1a.bio, by = sampID) |>
             merge(met.1b, by = sampID)
         }
-          # ddply(metsIn, c(sampID), summarise,
-          #              DEN=round(sum(DENSITY, na.rm=T),4),
-          #              PDEN=round(DEN/unique(TOTL_DEN)*100, 2),
-          #              BIO=round(sum(BIOMASS,na.rm=T), 6),
-          #              PBIO=round(BIO/unique(TOTL_BIO)*100, 2),
-          #              NIND=sum(COUNT, na.rm=T),
-          #              PIND=round(sum(COUNT, na.rm=T)/unique(TOTL_NIND)*100, 2),
-          #              NTAX=sum(IS_DISTINCT, na.rm=T),
-          #              PTAX=round(NTAX/unique(TOTL_NTAX)*100, 2))
 
         met.2a <- merge(samps, met.2, by = c(sampID), all.x=TRUE)
         met.2a[is.na(met.2a)] <- 0
@@ -245,8 +236,7 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
                             varying = names(met.2)[!(names(met.2a) %in% sampID)],
                             timevar = 'PARAMETER', v.names = 'RESULT',
                             times = names(met.2)[!(names(met.2a) %in% sampID)])
-        # met.1.long <- melt(met.1, id.vars=c(sampID), variable.name='PARAMETER',
-                           # value.name='RESULT')
+
         if(nativeMetrics==FALSE){
           met.2.long <- mutate(met.2.long, PARAMETER=paste(params[i], PARAMETER, sep='_'),
                              RESULT=ifelse(is.na(RESULT), 0, RESULT))
