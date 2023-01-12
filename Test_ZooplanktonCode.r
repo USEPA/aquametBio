@@ -24,6 +24,8 @@ source("R/prepZoopCombCts_NLA.r")
 source("R/calcZoopTotals.r")
 source("R/calcZoopBaseMetrics.r")
 source("R/calcZoopDivMetrics.r")
+source("R/zoopDominance.r")
+source("R/calcZoopDomMetrics.r")
 
 rawZp <- dbGet('ALL_THE_NLA', 'tblZOOPRAW', where = "PARAMETER IN('ABUNDANCE_TOTAL', 'BIOMASS_FACTOR', 'CONCENTRATED_VOLUME', 'VOLUME_COUNTED', 'L_R_ABUND', 'LARGE_RARE_TAXA') AND
                SAMPLE_TYPE IN('ZOCN', 'ZOFN')") %>%
@@ -96,6 +98,7 @@ msgCur.zonw <- filter(compareZONW, is.na(RESULT.y)) # Only missing count for tax
 msgNew.zonw <- filter(compareZONW, is.na(RESULT.x))
 
 # Now we need to create the 300 count subsamples for each sample type, then combine only for BIOMASS and COUNT. Start with raw data
+set.seed(1234)
 rawZoop.300 <- rarifyCounts(rawZp.1, sampID = c('UID', 'SAMPLE_TYPE'),
                             abund = 'ABUNDANCE_TOTAL',
                             subsize = 300,
@@ -113,7 +116,7 @@ zpCts.300 <- plyr::rename(zpCts.300, c('COUNT'='COUNT_300', 'BIOMASS' = 'BIOMASS
 
 zpCts.in.300 <- filter(zpCts.300, UID %in% keepSamps$UID)
 
-zonwCts.300 <- prepZoopCombCts_NLA(zpCts.in.300, sampID = 'UID',
+zonwCts.300 <- prepZoopCombCts_NLA(zpCts.in.300, sampID = c('UID', 'SAMPLE_TYPE'),
                                    sampType = 'SAMPLE_TYPE', typeFine = 'ZOFN',
                                    typeCoarse = 'ZOCN', ct = 'COUNT_300',
                                    biomass = 'BIOMASS_300', taxa_id = 'TAXA_ID')
@@ -213,7 +216,7 @@ taxa.clean <- filter(taxa, is.na(NON_TARGET))
 
 zpIn <- filter(curZp, TAXA_ID %in% taxa.clean$TAXA_ID)
 
-testMets <- calcZoopMetrics(zpIn, c('UID', 'SAMPLE_TYPE'), 'IS_DISTINCT',
+testMets <- calcZoopBaseMetrics(zpIn, c('UID', 'SAMPLE_TYPE'), 'IS_DISTINCT',
                                         'COUNT', 'BIOMASS', 'DENSITY',
                                         taxa, taxa_id='TAXA_ID',
                                         'FFG', 'CLADOCERA_SIZE',
@@ -292,3 +295,46 @@ diffMets.div <- filter(compDivMets, abs(as.numeric(RESULT.x)-RESULT.y)>0.0002) %
 # filter(test.divMets, abs(SIMPSON_DEN.x-SIMPSON_DEN.y)>0.0001)
 
 # Test Dominance metrics code
+domMets <- calcZoopDomMetrics(indata = zpIn, sampID = c('UID', 'SAMPLE_TYPE'),
+                            is_distinct = 'IS_DISTINCT',
+                            valsIn = c('COUNT', 'BIOMASS', 'DENSITY'),
+                            valsOut = c('PIND', 'PBIO', 'PDEN'),
+                            taxa_id = 'TAXA_ID', subgrp = NULL)
+
+zpIn.taxa <- merge(zpIn, taxa, by = 'TAXA_ID') %>%
+  mutate(ROT = ifelse(PHYLUM=='ROTIFERA', 1, 0),
+         CLAD = ifelse(SUBORDER=='CLADOCERA', 1, 0),
+         COPE = ifelse(SUBCLASS == 'COPEPODA', 1, 0))
+
+domMets.rot <- calcZoopDomMetrics(indata = zpIn.taxa, sampID = c('UID', 'SAMPLE_TYPE'),
+                                  is_distinct = 'IS_DISTINCT',
+                                  valsIn = c('COUNT', 'BIOMASS', 'DENSITY'),
+                                  valsOut = c('PIND', 'PBIO', 'PDEN'),
+                                  taxa_id = 'TAXA_ID', subgrp = 'ROT')
+
+domMets.clad <- calcZoopDomMetrics(indata = zpIn.taxa, sampID = c('UID', 'SAMPLE_TYPE'),
+                                  is_distinct = 'IS_DISTINCT',
+                                  valsIn = c('COUNT', 'BIOMASS', 'DENSITY'),
+                                  valsOut = c('PIND', 'PBIO', 'PDEN'),
+                                  taxa_id = 'TAXA_ID', subgrp = 'CLAD')
+
+domMets.cope <- calcZoopDomMetrics(indata = zpIn.taxa, sampID = c('UID', 'SAMPLE_TYPE'),
+                                  is_distinct = 'IS_DISTINCT',
+                                  valsIn = c('COUNT', 'BIOMASS', 'DENSITY'),
+                                  valsOut = c('PIND', 'PBIO', 'PDEN'),
+                                  taxa_id = 'TAXA_ID', subgrp = 'COPE')
+
+# Now pull ZONW 300 counts
+zpIn.300 <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE='ZONW' AND PARAMETER IN('COUNT_300', 'BIOMASS_300', 'IS_DISTINCT')") %>%
+  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID'), names_from='PARAMETER', values_from='RESULT') %>%
+  filter(TAXA_ID %in% taxa.clean$TAXA_ID & COUNT_300>0)
+
+domMets.300 <- calcZoopDomMetrics(indata = zpIn.300, sampID = c('UID', 'SAMPLE_TYPE'),
+                              is_distinct = 'IS_DISTINCT',
+                              valsIn = c('COUNT_300', 'BIOMASS_300'),
+                              valsOut = c('PIND', 'PBIO'),
+                              taxa_id = 'TAXA_ID', subgrp = NULL) %>%
+  mutate(PARAMETER = ifelse(str_detect(PARAMETER, 'PIND|PBIO'),
+                            paste(substring(PARAMETER, 1, 4), '300',
+                                  substring(PARAMETER, 6, 9), sep = '_')))
+

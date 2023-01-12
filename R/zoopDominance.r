@@ -14,23 +14,26 @@
 #' The default value is 1.
 #' @param varIn A string with the name of the variable to be used in calculating
 #' dominance.
+#' @param taxa_id A string with the name of the variable that distinctly
+#' identifies taxa in each sample.
 #' @return A data frame with \emph{sampID} variables and the metric containing
 #' the % individuals in the
 #' dominant (topN) taxa
-zoopDominance<-function(df, sampID = 'UID', topN = 1, varIn){
+zoopDominance <- function(df, sampID = 'UID', topN = 1, varIn, taxa_id){
 
-  df.long <- reshape(df, idvar = sampID, direction = 'long',
+  df.long <- reshape(df, idvar = c(sampID, taxa_id), direction = 'long',
                      varying = varIn, timevar = 'variable',
-                     v.names = 'value', times = varIn)
+                     v.names = 'value', times = varIn) |>
+    subset(select = c(sampID, taxa_id, 'variable', 'value'))
 
-  rr <- aggregate(list(TOTSUM = df.long$value),
-                  list(df.long[, sampID]),
-                  function(x){sum(x, na.rm=TRUE)})
+  rr <- aggregate(x = list(TOTSUM = df.long[, 'value']),
+                  by = df.long[c(sampID)],
+                  FUN = function(x){sum(x, na.rm=TRUE)})
 
   ss <- merge(df.long, rr, by = sampID)
 
-  tt <- aggregate(list(domN = ss$value),
-                  list(ss[, sampID]),
+  tt <- aggregate(x = list(domN = ss[, 'value']),
+                  by = ss[sampID],
                   function(x){
                     sum(x[order(x, decreasing=TRUE)[1:topN]],
                         na.rm=T)

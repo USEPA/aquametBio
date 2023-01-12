@@ -13,13 +13,15 @@
 #' in calculating dominance.
 #' @param valsOut A vector of output suffixes to append to dominance
 #' metric, matched with the order of valsIn variables.
+#' @param taxa_id A string with the name of the variable that distinctly
+#' identifies taxa in each sample.
 #' @param subgrp A string with the name of a subgroup in \emph{indata}, with
 #' a valid value of 1 to indicate inclusion in the subgroup.
 #' @return A data frame with \emph{sampID} variables and the metric containing
 #' the % individuals in the
 #' dominant (topN) taxa
 calcZoopDomMetrics <- function(indata, sampID, is_distinct,
-                               valsIn, valsOut,
+                               valsIn, valsOut, taxa_id,
                                subgrp = NULL){
   # convert input data to data frame
   indata <- as.data.frame(indata)
@@ -44,23 +46,23 @@ calcZoopDomMetrics <- function(indata, sampID, is_distinct,
   # Subset data to subgroup if needed and to only distinct values
   for(i in 1:length(valsIn)){
     if(!is.null(subgrp)){
-      indf.1 <- subset(indf, eval(as.name(subgrp))==1 &
+      indata.1 <- subset(indata, eval(as.name(subgrp))==1 &
                          !is.na(eval(as.name(valsIn[i]))) &
                          eval(as.name(is_distinct))==1)
     }else{
-      indf.1 <- subset(indf,!is.na(eval(as.name(valsIn[i]))) &
+      indata.1 <- subset(indata,!is.na(eval(as.name(valsIn[i]))) &
                          eval(as.name(is_distinct))==1)
     }
   # Call the zoopDominance function
     for(j in seq(from=1, to=5, by=2)){
-      dd <- zoopDominance(indf.1, topN=j, varIn=valsIn[i])
+      dd <- zoopDominance(indata.1, sampID, topN=j, varIn=valsIn[i], taxa_id)
       domtype <- valsOut[i]
 
       ee <- reshape(dd, idvar = sampID, direction = 'long',
                     varying = 'dompind', timevar = 'PARAMETER',
                     v.names = 'RESULT', times = 'dompind')
 
-      if(subgrp==''){
+      if(is.null(subgrp)){
         ee$PARAMETER <- paste0('DOM', j, '_', domtype)
       }else{
         ee$PARAMETER <- paste0('DOM', j, '_', subgrp, '_', domtype)
