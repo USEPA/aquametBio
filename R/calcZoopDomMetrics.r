@@ -48,10 +48,12 @@ calcZoopDomMetrics <- function(indata, sampID, is_distinct,
     if(!is.null(subgrp)){
       indata.1 <- subset(indata, eval(as.name(subgrp))==1 &
                          !is.na(eval(as.name(valsIn[i]))) &
+                           eval(as.name(valsIn[i]))>0 &
                          eval(as.name(is_distinct))==1)
     }else{
       indata.1 <- subset(indata,!is.na(eval(as.name(valsIn[i]))) &
-                         eval(as.name(is_distinct))==1)
+                            eval(as.name(valsIn[i]))>0 &
+                            eval(as.name(is_distinct))==1)
     }
   # Call the zoopDominance function
     for(j in seq(from=1, to=5, by=2)){

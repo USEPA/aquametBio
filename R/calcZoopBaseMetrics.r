@@ -6,7 +6,7 @@
 #' inputs include the names of count, biomass, and density variables,
 #' as well as a variable indicating distinctness of each taxon.
 #'
-#' @param inCts A data frame containing, at minimum, the variables
+#' @param indata A data frame containing, at minimum, the variables
 #' specified in the arguments for sampID, dist, ct, and taxa_id
 #' and TRIBE, as well as autecology traits with names that match those
 #' in the arguments ffg, habit, and ptv. In addition, there

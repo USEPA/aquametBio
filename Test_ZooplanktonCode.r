@@ -26,6 +26,7 @@ source("R/calcZoopBaseMetrics.r")
 source("R/calcZoopDivMetrics.r")
 source("R/zoopDominance.r")
 source("R/calcZoopDomMetrics.r")
+source("R/calcZoopRichnessMetrics.r")
 
 rawZp <- dbGet('ALL_THE_NLA', 'tblZOOPRAW', where = "PARAMETER IN('ABUNDANCE_TOTAL', 'BIOMASS_FACTOR', 'CONCENTRATED_VOLUME', 'VOLUME_COUNTED', 'L_R_ABUND', 'LARGE_RARE_TAXA') AND
                SAMPLE_TYPE IN('ZOCN', 'ZOFN')") %>%
@@ -325,12 +326,12 @@ domMets.cope <- calcZoopDomMetrics(indata = zpIn.taxa, sampID = c('UID', 'SAMPLE
                                   taxa_id = 'TAXA_ID', subgrp = 'COPE')
 
 # Now pull ZONW 300 counts
-zpIn.300 <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE='ZONW' AND PARAMETER IN('COUNT_300', 'BIOMASS_300', 'IS_DISTINCT')") %>%
+zpIn.300 <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE='ZONW' AND PARAMETER IN('COUNT_300', 'BIOMASS_300', 'IS_DISTINCT_300')") %>%
   pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID'), names_from='PARAMETER', values_from='RESULT') %>%
   filter(TAXA_ID %in% taxa.clean$TAXA_ID & COUNT_300>0)
 
 domMets.300 <- calcZoopDomMetrics(indata = zpIn.300, sampID = c('UID', 'SAMPLE_TYPE'),
-                              is_distinct = 'IS_DISTINCT',
+                              is_distinct = 'IS_DISTINCT_300',
                               valsIn = c('COUNT_300', 'BIOMASS_300'),
                               valsOut = c('PIND', 'PBIO'),
                               taxa_id = 'TAXA_ID', subgrp = NULL) %>%
@@ -338,3 +339,94 @@ domMets.300 <- calcZoopDomMetrics(indata = zpIn.300, sampID = c('UID', 'SAMPLE_T
                             paste(substring(PARAMETER, 1, 4), '300',
                                   substring(PARAMETER, 6, 9), sep = '_')))
 
+# Now stack all of these together to compare to database values
+domMets.all <- rbind(domMets, domMets.clad, domMets.cope, domMets.rot, domMets.300)
+
+compDomMets <- dbGet('ALL_THE_NLA', 'tblZOOPMET') %>%
+  merge(domMets.all, by = c('UID', 'PARAMETER'))
+
+diffMets.dom <- filter(compDomMets, abs(as.numeric(RESULT.x) - RESULT.y)>0.1) %>%
+  mutate(DIFF = as.numeric(RESULT.x)-RESULT.y)
+
+diffMets.dom.large <- filter(diffMets.dom, abs(DIFF)>=0.5)
+
+# Test by using original code and comparing values - maybe the changes to R are enough to alter results
+Dominance300<-function(df,topN=1,varIn){
+  rr <- subset(df,IS_DISTINCT_300==1)
+  rr.long <- reshape2::melt(rr,id.vars='UID',measure.vars=varIn)
+
+  ss <- ddply(rr.long,"UID",mutate,TOTSUM=sum(value,na.rm=T))
+
+  tt <- aggregate(list(domN=ss$value)
+                  ,list(UID=ss$UID)
+                  ,function(x){
+                    sum(x[order(x,decreasing=TRUE)[1:topN]]
+                        ,na.rm=T)
+                  }
+  )
+  uu <- merge(tt,unique(ss[,c('UID','TOTSUM')]),by="UID")
+  uu <- mutate(uu,dompind=round(domN/TOTSUM*100,1))
+  uu <- subset(uu,select=c('UID','dompind'))
+  #  uu <- plyr::rename(uu,c('dompind'=paste("DOM",topN,"PIND",sep='')))
+
+  return(uu)
+}
+## Separate function which calls Dominance and goes through all three value types (PIND,'PBIO','PDEN') and dom1-dom5
+calcDom300 <- function(indf,subgrp=''){
+  vals <- c('COUNT_300','BIOMASS_300')
+  outDom <- data.frame(UID=numeric(),PARAMETER=character(),RESULT=numeric(),stringsAsFactors=FALSE)
+
+  indf[, c('COUNT_300', 'BIOMASS_300', 'IS_DISTINCT_300')] <- lapply(indf[, c('COUNT_300', 'BIOMASS_300', 'IS_DISTINCT_300')], as.numeric)
+
+  if(subgrp!=''){
+    indf.1 <- subset(indf,eval(as.name(subgrp))==1 & !is.na(COUNT_300))
+  }else{
+    indf.1 <- subset(indf,!is.na(COUNT_300))
+  }
+
+  for(i in 1:length(vals)){
+    for(j in seq(from=1,to=5,by=2)){
+      dd <- Dominance300(indf.1,topN=j,varIn=vals[i])
+      domtype <- ifelse(vals[i]=='COUNT_300','PIND','PBIO')
+
+      if(subgrp==''){
+        ee <- plyr::rename(dd,c('dompind'=paste('DOM',j,'_300_',domtype,sep='')))
+      }else{
+        ee <- plyr::rename(dd,c('dompind'=paste('DOM',j,'_300_',subgrp,'_',domtype,sep='')))
+      }
+
+      ff <- reshape2::melt(ee,id.vars='UID',variable.name='PARAMETER',value.name='RESULT')
+      outDom <- rbind(outDom,ff)
+    }
+  }
+  return(outDom)
+}
+
+fullDom300 <- filter(zpIn.300) %>%
+  calcDom300()
+
+# Now compare with values calculated using aquametBio functions
+matchDom300 <- merge(fullDom300, domMets.300, by = c('UID', 'PARAMETER'))
+
+diffsMatchDom300 <- filter(matchDom300, RESULT.x!=RESULT.y) # all values match exactly, so it is a matter of corrections I made to ZONW data at the end of December.
+
+# Now test out richness metrics code
+# Need to combine all of the count data and native/non-native info together
+zpTaxa.zonw <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE = 'ZONW' AND PARAMETER IN('COUNT', 'COUNT_300', 'IS_DISTINCT', 'IS_DISTINCT_300', 'LARGE_RARE_TAXA')") %>%
+  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID'), names_from= 'PARAMETER', values_from='RESULT')
+
+state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE')") %>%
+  pivot_wider(id_cols = c('UNIQUE_ID', 'DSGN_CYCLE', 'IND_DOMAIN'), names_from='PARAMETER', values_from='RESULT')
+
+verif <- dbGet('ALL_THE_NLA', 'tblVERIFICATION', where = "PARAMETER IN('SITE_ID')") %>%
+  pivot_wider(id_cols = 'UID', names_from='PARAMETER', values_from = 'RESULT')
+
+stateVerif <- merge(verif, state, by='SITE_ID')
+
+zpTaxa.zonw.1 <- merge(zpTaxa.zonw, taxa.clean, by='TAXA_ID') %>%
+  merge(stateVerif, by=c('UID')) %>%
+  mutate(NON_NATIVE = ifelse(!is.na(NON_NATIVE.x) & NON_NATIVE.x=='Y'), 1, NA) %>%
+  mutate(NON_NATIVE = ifelse(NON_NATIVE.y=='ALL' & !is.na(NON_NATIVE.y), 1, NON_NATIVE)) %>%
+  mutate(NON_NATIVE = ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE & !is.na(NON_NATIVE.y), 1, NON_NATIVE)) %>%
+  select(UID, TAXA_ID, SAMPLE_TYPE, COUNT, BIOMASS, DENSITY, IS_DISTINCT,
+         LARGE_RARE_TAXA)
