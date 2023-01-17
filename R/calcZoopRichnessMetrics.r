@@ -65,7 +65,9 @@ calcZoopRichnessMetrics <- function(indata, sampID, distVars,
     return(NULL)
   }
 
-  indata.taxa <- merge(indata, inTaxa, by = 'TAXA_ID')
+  inTaxa.1 <- subset(inTaxa, select = c(taxa_id, genus, family))
+
+  indata.taxa <- merge(indata, inTaxa.1, by = taxa_id)
 
   outdata <- unique(indata[, sampID])
 
@@ -85,11 +87,13 @@ calcZoopRichnessMetrics <- function(indata, sampID, distVars,
       names(ntax.full.nat) <- gsub('TOTL_', paste0('TOTL', prefix[i], '_'), names(ntax.full.nat))
     }
     # Subset to only valid GENUS values and only unique values for genus for each sample
-    indata.gen <- unique(subset(indata.taxa, eval(as.name(genus))!='' & !is.na(eval(as.name(genus))),
+    indata.gen <- unique(subset(indata.taxa, eval(as.name(genus))!='' & !is.na(eval(as.name(genus)))
+                                & eval(as.name(distVars[i]))==1,
                          select = c(sampID, distVars[i], genus)))
 
     indata.gen.nat <- unique(subset(indata.taxa, eval(as.name(genus))!='' & !is.na(eval(as.name(genus))) &
-                                      eval(as.name(nonnative)) == 0))
+                                      eval(as.name(nonnative)) == 0 & eval(as.name(distVars[i]))==1,
+                             select = c(sampID, distVars[i], genus)))
 
     ntax.gen <- aggregate(x = list(GEN_NTAX = indata.gen[, distVars[i]]),
                           by = indata.gen[, sampID],
@@ -105,11 +109,13 @@ calcZoopRichnessMetrics <- function(indata, sampID, distVars,
     }
 
     # Subset to only valid FAMILY values and only unique values for family for each sample
-    indata.fam <- unique(subset(indata.taxa, eval(as.name(family))!='' & !is.na(eval(as.name(family))),
+    indata.fam <- unique(subset(indata.taxa, eval(as.name(family))!='' & !is.na(eval(as.name(family)))
+                                & eval(as.name(distVars[i]))==1,
                                 select = c(sampID, distVars[i], family)))
 
     indata.fam.nat <- unique(subset(indata.taxa, eval(as.name(family))!='' & !is.na(eval(as.name(family))) &
-                                      eval(as.name(nonnative)) == 0))
+                                      eval(as.name(nonnative)) == 0 & eval(as.name(distVars[i]))==1,
+                                    select = c(sampID, distVars[i], family)))
 
     ntax.fam <- aggregate(x = list(FAM_NTAX = indata.fam[, distVars[i]]),
                           by = indata.fam[, sampID],
@@ -132,5 +138,14 @@ calcZoopRichnessMetrics <- function(indata, sampID, distVars,
 
   }
 
+  var.long <- names(outdata)[!(names(outdata) %in% c(sampID))]
+
+  outdata.long <- reshape(outdata, idvar = sampID, direction = 'long',
+                                varying = var.long, timevar = 'PARAMETER',
+                                v.names = 'RESULT', times = var.long)
+
+  outdata.long$RESULT <- ifelse(is.na(outdata.long$RESULT), 0, outdata.long$RESULT)
+
+  return(outdata.long)
 
 }

@@ -28,6 +28,8 @@ source("R/zoopDominance.r")
 source("R/calcZoopDomMetrics.r")
 source("R/calcZoopRichnessMetrics.r")
 
+chanNLA <- odbcConnect('ALL_THE_NLA')
+
 rawZp <- dbGet('ALL_THE_NLA', 'tblZOOPRAW', where = "PARAMETER IN('ABUNDANCE_TOTAL', 'BIOMASS_FACTOR', 'CONCENTRATED_VOLUME', 'VOLUME_COUNTED', 'L_R_ABUND', 'LARGE_RARE_TAXA') AND
                SAMPLE_TYPE IN('ZOCN', 'ZOFN')") %>%
   pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 'REP'), names_from='PARAMETER', values_from='RESULT')
@@ -412,7 +414,7 @@ diffsMatchDom300 <- filter(matchDom300, RESULT.x!=RESULT.y) # all values match e
 
 # Now test out richness metrics code
 # Need to combine all of the count data and native/non-native info together
-zpTaxa.zonw <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE = 'ZONW' AND PARAMETER IN('COUNT', 'COUNT_300', 'IS_DISTINCT', 'IS_DISTINCT_300', 'LARGE_RARE_TAXA')") %>%
+zpTaxa.zonw <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE = 'ZONW' AND PARAMETER IN('COUNT', 'COUNT_300', 'IS_DISTINCT', 'IS_DISTINCT_300', 'LARGE_RARE_TAXA', 'NON_NATIVE')") %>%
   pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID'), names_from= 'PARAMETER', values_from='RESULT')
 
 state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE')") %>%
@@ -425,8 +427,110 @@ stateVerif <- merge(verif, state, by='SITE_ID')
 
 zpTaxa.zonw.1 <- merge(zpTaxa.zonw, taxa.clean, by='TAXA_ID') %>%
   merge(stateVerif, by=c('UID')) %>%
-  mutate(NON_NATIVE = ifelse(!is.na(NON_NATIVE.x) & NON_NATIVE.x=='Y'), 1, NA) %>%
-  mutate(NON_NATIVE = ifelse(NON_NATIVE.y=='ALL' & !is.na(NON_NATIVE.y), 1, NON_NATIVE)) %>%
-  mutate(NON_NATIVE = ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE & !is.na(NON_NATIVE.y), 1, NON_NATIVE)) %>%
-  select(UID, TAXA_ID, SAMPLE_TYPE, COUNT, BIOMASS, DENSITY, IS_DISTINCT,
-         LARGE_RARE_TAXA)
+  mutate(NON_NATIVE = ifelse(is.na(NON_NATIVE.x) & is.na(NON_NATIVE.y), '0',
+                                   ifelse(!is.na(NON_NATIVE.x), NON_NATIVE.x,  # keeps 2012 assignment
+                                          ifelse(NON_NATIVE.y=='ALL', '1', # only updates 2012 assignment non-native nationwide
+                                                 ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE, '1', '0'))))) %>%
+  mutate(NON_NATIVE = revalue(NON_NATIVE, c('Y'='1', 'N'='0'))) %>%
+  mutate(NON_NATIVE = ifelse(NON_NATIVE.y == 'ALL' & !is.na(NON_NATIVE.y), '1',
+                                   NON_NATIVE)) %>% # This sets to non-native where previous assignment but non-native all over US
+  # mutate(NON_NATIVE = ifelse(!is.na(NON_NATIVE.x) & NON_NATIVE.x=='Y', 1, NA)) %>%
+  # mutate(NON_NATIVE = ifelse(NON_NATIVE.y=='ALL' & !is.na(NON_NATIVE.y), 1, NON_NATIVE)) %>%
+  # mutate(NON_NATIVE = ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE & !is.na(NON_NATIVE.y), 1, NON_NATIVE)) %>%
+  # mutate(NON_NATIVE = ifelse(is.na(NON_NATIVE), 0, NON_NATIVE)) %>%
+  select(UID, TAXA_ID, SAMPLE_TYPE, COUNT, COUNT_300, IS_DISTINCT, IS_DISTINCT_300,
+         LARGE_RARE_TAXA, NON_NATIVE)
+
+richMets <- calcZoopRichnessMetrics(indata = zpTaxa.zonw.1, sampID=c('UID', 'SAMPLE_TYPE'),
+                                    distVars=c('IS_DISTINCT', 'IS_DISTINCT_300'),
+                                    nonnative = 'NON_NATIVE', inTaxa = taxa.clean,
+                                    taxa_id = 'TAXA_ID', genus='GENUS',
+                                    family = 'FAMILY', prefix = c('', '300'))
+
+curRich <- dbGet('ALL_THE_NLA', 'tblZOOPMET', where = paste0("PARAMETER IN('", paste(unique(richMets$PARAMETER), collapse="','"), "')"))
+
+matchRich <- merge(curRich, richMets, by = c('UID', 'PARAMETER'))
+
+diffRich <- filter(matchRich, as.numeric(RESULT.x)!=RESULT.y)
+
+# Looks like these differences could be related to the records that had to be deprecated for 300 org subsamples in ZONW samples
+# These were deprecated from ZOCN samples upon newly selecting 300 counts but accidentally left in ZONW
+# Look for cases where DEPRECATION was on 12/30/2022 for IS_DISTINCT_300
+dep <- sqlQuery(chanNLA, "SELECT * FROM tblZOOPCNT WHERE SAMPLE_TYPE='ZONW' AND PARAMETER='IS_DISTINCT_300' AND DEPRECATION<'12/31/2022' AND DEPRECATION>'12/30/2022' AND ACTIVE='FALSE'")
+
+diffRich.sub <- filter(diffRich, UID %nin% dep$UID) # All of the remaining differences are for samples that had changes to IS_DISTINCT_300 as noted in line 454 above.
+
+# Check native metrics code
+zpTaxa.zonw <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE = 'ZONW'") %>%
+  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID'), names_from= 'PARAMETER', values_from='RESULT')
+
+state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE')") %>%
+  pivot_wider(id_cols = c('UNIQUE_ID', 'DSGN_CYCLE', 'IND_DOMAIN'), names_from='PARAMETER', values_from='RESULT')
+
+verif <- dbGet('ALL_THE_NLA', 'tblVERIFICATION', where = "PARAMETER IN('SITE_ID')") %>%
+  pivot_wider(id_cols = 'UID', names_from='PARAMETER', values_from = 'RESULT')
+
+stateVerif <- merge(verif, state, by='SITE_ID')
+
+zpTaxa.zonw.1 <- merge(zpTaxa.zonw, taxa.clean, by='TAXA_ID') %>%
+  merge(stateVerif, by=c('UID')) %>%
+  mutate(NON_NATIVE = ifelse(is.na(NON_NATIVE.x) & is.na(NON_NATIVE.y), '0',
+                             ifelse(!is.na(NON_NATIVE.x), NON_NATIVE.x,  # keeps 2012 assignment
+                                    ifelse(NON_NATIVE.y=='ALL', '1', # only updates 2012 assignment non-native nationwide
+                                           ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE, '1', '0'))))) %>%
+  mutate(NON_NATIVE = revalue(NON_NATIVE, c('Y'='1', 'N'='0'))) %>%
+  mutate(NON_NATIVE = ifelse(NON_NATIVE.y == 'ALL' & !is.na(NON_NATIVE.y), '1',
+                             NON_NATIVE)) %>% # This sets to non-native where previous assignment but non-native all over US
+  # mutate(NON_NATIVE = ifelse(!is.na(NON_NATIVE.x) & NON_NATIVE.x=='Y', 1, NA)) %>%
+  # mutate(NON_NATIVE = ifelse(NON_NATIVE.y=='ALL' & !is.na(NON_NATIVE.y), 1, NON_NATIVE)) %>%
+  # mutate(NON_NATIVE = ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE & !is.na(NON_NATIVE.y), 1, NON_NATIVE)) %>%
+  # mutate(NON_NATIVE = ifelse(is.na(NON_NATIVE), 0, NON_NATIVE)) %>%
+  select(-NON_NATIVE.x, -NON_NATIVE.y, -INVASIVE_TAXA_OBSERVED)
+
+testSum <- calcZoopTotals(indata = zpTaxa.zonw.1, sampID = c('UID', 'SAMPLE_TYPE'),
+                          is_distinct = 'IS_DISTINCT',
+                          inputSums = c('COUNT', 'BIOMASS', 'DENSITY'),
+                          outputSums = c('TOTL_NIND', 'TOTL_BIO', 'TOTL_DEN'),
+                          outputTaxa = 'TOTL_NTAX')
+
+testSum.300 <- calcZoopTotals(zpTaxa.zonw.1, c('UID', 'SAMPLE_TYPE'),
+                              'IS_DISTINCT_300',
+                              c('COUNT_300', 'BIOMASS_300'),
+                              c('TOTL300_NIND', 'TOTL300_BIO'),
+                              'TOTL300_NTAX')
+
+testSum.nat <- calcZoopTotals(indata = subset(zpTaxa.zonw.1, NON_NATIVE=='0'),
+                              sampID = c('UID', 'SAMPLE_TYPE'),
+                              is_distinct = 'IS_DISTINCT',
+                              inputSums = c('COUNT', 'BIOMASS', 'DENSITY'),
+                              outputSums = c('TOTL_NAT_NIND', 'TOTL_NAT_BIO', 'TOTL_NAT_DEN'),
+                              outputTaxa = 'TOTL_NAT_NTAX')
+
+testSum.300.nat <- calcZoopTotals(indata = subset(zpTaxa.zonw.1, NON_NATIVE=='0'),
+                                  sampID = c('UID', 'SAMPLE_TYPE'),
+                                  is_distinct = 'IS_DISTINCT_300',
+                                  inputSums = c('COUNT_300', 'BIOMASS_300'),
+                                  outputSums = c('TOTL300_NAT_NIND', 'TOTL300_NAT_BIO'),
+                                  outputTaxa = 'TOTL300_NAT_NTAX')
+
+matchSums <- merge(testSum, testSum.300, by = c('UID', 'SAMPLE_TYPE'), all.x=TRUE) %>%
+  merge(testSum.nat, by = c('UID', 'SAMPLE_TYPE'), all.x=TRUE) %>%
+  merge(testSum.300.nat, by = c('UID', 'SAMPLE_TYPE'), all.x=TRUE)
+
+nativeMets <- calcZoopNativeMetrics(matchSums, c('UID', 'SAMPLE_TYPE'),
+                                  inputNative = c('TOTL_NAT_NTAX', 'TOTL300_NAT_NTAX',
+                                                  'TOTL_NAT_DEN', 'TOTL_NAT_BIO',
+                                                  'TOTL_NAT_NIND', 'TOTL300_NAT_NIND',
+                                                  'TOTL300_NAT_BIO'),
+                                  inputTotals = c('TOTL_NTAX', 'TOTL300_NTAX', 'TOTL_DEN',
+                                                  'TOTL_BIO', 'TOTL_NIND',
+                                                  'TOTL300_NIND', 'TOTL300_BIO'))
+
+# Now compare to existing metrics
+curNatMets <- dbGet('ALL_THE_NLA', 'tblZOOPMET', where = paste0("PARAMETER IN('", paste(unique(nativeMets$PARAMETER), collapse="','"), "')"))
+
+matchNative <- merge(curNatMets, nativeMets, by = c('UID', 'PARAMETER'))
+
+diffNative <- filter(matchNative, abs(as.numeric(RESULT.x)-RESULT.y)>0.01)
+
+diffNative.sub <- filter(diffNative, UID %nin% dep$UID) # No more records. The ones above were all related to ZONW samples not correctly being deprecated when tow volume updates were made and 300-org sample for ZOCN had to be redone.
