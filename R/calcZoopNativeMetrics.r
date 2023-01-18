@@ -7,14 +7,23 @@
 #' @param sampID sampID A character vector containing the names of all
 #' variables in indf that specify a unique sample. If not specified,
 #' the default is \emph{UID}.
-#' @param is_distinct A string with the name of the distinctness variable,
-#' which can have valid values of 0 (non-distinct) or 1 (distinct).
+#' @param inputNative A character vector with the names of
+#' metrics with the totals of native taxa for various
+#' characteristics (e.g., count, density, biomass, 300-count
+#' subsample).
+#' @param inputTotals A character vector with the names of
+#' metrics with the totals of all taxa. The order must correspond
+#' to the order of metrics listed in \emph{inputNative}.
 #' @param nonnative A string with the name of the numeric variable
 #' indicating a non-native taxon. A value of 1 indicates that a
 #' taxon is non-native. All other values will be ignored.
 #'
 #' @return A data frame containing percent native metrics
-#' for the full data and the 300-count subsample
+#' for each of the \emph{inputNative} variables as a subset
+#' of the \emph{inputTotals}. The names of the resulting
+#' metrics are based on the names of the inputs. Metrics
+#' with suffixes are replaced as follows: NIND = PIND,
+#' NTAX = PTAX, DEN = PDEN, BIO = PBIO.
 #'
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
