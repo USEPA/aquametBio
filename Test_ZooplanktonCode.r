@@ -243,7 +243,7 @@ zpIn.nat <- merge(curZp, taxa.clean, by='TAXA_ID') %>%
   select(UID, TAXA_ID, SAMPLE_TYPE, COUNT, BIOMASS, DENSITY, IS_DISTINCT,
          LARGE_RARE_TAXA)
 
-testMets.nat <- calcZoopMetrics(zpIn.nat, c('UID', 'SAMPLE_TYPE'),
+testMets.nat <- calcZoopBaseMetrics(zpIn.nat, c('UID', 'SAMPLE_TYPE'),
                                 'IS_DISTINCT',
                                 'COUNT', 'BIOMASS', 'DENSITY',
                                 taxa, taxa_id='TAXA_ID',

@@ -128,13 +128,96 @@ calcZoopAllMets.r <- function(indata, inTaxa, sampID, is_distinct,
                                           ffg, clad_size,
                                           net_size,
                                           nativeMetrics = TRUE)
-
+# Diversity metrics
   divMets.full <- calcZoopDivMetrics(indata, sampID, is_distinct,
                                      ct, biomass, density)
 
-  divMets.nat <- calcZoopDivMetrics(indata.nat, sampID, is_distinct,
-                                    ct, biomass, density)
+  divMets.300 <- calcZoopDivMetrics(indata, sampID, is_distinct_sub,
+                                    ct_sub, biomass_sub)
+
+  # Now merge taxa with indata to subset to rotifers
+  indata.taxa <- merge(indata, inTaxa, by = taxa_id) |>
+    subset(select = c(sampID, ct, ct_sub, taxa_id, is_distinct, is_distinct_sub,
+                      'SUBORDER', 'SUBCLASS', 'PHYLUM'))
+
+  divMets.full.rot <- calcZoopDivMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
+                                         sampID, is_distinct, ct)
+
+  divMets.full.clad <- calcZoopDivMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
+                                         sampID, is_distinct, ct)
+
+  divMets.full.cope <- calcZoopDivMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
+                                         sampID, is_distinct, ct)
+
+  divMets.300.rot <- calcZoopDivMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
+                                         sampID, is_distinct_sub, ct_sub)
+
+  divMets.300.clad <- calcZoopDivMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
+                                          sampID, is_distinct_sub, ct_sub)
+
+  divMets.300.cope <- calcZoopDivMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
+                                          sampID, is_distinct_sub, ct_sub)
+# Dominance metrics
+  dom.full <- calcZoopDomMetrics(indata, sampID, is_distinct,
+                                  valsIn = c(ct, biomass, density),
+                                  valsOut = c('PIND', 'PBIO', 'PDEN'),
+                                  taxa_id,
+                                  subgrp = NULL)
+
+  dom.300 <- calcZoopDomMetrics(indata, sampID, is_distinct_sub,
+                                 valsIn = c(ct_sub, biomass_sub),
+                                 valsOut = c('300_PIND', '300_PBIO', '300_PDEN'),
+                                 taxa_id,
+                                 subgrp = NULL)
+
+  dom.full.rot <- calcZoopDomMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
+                                     sampID, is_distinct,
+                                     valsIn = c(ct, biomass, density),
+                                     valsOut = c('PIND', 'PBIO', 'PDEN'),
+                                     taxa_id, subgrp = 'ROT')
+
+  dom.full.clad <- calcZoopDomMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
+                                     sampID, is_distinct,
+                                     valsIn = c(ct, biomass, density),
+                                     valsOut = c('PIND', 'PBIO', 'PDEN'),
+                                     taxa_id, subgrp = 'CLAD')
+
+  dom.full.rot <- calcZoopDomMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
+                                     sampID, is_distinct,
+                                     valsIn = c(ct, biomass, density),
+                                     valsOut = c('PIND', 'PBIO', 'PDEN'),
+                                     taxa_id, subgrp = 'COPE')
+
+  dom.300.rot <- calcZoopDomMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
+                                     sampID, is_distinct_sub,
+                                     valsIn = c(ct_sub, biomass_sub),
+                                     valsOut = c('PIND', 'PBIO'),
+                                     taxa_id, subgrp = 'ROT')
+  dom.300.rot$PARAMETER <- gsub('PIND', '300_PIND', dom.300.rot$PARAMETER)
+  dom.300.rot$PARAMETER <- gsub('PBIO', '300_PBIO', dom.300.rot$PARAMETER)
+
+  dom.300.clad <- calcZoopDomMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
+                                     sampID, is_distinct_sub,
+                                     valsIn = c(ct_sub, biomass_sub),
+                                      valsOut = c('PIND', 'PBIO'),
+                                      taxa_id, subgrp = 'CLAD')
+  dom.300.clad$PARAMETER <- gsub('PIND', '300_PIND', dom.300.clad$PARAMETER)
+  dom.300.clad$PARAMETER <- gsub('PBIO', '300_PBIO', dom.300.clad$PARAMETER)
+
+  dom.300.cope <- calcZoopDomMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
+                                     sampID, is_distinct_sub,
+                                     valsIn = c(ct_sub, biomass_sub),
+                                     valsOut = c('PIND', 'PBIO'),
+                                     taxa_id, subgrp = 'COPE')
+  dom.300.cope$PARAMETER <- gsub('PIND', '300_PIND', dom.300.cope$PARAMETER)
+  dom.300.cope$PARAMETER <- gsub('PBIO', '300_PBIO', dom.300.cope$PARAMETER)
+
+  # Richness metrics
+
 
   allMets <- rbind(baseMets.full, baseMets.nat, baseMets.300,
-                   baseMets.300.nat)
+                   baseMets.300.nat, divMets.full, divMets.300,
+                   divMets.full.rot, divMets.full.clad,
+                   divMets.full.cope, divMets.300.rot,
+                   divMets.300.clad, divMets.300.cope)
 }

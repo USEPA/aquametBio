@@ -163,6 +163,13 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
 
   }
 
-  return(metsOut)
+  metsOut.long <- reshape(metsOut, idvar = sampID, direction = 'long',
+                        varying = names(metsOut)[!(names(metsOut) %in% sampID)],
+                        timevar = 'PARAMETER', v.names = 'RESULT',
+                        times = names(metsOut)[!(names(metsOut) %in% sampID)])
+
+  metsOut.long$RESULT <- ifelse(is.na(metsOut.long$RESULT), 0, RESULT)
+
+  return(metsOut.long)
 
 }
