@@ -18,15 +18,15 @@ source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/db.r')
 source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/dd.r')
 source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/md.r')
 source( 'l:/Priv/CORFiles/IM/Rwork/SharedCode/sharedSupport.r')
-source("R/rarifyCounts.r")
-source("R/convertZoopCts_NLA.r")
-source("R/prepZoopCombCts_NLA.r")
-source("R/calcZoopTotals.r")
-source("R/calcZoopBaseMetrics.r")
-source("R/calcZoopDivMetrics.r")
-source("R/zoopDominance.r")
-source("R/calcZoopDomMetrics.r")
-source("R/calcZoopRichnessMetrics.r")
+# source("R/rarifyCounts.r")
+# source("R/convertZoopCts_NLA.r")
+# source("R/prepZoopCombCts_NLA.r")
+# source("R/calcZoopTotals.r")
+# source("R/calcZoopBaseMetrics.r")
+# source("R/calcZoopDivMetrics.r")
+# source("R/zoopDominance.r")
+# source("R/calcZoopDomMetrics.r")
+# source("R/calcZoopRichnessMetrics.r")
 
 chanNLA <- odbcConnect('ALL_THE_NLA')
 
@@ -534,3 +534,54 @@ matchNative <- merge(curNatMets, nativeMets, by = c('UID', 'PARAMETER'))
 diffNative <- filter(matchNative, abs(as.numeric(RESULT.x)-RESULT.y)>0.01)
 
 diffNative.sub <- filter(diffNative, UID %nin% dep$UID) # No more records. The ones above were all related to ZONW samples not correctly being deprecated when tow volume updates were made and 300-org sample for ZOCN had to be redone.
+
+
+# Test calcZoopAllMets.r
+exclude_UIDs <- sqlQuery(chanNLA, "SELECT DISTINCT UID FROM tblZOOPCNT WHERE SAMPLE_TYPE='ZONW' AND PARAMETER='IS_DISTINCT_300' AND DEPRECATION<'12/31/2022' AND DEPRECATION>'12/30/2022' AND ACTIVE='FALSE'")
+
+curZp <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE IN('ZONW', 'ZOCN', 'ZOFN')") %>%
+  filter(UID %nin% exclude_UIDs$UID & PARAMETER %nin% c('L_R_ABUND', 'COUNT_300_ORIG', 'BIOMASS_300_ORIG', 'INVASIVE_TAXA_OBSERVED')) %>%
+  pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID'), names_from='PARAMETER', values_from='RESULT')
+
+zpTaxa <- dbGet('ALL_THE_NLA', 'tblTAXA', where = "ASSEMBLAGE_NAME='ZOOPLANKTON'") %>%
+  pivot_wider(id_cols = c('TAXA_ID'), names_from='PARAMETER', values_from='RESULT') %>%
+  filter(is.na(NON_TARGET))
+
+state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE')") %>%
+  pivot_wider(id_cols = c('UNIQUE_ID', 'DSGN_CYCLE', 'IND_DOMAIN'), names_from='PARAMETER', values_from='RESULT')
+
+verif <- dbGet('ALL_THE_NLA', 'tblVERIFICATION', where = "PARAMETER IN('SITE_ID')") %>%
+  pivot_wider(id_cols = 'UID', names_from='PARAMETER', values_from = 'RESULT')
+
+stateVerif <- merge(verif, state, by='SITE_ID')
+
+curZp.1 <- merge(curZp, zpTaxa, by='TAXA_ID') %>% # Gets rid of non-target
+  merge(stateVerif, by=c('UID')) %>%
+  mutate(NON_NATIVE = ifelse(is.na(NON_NATIVE.x) & is.na(NON_NATIVE.y), '0',
+                             ifelse(!is.na(NON_NATIVE.x), NON_NATIVE.x,  # keeps 2012 assignment
+                                    ifelse(NON_NATIVE.y=='ALL', '1', # only updates 2012 assignment non-native nationwide
+                                           ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE, '1', '0'))))) %>%
+  mutate(NON_NATIVE = revalue(NON_NATIVE, c('Y'='1', 'N'='0'))) %>%
+  mutate(NON_NATIVE = ifelse(NON_NATIVE.y == 'ALL' & !is.na(NON_NATIVE.y), '1',
+                             NON_NATIVE)) %>% # This sets to non-native where previous assignment but non-native all over US
+  select(-NON_NATIVE.x, -NON_NATIVE.y)
+
+zonwIn <- filter(curZp.1, SAMPLE_TYPE == 'ZONW')
+
+zocnIn <- filter(curZp.1, SAMPLE_TYPE == 'ZOCN')
+
+zofnIn <- filter(curZp.1, SAMPLE_TYPE == 'ZOFN')
+
+testAllMets <- calcZoopAllMets(zonwIn, zocnIn, zofnIn,
+                               zpTaxa, sampID = c('UID', 'SAMPLE_TYPE'),
+                               is_distinct = 'IS_DISTINCT',
+                               ct = 'COUNT', biomass = 'BIOMASS',
+                               density = 'DENSITY',
+                               is_distinct_sub = 'IS_DISTINCT_300',
+                               ct_sub = 'COUNT_300',
+                               biomass_sub = 'BIOMASS_300',
+                               sub_mod = '300', taxa_id = 'TAXA_ID',
+                               nonnative = 'NON_NATIVE', genus = 'GENUS',
+                               family = 'FAMILY', ffg = 'FFG',
+                               clad_size = 'CLADOCERA_SIZE',
+                               net_size = 'NET_SIZECLS_NEW')

@@ -10,7 +10,8 @@ calcZoopDivMetrics(
   is_distinct,
   ct,
   biomass = NULL,
-  density = NULL
+  density = NULL,
+  suffix = ""
 )
 }
 \arguments{
@@ -38,37 +39,8 @@ variable should be numeric or able to be converted to numeric.}
 \item{density}{A string with the name of the density variable. This
 variable should be numeric or able to be converted to numeric.}
 
-\item{inTaxa}{a data frame containing taxonomic information,
-including the variables PHYLUM, CLASS, SUBCLASS, ORDER, SUBORDER,
-FAMILY, following the same taxonomy as the default taxa list,
-\emph{zoopTaxa}. There should also be autecology traits with names
-that match those for the arguments \emph{ffg}, \emph{clad_size},
-and \emph{net_size}.}
-
-\item{taxa_id}{A string with the name of the taxon ID variable
-in \emph{inCts} that matches that in \emph{inTaxa}. The default
-value is \emph{TAXA_ID}.}
-
-\item{ffg}{A string with the name of the functional feeding group
-variable in \emph{inTaxa}. Values used
-in calculations include FILT, HERB, OMNI, PARA, PRED, representing
-filterer, herbivore, omnivore, parasite, and predator,
-respectively.}
-
-\item{clad_size}{A string with the name of the variable in
-\emph{inTaxa} indicating the size class of the cladoceran
-taxon. Valid values are LARGE and SMALL.}
-
-\item{net_size}{A string with the name of the variable in
-\emph{inTaxa} indicating the net size class of a taxon.
-Valid values are COARSE and FINE.}
-
-\item{nativeMetrics}{A logical argument. TRUE indicates that
-the subset of metrics based on native status should be
-calculated. FALSE indicates that the full set of metrics
-should be calculated. The default value is FALSE. If value
-is TRUE, the input data should already be subset to
-native taxa.}
+\item{suffix}{A string to indicate the suffix that should be added
+to metric names to indicate the subgroup represented in the metric.}
 }
 \value{
 A data frame containing the variables in sampID and

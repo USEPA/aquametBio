@@ -22,37 +22,14 @@
 #' variable should be numeric or able to be converted to numeric.
 #' @param density A string with the name of the density variable. This
 #' variable should be numeric or able to be converted to numeric.
-#' @param inTaxa a data frame containing taxonomic information,
-#' including the variables PHYLUM, CLASS, SUBCLASS, ORDER, SUBORDER,
-#' FAMILY, following the same taxonomy as the default taxa list,
-#' \emph{zoopTaxa}. There should also be autecology traits with names
-#' that match those for the arguments \emph{ffg}, \emph{clad_size},
-#' and \emph{net_size}.
-#' @param taxa_id A string with the name of the taxon ID variable
-#' in \emph{inCts} that matches that in \emph{inTaxa}. The default
-#' value is \emph{TAXA_ID}.
-#' @param ffg A string with the name of the functional feeding group
-#' variable in \emph{inTaxa}. Values used
-#' in calculations include FILT, HERB, OMNI, PARA, PRED, representing
-#' filterer, herbivore, omnivore, parasite, and predator,
-#' respectively.
-#' @param clad_size A string with the name of the variable in
-#' \emph{inTaxa} indicating the size class of the cladoceran
-#' taxon. Valid values are LARGE and SMALL.
-#' @param net_size A string with the name of the variable in
-#' \emph{inTaxa} indicating the net size class of a taxon.
-#' Valid values are COARSE and FINE.
-#' @param nativeMetrics A logical argument. TRUE indicates that
-#' the subset of metrics based on native status should be
-#' calculated. FALSE indicates that the full set of metrics
-#' should be calculated. The default value is FALSE. If value
-#' is TRUE, the input data should already be subset to
-#' native taxa.
+#' @param suffix A string to indicate the suffix that should be added
+#' to metric names to indicate the subgroup represented in the metric.
 #' @return A data frame containing the variables in sampID and
 #' the zooplankton metrics as additional variables. If
 #' \emph{nativeMetrics} = TRUE, NAT is appended to metric names.
 calcZoopDivMetrics <- function(indata, sampID, is_distinct,
-                            ct, biomass = NULL, density = NULL){
+                            ct, biomass = NULL, density = NULL,
+                            suffix = ''){
   indata <- as.data.frame(indata)
 
   necVars <- c(sampID, is_distinct, ct)
@@ -169,6 +146,10 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
                         times = names(metsOut)[!(names(metsOut) %in% sampID)])
 
   metsOut.long$RESULT <- ifelse(is.na(metsOut.long$RESULT), 0, RESULT)
+
+  if(suffix != ''){
+    metsOut.long$PARAMETER <- gsub('NIND', suffix, metsOut.long$PARAMETER)
+  }
 
   return(metsOut.long)
 
