@@ -11,6 +11,16 @@
 #' specified in the arguments for sampID, is_distinct, ct, biomass,
 #' density, ct_sub, biomass_sub, taxa_id, nonnative. The dataset
 #' should contain only data from the combined sample type (ZONW for NLA).
+#' @param inCoarse A data frame for coarse mesh zooplankton sample data,
+#' containing the variables
+#' specified in the arguments for sampID, is_distinct, ct, biomass,
+#' density, ct_sub, biomass_sub, taxa_id, nonnative. The dataset
+#' should contain only data from the combined sample type (ZOCN for NLA)
+#' @param inFine A data frame for fine mesh zooplankton sample data,
+#' containing the variables
+#' specified in the arguments for sampID, is_distinct, ct, biomass,
+#' density, ct_sub, biomass_sub, taxa_id, nonnative. The dataset
+#' should contain only data from the combined sample type (ZOFN for NLA)
 #' @param inTaxa a data frame containing taxonomic information,
 #' including the variables PHYLUM, CLASS, SUBCLASS, ORDER, SUBORDER,
 #' FAMILY, following the same taxonomy as the default taxa list,
@@ -64,7 +74,8 @@
 #' @param net_size A string with the name of the variable in
 #' \emph{inTaxa} indicating the net size class of a taxon.
 #' Valid values are COARSE and FINE.
-calcZoopAllMets.r <- function(indata, inTaxa, sampID, is_distinct,
+calcZoopAllMets.r <- function(indata, inCoarse, inFine,
+                              inTaxa, sampID, is_distinct,
                               ct = 'COUNT', biomass = 'BIOMASS',
                               density = 'DENSITY',
                               is_distinct_sub = 'IS_DISTINCT_300',
@@ -128,6 +139,28 @@ calcZoopAllMets.r <- function(indata, inTaxa, sampID, is_distinct,
                                           ffg, clad_size,
                                           net_size,
                                           nativeMetrics = TRUE)
+
+
+  # Copepod ratio metrics - these require metrics calculated above
+  copeMetsIn <- rbind(subset(baseMets.full, PARAMETER %in% c('CALAN_NIND',
+                                                    'CALAN_BIO', 'CALAN_DEN',
+                                                    'CYCLOP_NIND', 'CYCLOP_BIO',
+                                                    'CYCLOP_DEN', 'CLAD_NIND',
+                                                    'CLAD_BIO', 'CLAD_DEN')),
+                      subset(baseMets.300, PARAMETER %in% c('CALAN300_NIND',
+                                                    'CALAN300_BIO',
+                                                    'CYCLOP300_NIND', 'CYCLOP300_BIO',
+                                                    'CLAD300_NIND', 'CLAD300_BIO')))
+
+
+  copeRatMets <- calcZoopCopeMetrics(copeMetsIn, sampID,
+                                     c('CALAN_NIND', 'CALAN_BIO', 'CALAN_DEN',
+                                       'CALAN300_NIND', 'CALAN300_BIO'),
+                                     c('CYCLOP_NIND', 'CYCLOP_BIO', 'CYCLOP_DEN',
+                                       'CYCLOP300_NIND', 'CYCLOP300_BIO'),
+                                     c('CLAD_NIND', 'CLAD_BIO', 'CLAD_DEN',
+                                       'CLAD300_NIND', 'CLAD300_BIO'))
+
 # Diversity metrics
   divMets.full <- calcZoopDivMetrics(indata, sampID, is_distinct,
                                      ct, biomass, density)
@@ -182,7 +215,7 @@ calcZoopAllMets.r <- function(indata, inTaxa, sampID, is_distinct,
                                      valsOut = c('PIND', 'PBIO', 'PDEN'),
                                      taxa_id, subgrp = 'CLAD')
 
-  dom.full.rot <- calcZoopDomMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
+  dom.full.cope <- calcZoopDomMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
                                      sampID, is_distinct,
                                      valsIn = c(ct, biomass, density),
                                      valsOut = c('PIND', 'PBIO', 'PDEN'),
@@ -213,11 +246,132 @@ calcZoopAllMets.r <- function(indata, inTaxa, sampID, is_distinct,
   dom.300.cope$PARAMETER <- gsub('PBIO', '300_PBIO', dom.300.cope$PARAMETER)
 
   # Richness metrics
+  richMets.full <- calcZoopRichnessMetrics(indata, sampID,
+                                           distVars=c(is_distinct, is_distinct_sub),
+                                           nonnative, inTaxa,
+                                           taxa_id, genus,
+                                           family, prefix = c('', '300'))
 
+  # Totals - these are all in wide format so combine and then melt
+  totMets.full <- calcZoopTotals(indata, sampID, is_distinct,
+                                 c(ct, biomass, density),
+                                 c('TOTL_NIND', 'TOTL_BIO', 'TOTL_DEN'),
+                                 'TOTL_NTAX')
 
+  totMets.nat <- calcZoopTotals(indata.nat, sampID, is_distinct,
+                                c(ct, biomass, density),
+                                c('TOTL_NAT_NIND', 'TOTL_NAT_BIO', 'TOTL_NAT_DEN'),
+                                'TOTL_NAT_NTAX')
+
+  totMets.300 <- calcZoopTotals(indata, sampID, is_distinct_sub,
+                                 c(ct_sub, biomass_sub),
+                                 c('TOTL300_NIND', 'TOTL300_BIO'),
+                                 'TOTL300_NTAX')
+
+  totMets.300.nat <- calcZoopTotals(indata.nat, sampID, is_distinct_sub,
+                                c(ct_sub, biomass_sub),
+                                c('TOTL300_NAT_NIND', 'TOTL300_NAT_BIO'),
+                                'TOTL300_NAT_NTAX')
+
+  # Also calculate totals by coarse and fine sample types
+  totMets.zocn.full <- calcZoopTotals(inCoarse, sampID, is_distinct,
+                                      c(ct, biomass, density),
+                                      c('ZOCN_NIND', 'ZOCN_BIO', 'ZOCN_DEN'),
+                                      'ZOCN_NTAX')
+
+  totMets.zocn.nat <- calcZoopTotals(subset(inCoarse, eval(as.name(nonnative))==0),
+                                     sampID, is_distinct,
+                                     c(ct, biomass, density),
+                                     c('ZOCN_NAT_NIND', 'ZOCN_NAT_BIO', 'ZOCN_NAT_DEN'),
+                                     'ZOCN_NAT_NTAX')
+
+  totMets.zocn.300 <- calcZoopTotals(inCoarse, sampID, is_distinct_sub,
+                                     c(ct_sub, biomass_sub),
+                                     c('ZOCN300_NIND', 'ZOCN300_BIO'),
+                                     'ZOCN300_NTAX')
+
+  totMets.zocn.300.nat <- calcZoopTotals(subset(inCoarse, eval(as.name(nonnative))==0),
+                                         sampID, is_distinct_sub,
+                                         c(ct_sub, biomass_sub),
+                                         c('ZOCN300_NAT_NIND', 'ZOCN300_NAT_BIO'),
+                                         'ZOCN300_NAT_NTAX')
+
+  totMets.zofn.full <- calcZoopTotals(inFine, sampID, is_distinct,
+                                      c(ct, biomass, density),
+                                      c('ZOFN_NIND', 'ZOFN_BIO', 'ZOFN_DEN'),
+                                      'ZOFN_NTAX')
+
+  totMets.zofn.nat <- calcZoopTotals(subset(inFine, eval(as.name(nonnative))==0),
+                                     sampID, is_distinct,
+                                     c(ct, biomass, density),
+                                     c('ZOFN_NAT_NIND', 'ZOFN_NAT_BIO', 'ZOFN_NAT_DEN'),
+                                     'ZOFN_NAT_NTAX')
+
+  totMets.zofn.300 <- calcZoopTotals(inFine, sampID, is_distinct_sub,
+                                     c(ct_sub, biomass_sub),
+                                     c('ZOFN300_NIND', 'ZOFN300_BIO'),
+                                     'ZOFN300_NTAX')
+
+  totMets.zofn.300.nat <- calcZoopTotals(subset(inFine, eval(as.name(nonnative))==0),
+                                         sampID, is_distinct_sub,
+                                         c(ct_sub, biomass_sub),
+                                         c('ZOFN300_NAT_NIND', 'ZOFN300_NAT_BIO'),
+                                         'ZOFN300_NAT_NTAX')
+
+  zonwMets.all <- merge(totMets.full, totMets.nat, by = sampID, all.x=TRUE) |>
+    merge(totMets.300, by = sampID, all.x=TRUE) |>
+    merge(totMets.300.nat, by = sampID, all.x=TRUE)
+
+  zocnTot.all <- merge(totMets.zocn.full, totMets.zocn.nat, by = sampID, all.x=TRUE) |>
+    merge(totMets.zocn.300, by = sampID, all.x=TRUE) |>
+    merge(totMets.zocn.300.nat, by = sampID, all.x=TRUE)
+
+  zofnTot.all <- merge(totMets.zofn.full, totMets.zofn.nat, by = sampID, all.x=TRUE) |>
+    merge(totMets.zofn.300, by = sampID, all.x=TRUE) |>
+    merge(totMets.zofn.300.nat, by = sampID, all.x=TRUE)
+
+  totMets.all <- merge(zonwMets.all, zocnTot.all, by = sampID, all.x=TRUE) |>
+    merge(zofnTot.all, by = sampID, all.x=TRUE)
+
+  totMets.all.long <- reshape(totMets.all, idvar = sampID, direction = 'long',
+            varying = names(totMets.all)[!(names(totMets.all) %in% sampID)],
+            timevar = 'PARAMETER', v.names = 'RESULT',
+            times = names(totMets.all)[!(names(totMets.all) %in% sampID)])
+
+  # Native metrics
+  natMets.full <- calcZoopNativeMetrics(matchSums, c('UID', 'SAMPLE_TYPE'),
+                        inputNative = c('TOTL_NAT_NTAX', 'TOTL300_NAT_NTAX',
+                                        'ZOCN_NAT_NTAX', 'ZOCN300_NAT_NTAX',
+                                        'ZOFN_NAT_NTAX', 'ZOFN300_NAT_NTAX',
+                                        'TOTL_NAT_DEN', 'TOTL_NAT_BIO',
+                                        'TOTL_NAT_NIND', 'TOTL300_NAT_NIND',
+                                        'TOTL300_NAT_BIO', 'ZOCN_NAT_NIND',
+                                        'ZOCN300_NAT_NIND', 'ZOCN_NAT_BIO',
+                                        'ZOCN300_NAT_BIO', 'ZOCN_NAT_DEN',
+                                        'ZOFN_NAT_NIND', 'ZOFN300_NAT_NIND',
+                                        'ZOFN_NAT_BIO', 'ZOFN300_NAT_BIO'),
+                        inputTotals = c('TOTL_NTAX', 'TOTL300_NTAX',
+                                        'ZOCN_NTAX', 'ZOCN300_NTAX',
+                                        'ZOFN_NTAX', 'ZOFN300_NTAX',
+                                        'TOTL_DEN',
+                                        'TOTL_BIO', 'TOTL_NIND',
+                                        'TOTL300_NIND', 'TOTL300_BIO',
+                                        'ZOCN_NIND', 'ZOCN300_NIND',
+                                        'ZOCN_BIO', 'ZOCN300_BIO',
+                                        'ZOCN_DEN', 'ZOFN_NIND',
+                                        'ZOFN300_NIND',
+                                        'ZOFN_BIO', 'ZOFN300_BIO'))
+
+  # Now combine all metrics together
   allMets <- rbind(baseMets.full, baseMets.nat, baseMets.300,
-                   baseMets.300.nat, divMets.full, divMets.300,
+                   baseMets.300.nat, copeRatMets,
+                   divMets.full, divMets.300,
                    divMets.full.rot, divMets.full.clad,
                    divMets.full.cope, divMets.300.rot,
-                   divMets.300.clad, divMets.300.cope)
+                   divMets.300.clad, divMets.300.cope,
+                   dom.full, dom.300, dom.full.rot,
+                   dom.full.clad, dom.full.cope,
+                   dom.300.rot, dom.300.clad,
+                   dom.300.cope, richMets.full,
+                   totMets.all.long, natMets.full)
 }

@@ -14,8 +14,15 @@ calcZoopDivMetrics(
 )
 }
 \arguments{
+\item{indata}{A data frame containing, at minimum, the variables
+specified in the arguments for sampID, dist, ct, and taxa_id
+and TRIBE, as well as autecology traits with names that match those
+in the arguments ffg, habit, and ptv. In addition, there
+should be a variable with the name in argument taxa_id that matches
+with all of those in the indf data frame}
+
 \item{sampID}{A character vector containing the names of all
-variables in indf that specify a unique sample. If not specified,
+variables in indata that specify a unique sample. If not specified,
 the default is \emph{UID}}
 
 \item{is_distinct}{A string with the name of the distinctness variable,
@@ -30,13 +37,6 @@ variable should be numeric or able to be converted to numeric.}
 
 \item{density}{A string with the name of the density variable. This
 variable should be numeric or able to be converted to numeric.}
-
-\item{inCts}{A data frame containing, at minimum, the variables
-specified in the arguments for sampID, dist, ct, and taxa_id
-and TRIBE, as well as autecology traits with names that match those
-in the arguments ffg, habit, and ptv. In addition, there
-should be a variable with the name in argument taxa_id that matches
-with all of those in the indf data frame}
 
 \item{inTaxa}{a data frame containing taxonomic information,
 including the variables PHYLUM, CLASS, SUBCLASS, ORDER, SUBORDER,

@@ -9,7 +9,7 @@
 #' in the arguments for \emph{sampID} and \emph{inputNames}.
 #' Large and rare taxa should be included in the input data.
 #' @param sampID sampID A character vector containing the names of all
-#' variables in indf that specify a unique sample. If not specified,
+#' variables in indata that specify a unique sample. If not specified,
 #' the default is \emph{UID}.
 #' @param distVars A string with the name of the distinctness
 #' variables to use for richness, which can have valid values of

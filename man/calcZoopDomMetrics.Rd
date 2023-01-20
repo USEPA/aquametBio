@@ -4,11 +4,21 @@
 \alias{calcZoopDomMetrics}
 \title{Calculate zooplankton dominance metrics}
 \usage{
-calcZoopDomMetrics(indata, sampID, is_distinct, valsIn, valsOut, subgrp = NULL)
+calcZoopDomMetrics(
+  indata,
+  sampID,
+  is_distinct,
+  valsIn,
+  valsOut,
+  taxa_id,
+  subgrp = NULL
+)
 }
 \arguments{
+\item{indata}{Input data frame, containing SAMPID as variable identifying unique samples}
+
 \item{sampID}{A character vector containing the names of all
-variables in indf that specify a unique sample. If not specified,
+variables in indata that specify a unique sample. If not specified,
 the default is \emph{UID}.}
 
 \item{is_distinct}{A string with the name of the distinctness variable,
@@ -21,10 +31,11 @@ in calculating dominance.}
 \item{valsOut}{A vector of output suffixes to append to dominance
 metric, matched with the order of valsIn variables.}
 
+\item{taxa_id}{A string with the name of the variable that distinctly
+identifies taxa in each sample.}
+
 \item{subgrp}{A string with the name of a subgroup in \emph{indata}, with
 a valid value of 1 to indicate inclusion in the subgroup.}
-
-\item{df}{Input data frame, containing SAMPID as variable identifying unique samples}
 }
 \value{
 A data frame with \emph{sampID} variables and the metric containing

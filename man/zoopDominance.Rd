@@ -4,7 +4,7 @@
 \alias{zoopDominance}
 \title{Dominance metric calculation function (zooplankton)}
 \usage{
-zoopDominance(df, sampID = "UID", topN = 1, varIn)
+zoopDominance(df, sampID = "UID", topN = 1, varIn, taxa_id)
 }
 \arguments{
 \item{df}{Input data frame, containing SAMPID as variable identifying unique samples}
@@ -18,6 +18,9 @@ The default value is 1.}
 
 \item{varIn}{A string with the name of the variable to be used in calculating
 dominance.}
+
+\item{taxa_id}{A string with the name of the variable that distinctly
+identifies taxa in each sample.}
 }
 \value{
 A data frame with \emph{sampID} variables and the metric containing

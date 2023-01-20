@@ -9,7 +9,7 @@
 #' @param indata A data frame containing, at minimum, the variables
 #' specified in the arguments for sampID, dist, ct, and taxa_id,
 #' @param sampID A character vector containing the names of all
-#' variables in indf that specify a unique sample. If not specified,
+#' variables in indata that specify a unique sample. If not specified,
 #' the default is \emph{UID}
 #' @param is_distinct A string with the name of the distinctness variable,
 #' which is assumed to have only values of 0 or 1. If not specified,
@@ -158,7 +158,7 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
                              'TOTL_NTAX')
   }else{
     totals <- calcZoopTotals(calcData, sampID, is_distinct,
-                             c(ct, biomass, density),
+                             c(ct, biomass),
                              outputSums = c('TOTL_NIND', 'TOTL_BIO'),
                              outputTaxa = 'TOTL_NTAX')
   }

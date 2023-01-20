@@ -202,7 +202,7 @@ testSum <- calcZoopTotals(indata = curZp, sampID = c('UID', 'SAMPLE_TYPE'),
                           outputTaxa = 'TOTL_NTAX')
 
 testSum.300 <- calcZoopTotals(curZp, c('UID', 'SAMPLE_TYPE'),
-                              'IS_DISTINCT',
+                              'IS_DISTINCT_300',
                             c('COUNT_300', 'BIOMASS_300'),
                             c('TOTL300_NIND', 'TOTL300_BIO'),
                             'TOTL300_NTAX')

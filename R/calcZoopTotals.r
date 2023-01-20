@@ -8,7 +8,7 @@
 #' @param indata Input data frame containing variables as identified
 #' in the arguments for \emph{sampID} and \emph{inputNames}.
 #' @param sampID sampID A character vector containing the names of all
-#' variables in indf that specify a unique sample. If not specified,
+#' variables in indata that specify a unique sample. If not specified,
 #' the default is \emph{UID}.
 #' @param is_distinct A string with the name of the distinctness variable,
 #' which can have valid values of 0 (non-distinct) or 1 (distinct).

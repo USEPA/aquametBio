@@ -4,14 +4,14 @@
 #' @description This function calculates all diversity metrics associated
 #' with a given input data frame using the inputs provided.
 #'
-#' @param inCts A data frame containing, at minimum, the variables
+#' @param indata A data frame containing, at minimum, the variables
 #' specified in the arguments for sampID, dist, ct, and taxa_id
 #' and TRIBE, as well as autecology traits with names that match those
 #' in the arguments ffg, habit, and ptv. In addition, there
 #' should be a variable with the name in argument taxa_id that matches
 #' with all of those in the indf data frame
 #' @param sampID A character vector containing the names of all
-#' variables in indf that specify a unique sample. If not specified,
+#' variables in indata that specify a unique sample. If not specified,
 #' the default is \emph{UID}
 #' @param is_distinct A string with the name of the distinctness variable,
 #' which is assumed to have only values of 0 or 1. If not specified,

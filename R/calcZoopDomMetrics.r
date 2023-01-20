@@ -2,9 +2,9 @@
 #' @title Calculate zooplankton dominance metrics
 #' @description This function calculates all of the dominance metrics used
 #' for zooplankton.
-#' @param df Input data frame, containing SAMPID as variable identifying unique samples
+#' @param indata Input data frame, containing SAMPID as variable identifying unique samples
 #' @param sampID A character vector containing the names of all
-#' variables in indf that specify a unique sample. If not specified,
+#' variables in indata that specify a unique sample. If not specified,
 #' the default is \emph{UID}.
 #' @param is_distinct A string with the name of the distinctness variable,
 #' which is assumed to have only values of 0 or 1. If not specified,
