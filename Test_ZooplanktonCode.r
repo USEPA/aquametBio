@@ -564,7 +564,9 @@ curZp.1 <- merge(curZp, zpTaxa, by='TAXA_ID') %>% # Gets rid of non-target
   mutate(NON_NATIVE = revalue(NON_NATIVE, c('Y'='1', 'N'='0'))) %>%
   mutate(NON_NATIVE = ifelse(NON_NATIVE.y == 'ALL' & !is.na(NON_NATIVE.y), '1',
                              NON_NATIVE)) %>% # This sets to non-native where previous assignment but non-native all over US
-  select(-NON_NATIVE.x, -NON_NATIVE.y)
+  select(UID, SAMPLE_TYPE, TAXA_ID, COUNT, COUNT_300, BIOMASS,
+         BIOMASS_300, DENSITY, IS_DISTINCT, IS_DISTINCT_300,
+         NON_NATIVE)
 
 zonwIn <- filter(curZp.1, SAMPLE_TYPE == 'ZONW')
 
@@ -572,8 +574,11 @@ zocnIn <- filter(curZp.1, SAMPLE_TYPE == 'ZOCN')
 
 zofnIn <- filter(curZp.1, SAMPLE_TYPE == 'ZOFN')
 
-testAllMets <- calcZoopAllMets(zonwIn, zocnIn, zofnIn,
-                               zpTaxa, sampID = c('UID', 'SAMPLE_TYPE'),
+testAllMets <- calcZoopAllMets(indata = zonwIn,
+                               inCoarse = zocnIn,
+                               inFine = zofnIn,
+                               inTaxa = zpTaxa,
+                               sampID = c('UID', 'SAMPLE_TYPE'),
                                is_distinct = 'IS_DISTINCT',
                                ct = 'COUNT', biomass = 'BIOMASS',
                                density = 'DENSITY',

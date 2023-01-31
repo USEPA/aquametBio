@@ -55,20 +55,22 @@ calcZoopCopeMetrics <- function(indata, sampID,
   for(i in 1:length(calaIn)){
 
     temp <- indata
-    temp$RESULT <- temp[, calaIn[i]]/(temp[, cyclIn] + temp[, cladIn])
-    temp$RESULT <- ifelse(is.na(temp$RESULT)|is.infinite(temp$RESULT))
+    temp$RESULT <- temp[, calaIn[i]]/(temp[, cyclIn[i]] + temp[, cladIn[i]])
+    temp$RESULT <- ifelse(is.na(temp$RESULT)|is.infinite(temp$RESULT), 0, temp$RESULT)
     # to rename each one by the suffix on the input variables,
     # first search for _ in the input names
     match_ <- unlist(gregexpr("\\_", calaIn[i]))
     matchNum <- unlist(gregexpr("[[:digit:]]", calaIn[i]))
 
-    if(matchNum > 0){
+    if(matchNum[1]>0){
       temp$PARAMETER <- paste("COPE_RATIO", substring(calaIn[i], matchNum[1], nchar(calaIn[i])), sep='_')
     }else{
       temp$PARAMETER <- paste0("COPE_RATIO", substring(calaIn[i], max(match_), nchar(calaIn[i])))
     }
 
-    temp <- temp[, c(sampID, PARAMETER, RESULT)]
+    temp <- temp[, c(sampID, 'PARAMETER', 'RESULT')]
     metsOut <- rbind(metsOut, temp)
   }
+
+  return(metsOut)
 }

@@ -74,7 +74,7 @@
 #' @param net_size A string with the name of the variable in
 #' \emph{inTaxa} indicating the net size class of a taxon.
 #' Valid values are COARSE and FINE.
-calcZoopAllMets.r <- function(indata, inCoarse, inFine,
+calcZoopAllMets <- function(indata, inCoarse, inFine,
                               inTaxa, sampID, is_distinct,
                               ct = 'COUNT', biomass = 'BIOMASS',
                               density = 'DENSITY',
@@ -126,19 +126,34 @@ calcZoopAllMets.r <- function(indata, inCoarse, inFine,
                                        net_size,
                                        nativeMetrics = TRUE)
 
-  baseMets.sub <- calcZoopBaseMetrics(indata.nat, sampID, is_distinct_sub,
-                                      ct_sub, biomass_sub,
+  baseMets.sub <- calcZoopBaseMetrics(indata, sampID, is_distinct_sub,
+                                      ct_sub, biomass_sub, density = NULL,
                                       inTaxa, taxa_id,
                                       ffg, clad_size,
                                       net_size,
                                       nativeMetrics = FALSE)
 
+  baseMets.sub$PARAMETER <- gsub("\\_NIND", paste0(sub_mod, "\\_NIND"), baseMets.sub$PARAMETER)
+  baseMets.sub$PARAMETER <- gsub("\\_PIND", paste0(sub_mod, "\\_PIND"), baseMets.sub$PARAMETER)
+  baseMets.sub$PARAMETER <- gsub("\\_NTAX", paste0(sub_mod, "\\_NTAX"), baseMets.sub$PARAMETER)
+  baseMets.sub$PARAMETER <- gsub("\\_PTAX", paste0(sub_mod, "\\_PNTAX"), baseMets.sub$PARAMETER)
+  baseMets.sub$PARAMETER <- gsub("\\_BIO", paste0(sub_mod, "\\_BIO"), baseMets.sub$PARAMETER)
+  baseMets.sub$PARAMETER <- gsub("\\_PBIO", paste0(sub_mod, "\\_PBIO"), baseMets.sub$PARAMETER)
+
   baseMets.sub.nat <- calcZoopBaseMetrics(indata.nat, sampID, is_distinct_sub,
-                                          ct_sub, biomass_sub,
+                                          ct_sub, biomass_sub, density = NULL,
                                           inTaxa, taxa_id,
                                           ffg, clad_size,
                                           net_size,
                                           nativeMetrics = TRUE)
+
+  baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_NIND", paste0(sub_mod, "\\_NAT\\_NIND"), baseMets.sub.nat$PARAMETER)
+  baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PIND", paste0(sub_mod, "\\_NAT\\_PIND"), baseMets.sub.nat$PARAMETER)
+  baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_NTAX", paste0(sub_mod, "\\_NAT\\_NTAX"), baseMets.sub.nat$PARAMETER)
+  baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PTAX", paste0(sub_mod, "\\_NAT\\_PNTAX"), baseMets.sub.nat$PARAMETER)
+  baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_BIO", paste0(sub_mod, "\\_NAT\\_BIO"), baseMets.sub.nat$PARAMETER)
+  baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PBIO", paste0(sub_mod, "\\_NAT\\_PBIO"), baseMets.sub.nat$PARAMETER)
+
 
 
   # Copepod ratio metrics - these require metrics calculated above
@@ -147,21 +162,26 @@ calcZoopAllMets.r <- function(indata, inCoarse, inFine,
                                                     'CYCLOP_NIND', 'CYCLOP_BIO',
                                                     'CYCLOP_DEN', 'CLAD_NIND',
                                                     'CLAD_BIO', 'CLAD_DEN')),
-                      subset(baseMets.300, PARAMETER %in% c(paste0('CALAN', sub_mod, '_NIND'),
+                      subset(baseMets.sub, PARAMETER %in% c(paste0('CALAN', sub_mod, '_NIND'),
                                                     paste0('CALAN', sub_mod, '_BIO'),
                                                     paste0('CYCLOP', sub_mod, '_NIND'),
                                                     paste0('CYCLOP', sub_mod, '_BIO'),
                                                     paste0('CLAD', sub_mod, '_NIND'),
                                                     paste0('CLAD', sub_mod, '_BIO'))))
 
+  copeMetsIn.wide <- reshape(copeMetsIn, idvar = c(sampID), direction = 'wide',
+                             timevar = 'PARAMETER', v.names = 'RESULT')
 
-  copeRatMets <- calcZoopCopeMetrics(copeMetsIn, sampID,
+  names(copeMetsIn.wide) <- gsub("RESULT\\.", "", names(copeMetsIn.wide))
+
+
+  copeRatMets <- calcZoopCopeMetrics(copeMetsIn.wide, sampID,
                                      c('CALAN_NIND', 'CALAN_BIO', 'CALAN_DEN',
                                        paste0('CALAN', sub_mod, '_NIND'),
                                        paste0('CALAN', sub_mod, '_BIO')),
                                      c('CYCLOP_NIND', 'CYCLOP_BIO', 'CYCLOP_DEN',
                                        paste0('CYCLOP', sub_mod, '_NIND'),
-                                       paste0('CYCLOP', sub_mod, '_BIO'),),
+                                       paste0('CYCLOP', sub_mod, '_BIO')),
                                      c('CLAD_NIND', 'CLAD_BIO', 'CLAD_DEN',
                                        paste0('CLAD', sub_mod, '_NIND'),
                                        paste0('CLAD', sub_mod, '_BIO')))

@@ -192,7 +192,6 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
         # that parameter, then add to existing metrics
         met.1$CALCPIND <- with(met.1, eval(as.name(ct))/TOTL_NIND)
         met.1$CALCPTAX <- with(met.1, eval(as.name(is_distinct))/TOTL_NTAX)
-        met.1$CALCPDEN <- with(met.1, eval(as.name(density))/TOTL_DEN)
         met.1$CALCPBIO <- with(met.1, eval(as.name(biomass))/TOTL_BIO)
 
         met.1a.nind <- aggregate(x = list(NIND = met.1[, ct],
@@ -201,6 +200,7 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
                             FUN = function(x){sum(x, na.rm=T)})
 
         if(!is.null(density)){
+          met.1$CALCPDEN <- with(met.1, eval(as.name(density))/TOTL_DEN)
           met.1a.den <- aggregate(x = list(DEN = met.1[, density]),
                                   by = met.1[c(sampID)],
                                   FUN = function(x){round(sum(x, na.rm=T), 4)})
@@ -210,12 +210,21 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
                                 by = met.1[c(sampID)],
                                 FUN = function(x){round(sum(x, na.rm=T), 6)})
 
-        met.1b <- aggregate(x = list(PIND = met.1$CALCPIND,
-                                     PTAX = met.1$CALCPTAX,
-                                     PDEN = met.1$CALCPDEN,
-                                     PBIO = met.1$CALCPBIO),
-                            by = met.1[c(sampID)],
-                            FUN = function(x){round(sum(x, na.rm=TRUE)*100, 2)})
+        if(!is.null(density)){
+          met.1b <- aggregate(x = list(PIND = met.1$CALCPIND,
+                                       PTAX = met.1$CALCPTAX,
+                                       PDEN = met.1$CALCPDEN,
+                                       PBIO = met.1$CALCPBIO),
+                              by = met.1[c(sampID)],
+                              FUN = function(x){round(sum(x, na.rm=TRUE)*100, 2)})
+        }else{
+          met.1b <- aggregate(x = list(PIND = met.1$CALCPIND,
+                                       PTAX = met.1$CALCPTAX,
+                                       PBIO = met.1$CALCPBIO),
+                              by = met.1[c(sampID)],
+                              FUN = function(x){round(sum(x, na.rm=TRUE)*100, 2)})
+        }
+
         if(!is.null(density)){
           met.2 <- merge(met.1a.nind, met.1a.bio, by = sampID) |>
             merge(met.1a.den, by = sampID) |>
