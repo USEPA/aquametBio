@@ -154,7 +154,7 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_BIO", paste0(sub_mod, "\\_NAT\\_BIO"), baseMets.sub.nat$PARAMETER)
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PBIO", paste0(sub_mod, "\\_NAT\\_PBIO"), baseMets.sub.nat$PARAMETER)
 
-
+  print("Finished with base metrics")
 
   # Copepod ratio metrics - these require metrics calculated above
   copeMetsIn <- rbind(subset(baseMets.full, PARAMETER %in% c('CALAN_NIND',
@@ -186,6 +186,8 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                        paste0('CLAD', sub_mod, '_NIND'),
                                        paste0('CLAD', sub_mod, '_BIO')))
 
+  print("Finished copepod ratio merics")
+
 # Diversity metrics
   divMets.full <- calcZoopDivMetrics(indata, sampID, is_distinct,
                                      ct, biomass, density)
@@ -193,28 +195,42 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
   divMets.sub <- calcZoopDivMetrics(indata, sampID, is_distinct_sub,
                                     ct_sub, biomass_sub)
 
+  divMets.sub$PARAMETER <- gsub("\\_NIND", paste0(sub_mod, "\\_NIND"), divMets.sub$PARAMETER)
+  divMets.sub$PARAMETER <- gsub("\\_BIO", paste0(sub_mod, "\\_BIO"), divMets.sub$PARAMETER)
+
+  print("Finished overall diversity metrics")
+
   # Now merge taxa with indata to subset to rotifers
   indata.taxa <- merge(indata, inTaxa, by = taxa_id) |>
-    subset(select = c(sampID, ct, ct_sub, taxa_id, is_distinct, is_distinct_sub,
+    subset(select = c(sampID, ct, ct_sub, taxa_id, biomass, biomass_sub,
+                      density, is_distinct, is_distinct_sub,
                       'SUBORDER', 'SUBCLASS', 'PHYLUM'))
 
   divMets.full.rot <- calcZoopDivMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
-                                         sampID, is_distinct, ct, 'ROT')
+                                         sampID, is_distinct, ct, suffix = 'ROT')
 
   divMets.full.clad <- calcZoopDivMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
-                                         sampID, is_distinct, ct, 'CLAD')
+                                         sampID, is_distinct, ct, suffix = 'CLAD')
 
   divMets.full.cope <- calcZoopDivMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
-                                         sampID, is_distinct, ct, 'COPE')
+                                         sampID, is_distinct, ct, suffix = 'COPE')
 
   divMets.sub.rot <- calcZoopDivMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
-                                         sampID, is_distinct_sub, ct_sub, 'ROT')
+                                         sampID, is_distinct_sub, ct_sub, suffix = 'ROT')
+
+  divMets.sub.rot$PARAMETER <- paste0(divMets.sub.rot$PARAMETER, sub_mod)
 
   divMets.sub.clad <- calcZoopDivMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
-                                          sampID, is_distinct_sub, ct_sub, 'CLAD')
+                                          sampID, is_distinct_sub, ct_sub, suffix = 'CLAD')
+
+  divMets.sub.clad$PARAMETER <- paste0(divMets.sub.clad$PARAMETER, sub_mod)
 
   divMets.sub.cope <- calcZoopDivMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
-                                          sampID, is_distinct_sub, ct_sub, 'COPE')
+                                          sampID, is_distinct_sub, ct_sub, suffix = 'COPE')
+
+  divMets.sub.cope$PARAMETER <- paste0(divMets.sub.cope$PARAMETER, sub_mod)
+
+  print("Finished group diversity metrics")
 # Dominance metrics
   dom.full <- calcZoopDomMetrics(indata, sampID, is_distinct,
                                   valsIn = c(ct, biomass, density),
@@ -222,7 +238,7 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                   taxa_id,
                                   subgrp = NULL)
 
-  dom.300 <- calcZoopDomMetrics(indata, sampID, is_distinct_sub,
+  dom.sub <- calcZoopDomMetrics(indata, sampID, is_distinct_sub,
                                  valsIn = c(ct_sub, biomass_sub),
                                  valsOut = c(paste(sub_mod, 'PIND', sep = '_'),
                                              paste(sub_mod, 'PBIO', sep = '_'),
@@ -230,32 +246,36 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                  taxa_id,
                                  subgrp = NULL)
 
-  dom.full.rot <- calcZoopDomMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
+  indata.taxa$ROT <- with(indata.taxa, ifelse(PHYLUM=='ROTIFERA', 1, 0))
+  indata.taxa$CLAD <- with(indata.taxa, ifelse(SUBORDER=='CLADOCERA', 1, 0))
+  indata.taxa$COPE <- with(indata.taxa, ifelse(SUBCLASS=='COPEPODA', 1, 0))
+
+  dom.full.rot <- calcZoopDomMetrics(indata.taxa,
                                      sampID, is_distinct,
                                      valsIn = c(ct, biomass, density),
                                      valsOut = c('PIND', 'PBIO', 'PDEN'),
                                      taxa_id, subgrp = 'ROT')
 
-  dom.full.clad <- calcZoopDomMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
+  dom.full.clad <- calcZoopDomMetrics(indata.taxa,
                                      sampID, is_distinct,
                                      valsIn = c(ct, biomass, density),
                                      valsOut = c('PIND', 'PBIO', 'PDEN'),
                                      taxa_id, subgrp = 'CLAD')
 
-  dom.full.cope <- calcZoopDomMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
+  dom.full.cope <- calcZoopDomMetrics(indata.taxa,
                                      sampID, is_distinct,
                                      valsIn = c(ct, biomass, density),
                                      valsOut = c('PIND', 'PBIO', 'PDEN'),
                                      taxa_id, subgrp = 'COPE')
 
-  dom.sub.rot <- calcZoopDomMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
+  dom.sub.rot <- calcZoopDomMetrics(indata.taxa,
                                      sampID, is_distinct_sub,
                                      valsIn = c(ct_sub, biomass_sub),
                                      valsOut = c('PIND', 'PBIO'),
                                      taxa_id, subgrp = 'ROT')
-  dom.sub.rot$PARAMETER <- gsub('PIND', paste(sub_mod, 'PIND', sep = '_'),
+  dom.sub.rot$PARAMETER <- gsub('ROT\\_PIND', paste(sub_mod, 'ROT\\_PIND', sep = '_'),
                                 dom.sub.rot$PARAMETER)
-  dom.sub.rot$PARAMETER <- gsub('PBIO', paste(sub_mod, 'PBIO', sep = '_'),
+  dom.sub.rot$PARAMETER <- gsub('ROT\\_PBIO', paste(sub_mod, 'ROT\\_PBIO', sep = '_'),
                                 dom.sub.rot$PARAMETER)
 
   dom.sub.clad <- calcZoopDomMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
@@ -263,9 +283,9 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                      valsIn = c(ct_sub, biomass_sub),
                                       valsOut = c('PIND', 'PBIO'),
                                       taxa_id, subgrp = 'CLAD')
-  dom.sub.clad$PARAMETER <- gsub('PIND', paste(sub_mod, 'PIND', sep = '_'),
+  dom.sub.clad$PARAMETER <- gsub('CLAD\\_PIND', paste(sub_mod, 'CLAD\\_PIND', sep = '_'),
                                  dom.sub.clad$PARAMETER)
-  dom.sub.clad$PARAMETER <- gsub('PBIO', paste(sub_mod, 'PBIO', sep = '_'),
+  dom.sub.clad$PARAMETER <- gsub('CLAD\\_PBIO', paste(sub_mod, 'CLAD\\_PBIO', sep = '_'),
                                  dom.sub.clad$PARAMETER)
 
   dom.sub.cope <- calcZoopDomMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
@@ -273,10 +293,12 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                      valsIn = c(ct_sub, biomass_sub),
                                      valsOut = c('PIND', 'PBIO'),
                                      taxa_id, subgrp = 'COPE')
-  dom.sub.cope$PARAMETER <- gsub('PIND', paste(sub_mod, 'PIND', sep = '_'),
+  dom.sub.cope$PARAMETER <- gsub('COPE\\_PIND', paste(sub_mod, 'COPE\\_PIND', sep = '_'),
                                  dom.sub.cope$PARAMETER)
-  dom.sub.cope$PARAMETER <- gsub('PBIO', paste(sub_mod, 'PBIO', sep = '_'),
+  dom.sub.cope$PARAMETER <- gsub('COPE\\_PBIO', paste(sub_mod, 'COPE\\_PBIO', sep = '_'),
                                  dom.sub.cope$PARAMETER)
+
+  print("Finished dominance metrics")
 
   # Richness metrics
   richMets.full <- calcZoopRichnessMetrics(indata, sampID,
@@ -284,6 +306,8 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                            nonnative, inTaxa,
                                            taxa_id, genus,
                                            family, prefix = c('', sub_mod))
+
+  print("Finished richness metrics")
 
   # Totals - these are all in wide format so combine and then melt
   totMets.full <- calcZoopTotals(indata, sampID, is_distinct,
@@ -307,6 +331,8 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                 c(paste0('TOTL', sub_mod, '_NAT_NIND'),
                                   paste0('TOTL', sub_mod, '_NAT_BIO')),
                                   paste0('TOTL', sub_mod, '_NAT_NTAX'))
+
+  print("Finished totals metrics for combined sample")
 
   # Also calculate totals by coarse and fine sample types
   totMets.zocn.full <- calcZoopTotals(inCoarse, sampID, is_distinct,
@@ -357,6 +383,8 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                            paste0('ZOFN', sub_mod, '_NAT_BIO')),
                                            paste0('ZOFN', sub_mod, '_NAT_NTAX'))
 
+  print("Finished totals metrics for fine and coarse mesh data")
+
   zonwMets.all <- merge(totMets.full, totMets.nat, by = sampID, all.x=TRUE) |>
     merge(totMets.sub, by = sampID, all.x=TRUE) |>
     merge(totMets.sub.nat, by = sampID, all.x=TRUE)
@@ -377,8 +405,10 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
             timevar = 'PARAMETER', v.names = 'RESULT',
             times = names(totMets.all)[!(names(totMets.all) %in% sampID)])
 
+  print("Combined totals metrics")
+
   # Native metrics
-  natMets.full <- calcZoopNativeMetrics(matchSums, c('UID', 'SAMPLE_TYPE'),
+  natMets.full <- calcZoopNativeMetrics(totMets.all, c('UID', 'SAMPLE_TYPE'),
                         inputNative = c('TOTL_NAT_NTAX',
                                         paste0('TOTL', sub_mod, '_NAT_NTAX'),
                                         'ZOCN_NAT_NTAX',
@@ -413,6 +443,8 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                         paste0('ZOFN', sub_mod, '_NIND'),
                                         'ZOFN_BIO',
                                         paste0('ZOFN', sub_mod, '_BIO')))
+
+  print("Finished native metrics")
 
   # Now combine all metrics together
   allMets <- rbind(baseMets.full, baseMets.nat, baseMets.sub,

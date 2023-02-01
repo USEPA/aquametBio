@@ -24,6 +24,7 @@
 #' variable should be numeric or able to be converted to numeric.
 #' @param suffix A string to indicate the suffix that should be added
 #' to metric names to indicate the subgroup represented in the metric.
+#' This suffix must match the name of a variable in \emph{indata}
 #' @return A data frame containing the variables in sampID and
 #' the zooplankton metrics as additional variables. If
 #' \emph{nativeMetrics} = TRUE, NAT is appended to metric names.
@@ -145,7 +146,7 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
                         timevar = 'PARAMETER', v.names = 'RESULT',
                         times = names(metsOut)[!(names(metsOut) %in% sampID)])
 
-  metsOut.long$RESULT <- ifelse(is.na(metsOut.long$RESULT), 0, RESULT)
+  metsOut.long$RESULT <- ifelse(is.na(metsOut.long$RESULT), 0, metsOut.long$RESULT)
 
   if(suffix != ''){
     metsOut.long$PARAMETER <- gsub('NIND', suffix, metsOut.long$PARAMETER)

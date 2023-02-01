@@ -45,7 +45,7 @@ calcZoopCopeMetrics <- function(indata, sampID,
   indata[, c(calaIn, cyclIn, cladIn)] <- lapply(indata[, c(calaIn, cyclIn, cladIn)],
                                                 FUN = function(x){ifelse(is.na(x), 0, x)})
 
-  samps <- unique(calcData[, sampID])
+  samps <- unique(indata[, sampID])
 
   column_names <- c(sampID, 'PARAMETER', 'RESULT')
 
