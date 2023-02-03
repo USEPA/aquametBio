@@ -237,11 +237,16 @@ stateVerif <- merge(verif, state, by='SITE_ID')
 
 zpIn.nat <- merge(curZp, taxa.clean, by='TAXA_ID') %>%
   merge(stateVerif, by=c('UID')) %>%
-  filter(is.na(NON_NATIVE.x)|NON_NATIVE.x=='N') %>%
-  filter(NON_NATIVE.y!= "ALL"|is.na(NON_NATIVE.y)) %>%
-  filter(str_detect(NON_NATIVE.y, PSTL_CODE)==FALSE|is.na(NON_NATIVE.y)) %>%
-  select(UID, TAXA_ID, SAMPLE_TYPE, COUNT, BIOMASS, DENSITY, IS_DISTINCT,
-         LARGE_RARE_TAXA)
+  mutate(NON_NATIVE = ifelse(is.na(NON_NATIVE.x) & is.na(NON_NATIVE.y), 0,
+                             ifelse(!is.na(NON_NATIVE.x), NON_NATIVE.x,  # keeps 2012 assignment
+                                    ifelse(NON_NATIVE.y=='ALL', 1, # only updates 2012 assignment non-native nationwide
+                                           ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE, 1, 0))))) %>%
+  mutate(NON_NATIVE = revalue(NON_NATIVE, c('Y'='1', 'N'='0'))) %>%
+  mutate(NON_NATIVE_TAXON = ifelse(NON_NATIVE.y == 'ALL' & !is.na(NON_NATIVE.y), 1,
+                             NON_NATIVE)) %>% # This sets to non-native where previous assignment but non-native all over US
+  select(UID, SAMPLE_TYPE, TAXA_ID, COUNT, COUNT_300, BIOMASS,
+         BIOMASS_300, DENSITY, IS_DISTINCT, IS_DISTINCT_300,
+         NON_NATIVE_TAXON)
 
 testMets.nat <- calcZoopBaseMetrics(zpIn.nat, c('UID', 'SAMPLE_TYPE'),
                                 'IS_DISTINCT',
@@ -249,7 +254,8 @@ testMets.nat <- calcZoopBaseMetrics(zpIn.nat, c('UID', 'SAMPLE_TYPE'),
                                 taxa, taxa_id='TAXA_ID',
                                 'FFG', 'CLADOCERA_SIZE',
                                 'NET_SIZECLS_NEW',
-                                nativeMetrics = TRUE)
+                                nativeMetrics = TRUE,
+                                'NON_NATIVE_TAXON')
 
 # Compare values to database, assuming all preparatory steps are being followed
 compMets <- dbGet('ALL_THE_NLA', 'tblZOOPMET') %>%
@@ -258,6 +264,11 @@ compMets <- dbGet('ALL_THE_NLA', 'tblZOOPMET') %>%
 diffMets <- filter(compMets, abs(as.numeric(RESULT.x)-RESULT.y)>0.0001) %>%
   mutate(DIFF = as.numeric(RESULT.x) - RESULT.y) # All within rounding limits
 
+compMets.nat <- dbGet('ALL_THE_NLA', 'tblZOOPMET') %>%
+  merge(testMets.nat, by=c('UID', 'PARAMETER'))
+
+diffMets.nat <- filter(compMets.nat, abs(as.numeric(RESULT.x)-RESULT.y)>0.001) %>%
+  mutate(DIFF = as.numeric(RESULT.x) - RESULT.y)
 
 # Zooplankton diversity metrics
 divMets <- calcZoopDivMetrics(zpIn, c('UID', 'SAMPLE_TYPE'), 'IS_DISTINCT',
@@ -540,14 +551,14 @@ diffNative.sub <- filter(diffNative, UID %nin% dep$UID) # No more records. The o
 exclude_UIDs <- sqlQuery(chanNLA, "SELECT DISTINCT UID FROM tblZOOPCNT WHERE SAMPLE_TYPE='ZONW' AND PARAMETER='IS_DISTINCT_300' AND DEPRECATION<'12/31/2022' AND DEPRECATION>'12/30/2022' AND ACTIVE='FALSE'")
 
 curZp <- dbGet('ALL_THE_NLA', 'tblZOOPCNT', where = "SAMPLE_TYPE IN('ZONW', 'ZOCN', 'ZOFN')") %>%
-  filter(UID %nin% exclude_UIDs$UID & PARAMETER %nin% c('L_R_ABUND', 'COUNT_300_ORIG', 'BIOMASS_300_ORIG', 'INVASIVE_TAXA_OBSERVED')) %>%
+  filter(UID %nin% exclude_UIDs$UID & PARAMETER %nin% c('COUNT_300_ORIG', 'BIOMASS_300_ORIG', 'INVASIVE_TAXA_OBSERVED')) %>%
   pivot_wider(id_cols = c('UID', 'SAMPLE_TYPE', 'TAXA_ID'), names_from='PARAMETER', values_from='RESULT')
 
 zpTaxa <- dbGet('ALL_THE_NLA', 'tblTAXA', where = "ASSEMBLAGE_NAME='ZOOPLANKTON'") %>%
   pivot_wider(id_cols = c('TAXA_ID'), names_from='PARAMETER', values_from='RESULT') %>%
   filter(is.na(NON_TARGET))
 
-state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE')") %>%
+state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE') AND DSGN_CYCLE='2017'") %>%
   pivot_wider(id_cols = c('UNIQUE_ID', 'DSGN_CYCLE', 'IND_DOMAIN'), names_from='PARAMETER', values_from='RESULT')
 
 verif <- dbGet('ALL_THE_NLA', 'tblVERIFICATION', where = "PARAMETER IN('SITE_ID')") %>%
@@ -557,16 +568,16 @@ stateVerif <- merge(verif, state, by='SITE_ID')
 
 curZp.1 <- merge(curZp, zpTaxa, by='TAXA_ID') %>% # Gets rid of non-target
   merge(stateVerif, by=c('UID')) %>%
-  mutate(NON_NATIVE = ifelse(is.na(NON_NATIVE.x) & is.na(NON_NATIVE.y), '0',
+  mutate(NON_NATIVE = ifelse(is.na(NON_NATIVE.x) & is.na(NON_NATIVE.y), 0,
                              ifelse(!is.na(NON_NATIVE.x), NON_NATIVE.x,  # keeps 2012 assignment
-                                    ifelse(NON_NATIVE.y=='ALL', '1', # only updates 2012 assignment non-native nationwide
-                                           ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE, '1', '0'))))) %>%
-  mutate(NON_NATIVE = revalue(NON_NATIVE, c('Y'='1', 'N'='0'))) %>%
-  mutate(NON_NATIVE = ifelse(NON_NATIVE.y == 'ALL' & !is.na(NON_NATIVE.y), '1',
+                                    ifelse(NON_NATIVE.y=='ALL', 1, # only updates 2012 assignment non-native nationwide
+                                           ifelse(str_detect(NON_NATIVE.y, PSTL_CODE)==TRUE, 1, 0))))) %>%
+  # mutate(NON_NATIVE = revalue(NON_NATIVE, c('Y'='1', 'N'='0'))) %>%
+  mutate(NON_NATIVE_TAXON = ifelse(NON_NATIVE.y == 'ALL' & !is.na(NON_NATIVE.y), 1,
                              NON_NATIVE)) %>% # This sets to non-native where previous assignment but non-native all over US
   select(UID, SAMPLE_TYPE, TAXA_ID, COUNT, COUNT_300, BIOMASS,
          BIOMASS_300, DENSITY, IS_DISTINCT, IS_DISTINCT_300,
-         NON_NATIVE)
+         NON_NATIVE_TAXON)
 
 zonwIn <- filter(curZp.1, SAMPLE_TYPE == 'ZONW')
 
@@ -578,7 +589,7 @@ testAllMets <- calcZoopAllMets(indata = zonwIn,
                                inCoarse = zocnIn,
                                inFine = zofnIn,
                                inTaxa = zpTaxa,
-                               sampID = c('UID', 'SAMPLE_TYPE'),
+                               sampID = c('UID'),
                                is_distinct = 'IS_DISTINCT',
                                ct = 'COUNT', biomass = 'BIOMASS',
                                density = 'DENSITY',
@@ -586,7 +597,31 @@ testAllMets <- calcZoopAllMets(indata = zonwIn,
                                ct_sub = 'COUNT_300',
                                biomass_sub = 'BIOMASS_300',
                                sub_mod = '300', taxa_id = 'TAXA_ID',
-                               nonnative = 'NON_NATIVE', genus = 'GENUS',
+                               nonnative = 'NON_NATIVE_TAXON', genus = 'GENUS',
                                family = 'FAMILY', ffg = 'FFG',
                                clad_size = 'CLADOCERA_SIZE',
                                net_size = 'NET_SIZECLS_NEW')
+
+curMets <- dbGet('ALL_THE_NLA', 'tblZOOPMET') %>%
+  filter(UID %nin% exclude_UIDs$UID)
+
+matchMets <- merge(curMets, testAllMets, by = c('UID', 'PARAMETER'))
+
+filter(testAllMets, PARAMETER %nin% curMets$PARAMETER) %>%
+  select(PARAMETER) %>%
+  unique() # 0 extra parameters
+
+filter(curMets, PARAMETER %nin% testAllMets$PARAMETER) %>%
+  select(PARAMETER) %>%
+  unique() # Missing are all MMI related
+
+diffMets <- mutate(matchMets, RESULT.x = as.numeric(RESULT.x),
+                   DIFF = abs(RESULT.x - RESULT.y)) %>%
+  filter(DIFF > 0.0001) %>% # 2407 differences, spread over a lot of metrics and UIDs, mostly very small numbers and differences, 1841 are from TOTL300_NTAX, 562 are spread over other metrics
+  arrange(PARAMETER)
+
+table(diffMets$UID)
+
+table(diffMets$PARAMETER)
+
+simpson <- filter(diffMets, stringr::str_detect(PARAMETER, 'SIMPSON')) # 170 total across SIMPSON_BIO, SIMPSON_DEN, SIMPSON300_BIO, SIMPSON300_NIND, all values <0.001

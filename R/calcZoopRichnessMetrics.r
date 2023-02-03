@@ -69,17 +69,22 @@ calcZoopRichnessMetrics <- function(indata, sampID, distVars,
 
   indata.taxa <- merge(indata, inTaxa.1, by = taxa_id)
 
-  outdata <- unique(indata[, sampID])
+  if(length(sampID)==1){
+    outdata <- data.frame(col1 = unique(indata[, sampID]))
+    colnames(outdata) <- sampID
+  }else{
+    outdata <- as.data.frame(unique(indata[, sampID]))
+  }
 
   for(i in 1:length(distVars)){
     ntax.full <- aggregate(x = list(TOTL_NTAX = indata[, distVars[i]]),
-                      by = indata[, sampID],
+                      by = indata[sampID],
                       FUN = function(x){sum(x, na.rm=TRUE)})
 
     indata.nat <- subset(indata, eval(as.name(nonnative)) == 0)
 
     ntax.full.nat <- aggregate(x = list(TOTL_NAT_NTAX = indata.nat[, distVars[i]]),
-                           by = indata.nat[, sampID],
+                           by = indata.nat[sampID],
                            FUN = function(x){sum(x, na.rm=TRUE)})
 
     if(prefix[i] != ''){
@@ -96,11 +101,11 @@ calcZoopRichnessMetrics <- function(indata, sampID, distVars,
                              select = c(sampID, distVars[i], genus)))
 
     ntax.gen <- aggregate(x = list(GEN_NTAX = indata.gen[, distVars[i]]),
-                          by = indata.gen[, sampID],
+                          by = indata.gen[sampID],
                           FUN = function(x){sum(x, na.rm=TRUE)})
 
     ntax.gen.nat <- aggregate(x = list(GEN_NAT_NTAX = indata.gen.nat[, distVars[i]]),
-                              by = indata.gen.nat[, sampID],
+                              by = indata.gen.nat[sampID],
                               FUN = function(x){sum(x, na.rm=TRUE)})
 
     if(prefix[i] != ''){
@@ -118,11 +123,11 @@ calcZoopRichnessMetrics <- function(indata, sampID, distVars,
                                     select = c(sampID, distVars[i], family)))
 
     ntax.fam <- aggregate(x = list(FAM_NTAX = indata.fam[, distVars[i]]),
-                          by = indata.fam[, sampID],
+                          by = indata.fam[sampID],
                           FUN = function(x){sum(x, na.rm=TRUE)})
 
     ntax.fam.nat <- aggregate(x = list(FAM_NAT_NTAX = indata.fam.nat[, distVars[i]]),
-                          by = indata.fam.nat[, sampID],
+                          by = indata.fam.nat[sampID],
                           FUN = function(x){sum(x, na.rm=TRUE)})
 
     if(prefix[i] != ''){

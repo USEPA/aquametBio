@@ -27,7 +27,7 @@ zoopDominance <- function(df, sampID = 'UID', topN = 1, varIn, taxa_id){
     subset(select = c(sampID, taxa_id, 'variable', 'value'))
 
   rr <- aggregate(x = list(TOTSUM = df.long[, 'value']),
-                  by = df.long[c(sampID)],
+                  by = df.long[sampID],
                   FUN = function(x){sum(x, na.rm=TRUE)})
 
   ss <- merge(df.long, rr, by = sampID)

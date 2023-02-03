@@ -119,12 +119,13 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
 
   indata.nat <- subset(indata, eval(as.name(nonnative))==0)
 
-  baseMets.nat <- calcZoopBaseMetrics(indata.nat, sampID, is_distinct,
+  baseMets.nat <- calcZoopBaseMetrics(indata, sampID, is_distinct,
                                        ct, biomass, density,
                                        inTaxa, taxa_id,
                                        ffg, clad_size,
                                        net_size,
-                                       nativeMetrics = TRUE)
+                                       nativeMetrics = TRUE,
+                                       nonnative)
 
   baseMets.sub <- calcZoopBaseMetrics(indata, sampID, is_distinct_sub,
                                       ct_sub, biomass_sub, density = NULL,
@@ -136,21 +137,22 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
   baseMets.sub$PARAMETER <- gsub("\\_NIND", paste0(sub_mod, "\\_NIND"), baseMets.sub$PARAMETER)
   baseMets.sub$PARAMETER <- gsub("\\_PIND", paste0(sub_mod, "\\_PIND"), baseMets.sub$PARAMETER)
   baseMets.sub$PARAMETER <- gsub("\\_NTAX", paste0(sub_mod, "\\_NTAX"), baseMets.sub$PARAMETER)
-  baseMets.sub$PARAMETER <- gsub("\\_PTAX", paste0(sub_mod, "\\_PNTAX"), baseMets.sub$PARAMETER)
+  baseMets.sub$PARAMETER <- gsub("\\_PTAX", paste0(sub_mod, "\\_PTAX"), baseMets.sub$PARAMETER)
   baseMets.sub$PARAMETER <- gsub("\\_BIO", paste0(sub_mod, "\\_BIO"), baseMets.sub$PARAMETER)
   baseMets.sub$PARAMETER <- gsub("\\_PBIO", paste0(sub_mod, "\\_PBIO"), baseMets.sub$PARAMETER)
 
-  baseMets.sub.nat <- calcZoopBaseMetrics(indata.nat, sampID, is_distinct_sub,
+  baseMets.sub.nat <- calcZoopBaseMetrics(indata, sampID, is_distinct_sub,
                                           ct_sub, biomass_sub, density = NULL,
                                           inTaxa, taxa_id,
                                           ffg, clad_size,
                                           net_size,
-                                          nativeMetrics = TRUE)
+                                          nativeMetrics = TRUE,
+                                          nonnative)
 
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_NIND", paste0(sub_mod, "\\_NAT\\_NIND"), baseMets.sub.nat$PARAMETER)
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PIND", paste0(sub_mod, "\\_NAT\\_PIND"), baseMets.sub.nat$PARAMETER)
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_NTAX", paste0(sub_mod, "\\_NAT\\_NTAX"), baseMets.sub.nat$PARAMETER)
-  baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PTAX", paste0(sub_mod, "\\_NAT\\_PNTAX"), baseMets.sub.nat$PARAMETER)
+  baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PTAX", paste0(sub_mod, "\\_NAT\\_PTAX"), baseMets.sub.nat$PARAMETER)
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_BIO", paste0(sub_mod, "\\_NAT\\_BIO"), baseMets.sub.nat$PARAMETER)
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PBIO", paste0(sub_mod, "\\_NAT\\_PBIO"), baseMets.sub.nat$PARAMETER)
 
@@ -305,7 +307,46 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                            distVars=c(is_distinct, is_distinct_sub),
                                            nonnative, inTaxa,
                                            taxa_id, genus,
+                                           family, prefix = c('', sub_mod)) |>
+    subset(!(PARAMETER %in% c('TOTL_NTAX', paste0('TOTL', sub_mod, '_NTAX'))))
+
+  richMets.coarse <- calcZoopRichnessMetrics(inCoarse, sampID,
+                                           distVars=c(is_distinct, is_distinct_sub),
+                                           nonnative, inTaxa,
+                                           taxa_id, genus,
                                            family, prefix = c('', sub_mod))
+
+  richMets.coarse <- subset(richMets.coarse, !(PARAMETER %in% c('TOTL_NTAX', 'TOTL_NAT_NTAX',
+                                                                paste0('TOTL', sub_mod, '_NTAX'),
+                                                                paste0('TOTL', sub_mod, '_NAT_NTAX'))))
+
+  richMets.coarse$PARAMETER <- gsub('FAM\\_', 'ZOCN\\_FAM\\_', richMets.coarse$PARAMETER)
+  richMets.coarse$PARAMETER <- gsub('GEN\\_', 'ZOCN\\_GEN\\_', richMets.coarse$PARAMETER)
+  richMets.coarse$PARAMETER <- gsub(paste0('FAM', sub_mod),
+                                    paste0('ZOCN', sub_mod, '\\_FAM'),
+                                    richMets.coarse$PARAMETER)
+  richMets.coarse$PARAMETER <- gsub(paste0('GEN', sub_mod),
+                                    paste0('ZOCN', sub_mod, '\\_GEN'),
+                                    richMets.coarse$PARAMETER)
+
+  richMets.fine <- calcZoopRichnessMetrics(inFine, sampID,
+                                             distVars=c(is_distinct, is_distinct_sub),
+                                             nonnative, inTaxa,
+                                             taxa_id, genus,
+                                             family, prefix = c('', sub_mod))
+  richMets.fine <- subset(richMets.fine, !(PARAMETER %in% c('TOTL_NTAX', 'TOTL_NAT_NTAX',
+                                                            paste0('TOTL', sub_mod, '_NTAX'),
+                                                            paste0('TOTL', sub_mod, '_NAT_NTAX'))))
+
+  richMets.fine$PARAMETER <- gsub('FAM\\_', 'ZOFN\\_FAM\\_', richMets.fine$PARAMETER)
+  richMets.fine$PARAMETER <- gsub('GEN\\_', 'ZOFN\\_GEN\\_', richMets.fine$PARAMETER)
+  richMets.fine$PARAMETER <- gsub(paste0('FAM', sub_mod),
+                                    paste0('ZOFN', sub_mod, '\\_FAM'),
+                                    richMets.fine$PARAMETER)
+  richMets.fine$PARAMETER <- gsub(paste0('GEN', sub_mod),
+                                    paste0('ZOFN', sub_mod, '\\_GEN'),
+                                    richMets.fine$PARAMETER)
+
 
   print("Finished richness metrics")
 
@@ -408,7 +449,7 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
   print("Combined totals metrics")
 
   # Native metrics
-  natMets.full <- calcZoopNativeMetrics(totMets.all, c('UID', 'SAMPLE_TYPE'),
+  natMets.full <- calcZoopNativeMetrics(totMets.all, sampID,
                         inputNative = c('TOTL_NAT_NTAX',
                                         paste0('TOTL', sub_mod, '_NAT_NTAX'),
                                         'ZOCN_NAT_NTAX',
@@ -427,22 +468,24 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                                         'ZOFN_NAT_NIND',
                                         paste0('ZOFN', sub_mod, '_NAT_NIND'),
                                         'ZOFN_NAT_BIO',
-                                        paste0('ZOFN', sub_mod, '_NAT_BIO')),
+                                        paste0('ZOFN', sub_mod, '_NAT_BIO'),
+                                        'ZOFN_NAT_DEN'),
                         inputTotals = c('TOTL_NTAX', paste0('TOTL', sub_mod, '_NTAX'),
                                         'ZOCN_NTAX', paste0('ZOCN', sub_mod, '_NTAX'),
                                         'ZOFN_NTAX', paste0('ZOFN', sub_mod, '_NTAX'),
-                                        'TOTL_DEN',
-                                        'TOTL_BIO', 'TOTL_NIND',
+                                        'TOTL_DEN', 'TOTL_BIO', 'TOTL_NIND',
                                         paste0('TOTL', sub_mod, '_NIND'),
                                         paste0('TOTL', sub_mod, '_BIO'),
                                         'ZOCN_NIND',
                                         paste0('ZOCN', sub_mod, '_NIND'),
                                         'ZOCN_BIO',
                                         paste0('ZOCN', sub_mod, '_BIO'),
-                                        'ZOCN_DEN', 'ZOFN_NIND',
+                                        'ZOCN_DEN',
+                                        'ZOFN_NIND',
                                         paste0('ZOFN', sub_mod, '_NIND'),
                                         'ZOFN_BIO',
-                                        paste0('ZOFN', sub_mod, '_BIO')))
+                                        paste0('ZOFN', sub_mod, '_BIO'),
+                                        'ZOFN_DEN'))
 
   print("Finished native metrics")
 
@@ -457,5 +500,10 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
                    dom.full.clad, dom.full.cope,
                    dom.sub.rot, dom.sub.clad,
                    dom.sub.cope, richMets.full,
+                   richMets.coarse, richMets.fine,
                    totMets.all.long, natMets.full)
+
+  row.names(allMets) <- NULL
+  print("Finished calculating metrics.")
+  return(allMets)
 }

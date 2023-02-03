@@ -91,11 +91,11 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
   # Calculate diversity for counts, biomass, and density separately to
   # accommodate all variations of calculation of indices
   hprime <- aggregate(x=list(HPRIME_NIND = calcData[, 'prop.cnt']),
-                             by = calcData[, c(sampID)],
+                             by = calcData[sampID],
                              FUN = function(x){round(-1*sum(x*log(x), na.rm=T), 4)})
 
   simpson <- aggregate(x = list(SIMPSON_NIND = calcData[, 'prop.cnt']),
-                       by = calcData[, c(sampID)],
+                       by = calcData[sampID],
                        FUN = function(x){round(sum(x*x, na.rm=T), 4)})
 
   even <- merge(hprime, totals[, c(sampID, 'TOTL_NTAX')], by=sampID)
@@ -104,10 +104,10 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
   even.1 <- subset(even, select = c(sampID, 'EVEN_NIND'))
 
   pie.in <- calcData
-  pie.in$CALCPROP <- with(pie.in, prop.cnt*((TOTL_NIND - COUNT)/(TOTL_NIND-1)))
+  pie.in$CALCPROP <- with(pie.in, prop.cnt*((TOTL_NIND - eval(as.name(ct)))/(TOTL_NIND-1)))
 
   pie <- aggregate(x=list(PIE_NIND = pie.in[, 'CALCPROP']),
-              by = pie.in[, c(sampID)],
+              by = pie.in[sampID],
               FUN = function(x){round(sum(x, na.rm=T), 4)})
 
   metsOut <- merge(hprime, simpson, by = sampID) |>
@@ -116,11 +116,11 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
 
   if(!is.null(density)){
     hprime.den <- aggregate(x=list(HPRIME_DEN = calcData[, 'prop.den']),
-                        by = calcData[, c(sampID)],
+                        by = calcData[sampID],
                         FUN = function(x){round(-1*sum(x*log(x), na.rm=T), 4)})
 
     simpson.den <- aggregate(x = list(SIMPSON_DEN = calcData[, 'prop.den']),
-                         by = calcData[, c(sampID)],
+                         by = calcData[sampID],
                          FUN = function(x){round(sum(x*x, na.rm=T), 4)})
 
     metsOut <- merge(metsOut, hprime.den, by = sampID) |>
@@ -129,11 +129,11 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
 
   if(!is.null(biomass)){
     hprime.bio <- aggregate(x=list(HPRIME_BIO = calcData[, 'prop.bio']),
-                        by = calcData[, c(sampID)],
+                        by = calcData[sampID],
                         FUN = function(x){round(-1*sum(x*log(x), na.rm=T), 4)})
 
     simpson.bio <- aggregate(x = list(SIMPSON_BIO = calcData[, 'prop.bio']),
-                         by = calcData[, c(sampID)],
+                         by = calcData[sampID],
                          FUN = function(x){round(sum(x*x, na.rm=T), 4)})
 
     metsOut <- merge(metsOut, hprime.bio, by = sampID) |>

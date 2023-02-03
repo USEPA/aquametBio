@@ -44,8 +44,13 @@
 #' the subset of metrics based on native status should be
 #' calculated. FALSE indicates that the full set of metrics
 #' should be calculated. The default value is FALSE. If value
-#' is TRUE, the input data should already be subset to
-#' native taxa.
+#' is TRUE, the input data should include all taxa, as well as
+#' an indicator variable for non-native taxa (\emph{nonnative}).
+#' @param nonnative A string with the name of the numeric variable
+#' indicating a non-native taxon. A value of 1 indicates that a
+#' taxon is non-native, and 0 native. All other values will be ignored.
+#' This variable cannot share the same name as any other variable in
+#' \emph{inTaxa}.
 #' @return A data frame containing the variables in sampID and
 #' the zooplankton metrics as additional variables. The output
 #' metrics include number of individuals, percent individuals,
@@ -57,9 +62,11 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
                            ct, biomass, density = NULL,
                            inTaxa, taxa_id='TAXA_ID',
                            ffg, clad_size, net_size,
-                           nativeMetrics = FALSE){
+                           nativeMetrics = FALSE,
+                           nonnative = NULL){
 
   indata <- as.data.frame(indata)
+  indata <- indata[, names(indata)[names(indata) %in% c(sampID, is_distinct, ct, biomass, density, taxa_id, nonnative)]]
 
   necVars <- c(sampID, is_distinct, ct, biomass, taxa_id)
   if(any(necVars %nin% names(indata))){
@@ -76,6 +83,14 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
       print("Missing density variable in input data frame.")
     }else{
       indata[, density] <- as.numeric(indata[, density])
+    }
+  }
+
+  if(!is.null(nonnative)){
+    if(nonnative %nin% names(indata)){
+      print("Missing nonnative variable in input data frame.")
+    }else{
+      indata[, nonnative] <- as.numeric(indata[, nonnative])
     }
   }
 
@@ -143,7 +158,12 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
     params <- c('CALAN','COPE','COARSE','FINE','SMCLAD','LGCLAD','CLAD','DAPHNIID','BOSM')
   }
 
-  samps <- unique(calcData[, sampID])
+  if(length(sampID)==1){
+    samps <- data.frame(x1 = unique(calcData[, sampID]))
+    colnames(samps) <- sampID
+  }else{
+    samps <- unique(calcData[, sampID])
+  }
 
   column_names <- c(sampID, 'PARAMETER', 'RESULT')
 
@@ -166,7 +186,13 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
 
   for(i in 1:length(params)){
       print(i)
-      metsIn <- subset(calcData, eval(as.name(params[i]))==1)
+      if(nativeMetrics==FALSE){
+        metsIn <- subset(calcData, eval(as.name(params[i]))==1)
+      }else{
+        metsIn <- subset(calcData, eval(as.name(params[i]))==1 &
+                           eval(as.name(nonnative))==0)
+      }
+
 
       metsIn <- merge(metsIn, totals, by = sampID)
 
@@ -196,18 +222,18 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
 
         met.1a.nind <- aggregate(x = list(NIND = met.1[, ct],
                                           NTAX = met.1[, is_distinct]),
-                            by = met.1[c(sampID)],
+                            by = met.1[sampID],
                             FUN = function(x){sum(x, na.rm=T)})
 
         if(!is.null(density)){
           met.1$CALCPDEN <- with(met.1, eval(as.name(density))/TOTL_DEN)
           met.1a.den <- aggregate(x = list(DEN = met.1[, density]),
-                                  by = met.1[c(sampID)],
+                                  by = met.1[sampID],
                                   FUN = function(x){round(sum(x, na.rm=T), 4)})
         }
 
         met.1a.bio <- aggregate(x = list(BIO = met.1[, biomass]),
-                                by = met.1[c(sampID)],
+                                by = met.1[sampID],
                                 FUN = function(x){round(sum(x, na.rm=T), 6)})
 
         if(!is.null(density)){
@@ -215,13 +241,13 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
                                        PTAX = met.1$CALCPTAX,
                                        PDEN = met.1$CALCPDEN,
                                        PBIO = met.1$CALCPBIO),
-                              by = met.1[c(sampID)],
+                              by = met.1[sampID],
                               FUN = function(x){round(sum(x, na.rm=TRUE)*100, 2)})
         }else{
           met.1b <- aggregate(x = list(PIND = met.1$CALCPIND,
                                        PTAX = met.1$CALCPTAX,
                                        PBIO = met.1$CALCPBIO),
-                              by = met.1[c(sampID)],
+                              by = met.1[sampID],
                               FUN = function(x){round(sum(x, na.rm=TRUE)*100, 2)})
         }
 

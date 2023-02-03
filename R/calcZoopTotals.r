@@ -39,12 +39,16 @@ calcZoopTotals <- function(indata, sampID, is_distinct,
 
   indata[, c(inputSums, is_distinct)] <- lapply(indata[, c(inputSums, is_distinct)], as.numeric)
 
-  outdata <- unique(indata[, sampID])
-
+  if(length(sampID)==1){
+    outdata <- data.frame(col1 = unique(indata[, sampID]))
+    colnames(outdata) <- sampID
+  }else{
+    outdata <- as.data.frame(unique(indata[, sampID]))
+  }
   for(i in 1:length(inputSums)){
 
     temp <- aggregate(x=list(x.out = indata[, inputSums[i]]),
-                                   by = indata[, c(sampID)],
+                                   by = indata[sampID],
                                    FUN = function(x){sum(x, na.rm=TRUE)})
 
     outdata <- merge(outdata, temp)
@@ -54,7 +58,7 @@ calcZoopTotals <- function(indata, sampID, is_distinct,
   # now count distinct taxa using distinctness variable
   if(!is.null(outputTaxa)){
     ntax <- aggregate(x = list(ntax = indata[, is_distinct]),
-                      by = indata[, sampID],
+                      by = indata[sampID],
                       FUN = function(x){sum(x, na.rm=TRUE)})
 
     names(ntax)[names(ntax) == 'ntax'] <- outputTaxa
