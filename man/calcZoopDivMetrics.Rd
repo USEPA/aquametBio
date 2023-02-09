@@ -40,7 +40,8 @@ variable should be numeric or able to be converted to numeric.}
 variable should be numeric or able to be converted to numeric.}
 
 \item{suffix}{A string to indicate the suffix that should be added
-to metric names to indicate the subgroup represented in the metric.}
+to metric names to indicate the subgroup represented in the metric.
+This suffix must match the name of a variable in \emph{indata}}
 }
 \value{
 A data frame containing the variables in sampID and

@@ -16,7 +16,8 @@ calcZoopBaseMetrics(
   ffg,
   clad_size,
   net_size,
-  nativeMetrics = FALSE
+  nativeMetrics = FALSE,
+  nonnative = NULL
 )
 }
 \arguments{
@@ -69,8 +70,14 @@ Valid values are COARSE and FINE.}
 the subset of metrics based on native status should be
 calculated. FALSE indicates that the full set of metrics
 should be calculated. The default value is FALSE. If value
-is TRUE, the input data should already be subset to
-native taxa.}
+is TRUE, the input data should include all taxa, as well as
+an indicator variable for non-native taxa (\emph{nonnative}).}
+
+\item{nonnative}{A string with the name of the numeric variable
+indicating a non-native taxon. A value of 1 indicates that a
+taxon is non-native, and 0 native. All other values will be ignored.
+This variable cannot share the same name as any other variable in
+\emph{inTaxa}.}
 }
 \value{
 A data frame containing the variables in sampID and

@@ -558,13 +558,15 @@ zpTaxa <- dbGet('ALL_THE_NLA', 'tblTAXA', where = "ASSEMBLAGE_NAME='ZOOPLANKTON'
   pivot_wider(id_cols = c('TAXA_ID'), names_from='PARAMETER', values_from='RESULT') %>%
   filter(is.na(NON_TARGET))
 
-state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE') AND DSGN_CYCLE='2017'") %>%
+state <- dbGet('ALL_THE_NLA', 'tblSITETRUTH', where = "IND_DOMAIN IN('HAND', 'CORE') AND STUDY='NLA' AND PARAMETER IN('SITE_ID', 'PSTL_CODE', 'AG_ECO9') AND DSGN_CYCLE='2017'") %>%
   pivot_wider(id_cols = c('UNIQUE_ID', 'DSGN_CYCLE', 'IND_DOMAIN'), names_from='PARAMETER', values_from='RESULT')
 
 verif <- dbGet('ALL_THE_NLA', 'tblVERIFICATION', where = "PARAMETER IN('SITE_ID')") %>%
   pivot_wider(id_cols = 'UID', names_from='PARAMETER', values_from = 'RESULT')
 
-stateVerif <- merge(verif, state, by='SITE_ID')
+stateVerif <- merge(verif, state, by='SITE_ID') %>%
+  mutate(ECO_BIO = revalue(AG_ECO9, c('NAP'='EHIGH', 'SAP'='EHIGH', 'TPL'='PLAINS', 'NPL'='PLAINS',
+                                      'SPL'='PLAINS', 'XER' = 'WMTNS', 'WMT'='WMTNS')))
 
 curZp.1 <- merge(curZp, zpTaxa, by='TAXA_ID') %>% # Gets rid of non-target
   merge(stateVerif, by=c('UID')) %>%
@@ -589,7 +591,7 @@ testAllMets <- calcZoopAllMets(indata = zonwIn,
                                inCoarse = zocnIn,
                                inFine = zofnIn,
                                inTaxa = zpTaxa,
-                               sampID = c('UID'),
+                               sampID = c('UID','SAMPLE_TYPE'),
                                is_distinct = 'IS_DISTINCT',
                                ct = 'COUNT', biomass = 'BIOMASS',
                                density = 'DENSITY',
@@ -617,11 +619,48 @@ filter(curMets, PARAMETER %nin% testAllMets$PARAMETER) %>%
 
 diffMets <- mutate(matchMets, RESULT.x = as.numeric(RESULT.x),
                    DIFF = abs(RESULT.x - RESULT.y)) %>%
-  filter(DIFF > 0.0001) %>% # 2407 differences, spread over a lot of metrics and UIDs, mostly very small numbers and differences, 1841 are from TOTL300_NTAX, 562 are spread over other metrics
+  filter(DIFF > 0.0001) %>% # 566 differences, spread over a lot of metrics and UIDs, mostly very small numbers and differences
   arrange(PARAMETER)
+
+diffMets.large <- filter(diffMets, round(DIFF,2) != 0.01) %>%
+  arrange(PARAMETER) %>%
+  merge(stateVerif, by='UID') # Still 494 over 302 UIDs and 43 metrics, mostly related to BIO and DEN, as well as a few related to diversity indices. All of these are changes between 0.001 and 0.0001 that were missed when I updated data in October 2021 following corrections to tow volumes.
+
+filter(diffMets, DIFF>0.001) # What parameters are these? These probably should have been updated when tow volumes were updated, 72 records left - all are exactly 0.01, so they are rounding errors.
 
 table(diffMets$UID)
 
 table(diffMets$PARAMETER)
 
 simpson <- filter(diffMets, stringr::str_detect(PARAMETER, 'SIMPSON')) # 170 total across SIMPSON_BIO, SIMPSON_DEN, SIMPSON300_BIO, SIMPSON300_NIND, all values <0.001
+
+
+# Now test MMI code using current metrics in database
+# Need AG_ECO9 in order to convert to ECO_BIO regions
+curMets.1 <- merge(curMets, stateVerif, by='UID') %>%
+  pivot_wider(id_cols = c('UID', 'SITE_ID', 'ECO_BIO'), names_from='PARAMETER',
+              values_from='RESULT')
+
+testMMI <- calcNLA_ZoopMMI(curMets.1, sampID = 'UID', ecoreg = 'ECO_BIO',
+                           totlnind = 'TOTL_NIND')
+
+# Melt this output and compare with existing values in database
+testMMI.long <- pivot_longer(testMMI, cols = MMI_ZOOP:TROP_PT,
+                             names_to='PARAMETER', values_to='RESULT') %>%
+  mutate(PARAMETER = revalue(PARAMETER, c('MMI_ZOOP'='MMI_ZOOP_2017', 'ZOOP_MMI_COND'='ZOOP_MMI_COND_2017')))
+
+
+matchMMI <- merge(curMets, testMMI.long, by = c('UID', 'PARAMETER')) %>%
+  mutate(RESULT.x = ifelse(PARAMETER=='MMI_ZOOP_2017', as.character(round(as.numeric(RESULT.x), 1)),
+                           RESULT.x))
+
+filter(matchMMI, RESULT.x!=RESULT.y) # All values match except due to rounding of MMI values - NOTE code rounds to 1 decimal point but original code does not.
+
+# Now compare condition
+curCond <- dbGet('ALL_THE_NLA', 'tblCONDITION', where = "PARAMETER = 'ZOOP_MMI_COND_2017'")
+
+matchCond <- merge(curCond, testMMI.long, by=c('UID', 'PARAMETER'))
+
+filter(matchCond, RESULT.x!=RESULT.y) # 3 differences because the thresholds are at too many decimal points and rounding has shifted the MMI scores for these. Talk to Dave about this.
+
+filter(testMMI, UID %in% c(2010296, 2010360, 2011071))

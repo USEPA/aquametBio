@@ -49,7 +49,7 @@ calcNLA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='T
   necTraits <- c(sampID,ecoreg,totlnind)
   if(any(necTraits %nin% names(inMets))){
     msgTraits <- which(necTraits %nin% names(inMets))
-    print(paste("Some of the traits are missing from the taxa list. The following are required for metric calculations to run:"
+    print(paste("Some of the traits are missing from the input dataset. The following are required for metric calculations to run:"
                 , necTraits[msgTraits]))
     return(NULL)
   }
