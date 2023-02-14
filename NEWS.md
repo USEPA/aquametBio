@@ -1,3 +1,7 @@
+# aquametBio 2.2.0
+
+2/10/2023 Added code to calculate zooplankton metrics and MMI.
+
 # aquametBio 2.1.2
 
 * 5/11/2022 Updated test dataset for NLA benthic MMI testing.

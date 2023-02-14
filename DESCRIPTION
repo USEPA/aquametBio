@@ -1,7 +1,7 @@
 Package: aquametBio
 Type: Package
 Title: Calculate NRSA and NLA Biological Metrics & Indicators
-Version: 2.1.3
+Version: 2.2.0
 Author: Karen Blocksom
 Maintainer: Karen Blocksom <blocksom.karen@epa.gov>
 Description: This package calculates fish and macroinvertebrate metrics used 
