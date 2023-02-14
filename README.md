@@ -1,18 +1,16 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-aquametBio
-==========
+# aquametBio
 
-Description
------------
+## Description
 
 The goal of aquametBio is to calculate metrics and multimetric indices
-for fish and macroinvertebrates, as used in the National Rivers and
-Streams Assessment (NRSA) for 2008-9 and 2013-14 and the National Lakes
-Assessment (NLA) for 2007 and 2012. This package is built from the
-aquamet package v. 2.5.1, utilizing only the functions based on
-biological data. The package includes default taxalists for fish in
-NRSA, macroinvertebrates in NRSA, and macroinvertebrates in NLA.
+for fish, macroinvertebrates, and zooplankton, as used in the National
+Rivers and Streams Assessment (NRSA) and the National Lakes Assessment
+(NLA). This package is built from the aquamet package v. 2.5.1,
+utilizing only the functions based on biological data. The package
+includes default taxalists for fish in NRSA, macroinvertebrates in NRSA,
+and macroinvertebrates in NLA.
 
 More details on the indices calculated in this package can be found in
 these citations:
@@ -27,8 +25,7 @@ these citations:
 See vignettes and examples for information on how to use the functions
 in this package.
 
-Disclaimer
-----------
+## Disclaimer
 
 The United States Environmental Protection Agency (EPA) R package code
 is provided on an “as is” basis and the user assumes responsibility for
