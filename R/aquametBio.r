@@ -5,8 +5,8 @@
 #'
 #' @importFrom Hmisc "%nin%" capitalize
 #' @importFrom gtools smartbind
-#' @importFrom stats aggregate approx reshape formula
-#' @importFrom utils head
+#' @importFrom stats aggregate approx reshape formula runif
+#' @importFrom utils head flush.console
 #'
 #' @keywords package
 #' @title aquametBio
@@ -23,7 +23,7 @@ if(getRversion() >= "3.4") utils::globalVariables(c('IS_DISTINCT','FINAL_CT'
 ,'NAT_TOTLNTAX','GENUS','NAME','TOLERANCE','INTL','NTOL','HABITAT'
 ,'TROPHIC','TOL_VAL','bentTaxa_nla','ECO_BIO','MMI_BENT','BENT_MMI_COND'
 ,'bentTaxa_nrsa','ECO9','bentTaxa','TARGET_TAXON','TOTAL'
-,'SUMCT'))
+,'SUMCT', 'SUBORDER', 'SUBCLASS'))
 
 
 

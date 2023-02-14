@@ -14,9 +14,6 @@
 #' the same order as for calaIn and cladIn metrics.
 #' @param cladIn A vector of the names of input Cladocera metrics, in
 #' the same order as for calaIn and cyclIn metrics.
-#' @param taxa_id A string with the name of the variable that distinctly
-#' identifies taxa in each sample.
-
 #' @return A data frame with \emph{sampID} variables and the metric
 #' containing the copepod ratio metrics
 calcZoopCopeMetrics <- function(indata, sampID,

@@ -14,10 +14,6 @@
 #' @param inputTotals A character vector with the names of
 #' metrics with the totals of all taxa. The order must correspond
 #' to the order of metrics listed in \emph{inputNative}.
-#' @param nonnative A string with the name of the numeric variable
-#' indicating a non-native taxon. A value of 1 indicates that a
-#' taxon is non-native. All other values will be ignored.
-#'
 #' @return A data frame containing percent native metrics
 #' for each of the \emph{inputNative} variables as a subset
 #' of the \emph{inputTotals}. The names of the resulting

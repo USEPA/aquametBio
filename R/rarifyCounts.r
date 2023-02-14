@@ -20,9 +20,6 @@
 #' specified, the default is \emph{COUNT}. Any rows with a missing value
 #' for the \emph{abund} variable will be dropped in the output
 #' dataset.
-#' @param taxa_id A string with the name of the taxon ID or taxon
-#' name variable
-#' in \emph{inCts}.
 #' @param subsize A numeric value to indicate the size of the random
 #' subsample to be created.
 #' @param seed Optional number to set the random seed. This allows the

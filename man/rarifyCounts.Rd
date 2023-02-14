@@ -32,10 +32,6 @@ subsample to be created.}
 \item{seed}{Optional number to set the random seed. This allows the
 process to be repeated and receive the same results, as long as
 the input data are ordered the same way.}
-
-\item{taxa_id}{A string with the name of the taxon ID or taxon
-name variable
-in \emph{inCts}.}
 }
 \value{
 A data frame containing the same fields at the input

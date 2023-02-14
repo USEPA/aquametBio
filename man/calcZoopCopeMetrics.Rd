@@ -23,9 +23,6 @@ the same order as for calaIn and cladIn metrics.}
 
 \item{cladIn}{A vector of the names of input Cladocera metrics, in
 the same order as for calaIn and cyclIn metrics.}
-
-\item{taxa_id}{A string with the name of the variable that distinctly
-identifies taxa in each sample.}
 }
 \value{
 A data frame with \emph{sampID} variables and the metric

@@ -40,7 +40,7 @@ zoopDominance <- function(df, sampID = 'UID', topN = 1, varIn, taxa_id){
                   }
   )
   uu <- merge(tt, unique(ss[, c(sampID,'TOTSUM')]), by = sampID)
-  uu <- mutate(uu, dompind=round(domN/TOTSUM*100, 1))
+  uu$dompind <- with(uu, round(domN/TOTSUM*100, 1))
   uu <- subset(uu, select=c(sampID, 'dompind'))
 
   return(uu)

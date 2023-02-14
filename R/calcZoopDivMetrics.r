@@ -111,7 +111,7 @@ calcZoopDivMetrics <- function(indata, sampID, is_distinct,
               FUN = function(x){round(sum(x, na.rm=T), 4)})
 
   metsOut <- merge(hprime, simpson, by = sampID) |>
-    merge(pie, by = sampID) %>%
+    merge(pie, by = sampID) |>
     merge(even.1, by = sampID)
 
   if(!is.null(density)){

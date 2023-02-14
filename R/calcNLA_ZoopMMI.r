@@ -38,7 +38,7 @@
 #' @param ecoreg A string with the name of the aggregated bioregion variable.
 #' Valid values that correspond to regions used in NLA are
 #' CPL, EHIGH, PLAINS, UMW, and WMTNS.
-#' #' @param totlnind A string with the name of the variable with the
+#' @param totlnind A string with the name of the variable with the
 #' total individuals in each sample.
 #' @return A data frame containing the variables in sampID, as well as
 #' the scored metrics, the zooplankton MMI, and the condition class for each

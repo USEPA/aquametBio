@@ -45,8 +45,9 @@ the default is \emph{UID}}
 
 \item{ecoreg}{A string with the name of the aggregated bioregion variable.
 Valid values that correspond to regions used in NLA are
-CPL, EHIGH, PLAINS, UMW, and WMTNS.
-#' @param totlnind A string with the name of the variable with the
+CPL, EHIGH, PLAINS, UMW, and WMTNS.}
+
+\item{totlnind}{A string with the name of the variable with the
 total individuals in each sample.}
 }
 \value{

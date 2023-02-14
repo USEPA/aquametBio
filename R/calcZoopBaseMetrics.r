@@ -269,11 +269,11 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
                             times = names(met.2)[!(names(met.2a) %in% sampID)])
 
         if(nativeMetrics==FALSE){
-          met.2.long <- mutate(met.2.long, PARAMETER=paste(params[i], PARAMETER, sep='_'),
-                             RESULT=ifelse(is.na(RESULT), 0, RESULT))
+          met.2.long$PARAMETER <- paste(params[i], met.2.long$PARAMETER, sep='_')
+          met.2.long$RESULT <- with(met.2.long, ifelse(is.na(RESULT), 0, RESULT))
         }else{
-          met.2.long <- mutate(met.2.long, PARAMETER=paste(params[i], 'NAT', PARAMETER, sep='_'),
-                               RESULT=ifelse(is.na(RESULT), 0, RESULT))
+          met.2.long$PARAMETER <- with(met.2.long, paste(params[i], 'NAT', PARAMETER, sep='_'))
+          met.2.long$RESULT <- with(met.2.long, ifelse(is.na(RESULT), 0, RESULT))
         }
 
         metsOut <- rbind(metsOut, met.2.long)
