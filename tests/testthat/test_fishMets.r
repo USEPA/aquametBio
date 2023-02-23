@@ -1,7 +1,5 @@
-library(testthat)
-library(aquametBio)
 
-context("Test fish metric and MMI calculations")
+# context("Test fish metric and MMI calculations")
 
 test_that("Fish tolerance metric values correct",
 {
@@ -160,12 +158,14 @@ test_that("All fish metric values correct",
 })
 
 
-ecoTest <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
-                      ,AGGR_ECO9_2015=c('UMW','CPL','CPL','CPL','CPL','SAP','TPL','XER','XER','WMT'),stringsAsFactors=F)
-fishCts.eco <- merge(fishCts_test,ecoTest,by='UID')
+
 
 test_that("MMI fish metric values correct",
 {
+  ecoTest <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
+                        ,AGGR_ECO9_2015=c('UMW','CPL','CPL','CPL','CPL','SAP','TPL','XER','XER','WMT'),stringsAsFactors=F)
+  fishCts.eco <- merge(fishCts_test, ecoTest,by='UID')
+
   testOut <- calcNRSA_FishMMImets(fishCts.eco,fishTaxa,sampID=c('UID'),dist='IS_DISTINCT',
                              ct='FINAL_CT',taxa_id='TAXA_ID',
                              tol='TOLERANCE_NRSA',vel='VEL_NRSA',
@@ -188,19 +188,21 @@ test_that("MMI fish metric values correct",
   expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001)
 })
 
-# Create data frame of log10(watershed area) values
-
-lwsarea <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
-                      ,LWSAREA=c(3.88288,6.36191,6.36425,3.81217,-1.02872,4.41280,2.80386,2.28921,2.45688,2.02662))
-fishws_test <- merge(fishMet_test,lwsarea,by='UID') %>% merge(ecoTest,by='UID')
-# Put fish metrics in wide format
-fishws_test.1 <- reshape(fishws_test, idvar = c('UID','SAMPLE_TYPE','LWSAREA','AGGR_ECO9_2015'), direction = 'wide',
-                         v.names = 'RESULT', timevar = 'PARAMETER')
-names(fishws_test.1) <- gsub("RESULT\\.", "", names(fishws_test.1))
-# fishws_test.1 <- data.table::dcast(fishws_test,UID+SAMPLE_TYPE+LWSAREA+AGGR_ECO9_2015~PARAMETER,value.var='RESULT')
 
 test_that("Fish MMI scores correct",
           {
+            # Create data frame of log10(watershed area) values
+            ecoTest <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
+                                  ,AGGR_ECO9_2015=c('UMW','CPL','CPL','CPL','CPL','SAP','TPL','XER','XER','WMT'),stringsAsFactors=F)
+            lwsarea <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
+                                  ,LWSAREA=c(3.88288,6.36191,6.36425,3.81217,-1.02872,4.41280,2.80386,2.28921,2.45688,2.02662))
+            fishws_test <- merge(fishMet_test, lwsarea, by='UID') %>% merge(ecoTest,by='UID')
+            # Put fish metrics in wide format
+            fishws_test.1 <- reshape(fishws_test, idvar = c('UID','SAMPLE_TYPE','LWSAREA','AGGR_ECO9_2015'), direction = 'wide',
+                                     v.names = 'RESULT', timevar = 'PARAMETER')
+            names(fishws_test.1) <- gsub("RESULT\\.", "", names(fishws_test.1))
+            # fishws_test.1 <- data.table::dcast(fishws_test,UID+SAMPLE_TYPE+LWSAREA+AGGR_ECO9_2015~PARAMETER,value.var='RESULT')
+
             testOut <- calcFishMMI(fishws_test.1,sampID=c('UID','SAMPLE_TYPE'),ecoreg='AGGR_ECO9_2015'
                                    ,lwsarea='LWSAREA')
             testOut.long <- reshape(testOut, idvar = c('UID','AGGR_ECO9_2015'), direction = 'long',
@@ -221,15 +223,24 @@ test_that("Fish MMI scores correct",
 
           })
 
-# Create wsarea from lwsarea above for samples in fishws_test.1
-fishws_test.2 <- fishws_test.1
-fishws_test.2$WSAREA <- with(fishws_test.2, 10^LWSAREA)
-fishws_test.2 <- merge(fishws_test.1, fishMMI_test[,c('UID','MMI_FISH')], by = 'UID')
-# fishws_test.2 <- plyr::mutate(fishws_test.1,WSAREA=10^LWSAREA) %>%
-#   merge(fishMMI_test[,c('UID','MMI_FISH')],by='UID')
 
-test_that("Fish MMI scores correct",
+test_that("Fish MMI condition correct",
           {
+            # Create data frame of log10(watershed area) values
+            ecoTest <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
+                                  ,AGGR_ECO9_2015=c('UMW','CPL','CPL','CPL','CPL','SAP','TPL','XER','XER','WMT'),stringsAsFactors=F)
+            lwsarea <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
+                                  ,LWSAREA=c(3.88288,6.36191,6.36425,3.81217,-1.02872,4.41280,2.80386,2.28921,2.45688,2.02662))
+            fishws_test <- merge(fishMet_test, lwsarea, by='UID') %>% merge(ecoTest,by='UID')
+            # Put fish metrics in wide format
+            fishws_test.1 <- reshape(fishws_test, idvar = c('UID','SAMPLE_TYPE','LWSAREA','AGGR_ECO9_2015'), direction = 'wide',
+                                     v.names = 'RESULT', timevar = 'PARAMETER')
+            names(fishws_test.1) <- gsub("RESULT\\.", "", names(fishws_test.1))
+            # Create wsarea from lwsarea above for samples in fishws_test.1
+
+            fishws_test.1$WSAREA <- with(fishws_test.1, 10^LWSAREA)
+            fishws_test.2 <- merge(fishws_test.1, fishMMI_test[,c('UID','MMI_FISH')], by = 'UID')
+
             testOut <- assignFishCondition(fishws_test.2,sampID=c('UID','SAMPLE_TYPE'),ecoreg='AGGR_ECO9_2015'
                                    ,wsarea='WSAREA',totlnind='TOTLNIND',mmi='MMI_FISH')
             testOut.1 <- testOut[,c('UID','SAMPLE_TYPE','MMI_FISH','FISH_MMI_COND')]

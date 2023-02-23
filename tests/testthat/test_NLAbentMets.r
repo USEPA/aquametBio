@@ -1,7 +1,4 @@
-library(testthat)
-library(aquametBio)
-
-context("Test NLA benthic metric and MMI calculations")
+#context("Test NLA benthic metric and MMI calculations")
 
 
 test_that("Benthic Taxonomy metric values correct",
@@ -107,11 +104,12 @@ test_that("All benthic metric values correct",
             expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001)
           })
 
-indf.eco <- subset(bentMetsNLA_test,select=c('SITE_ID','ECO_BIO')) %>%
-  unique() %>% merge(bentctsNLA_test,by='SITE_ID')
 
 test_that("MMI metrics correct",
           {
+            indf.eco <- subset(bentMetsNLA_test, select=c('SITE_ID','ECO_BIO')) %>%
+              unique() %>% merge(bentctsNLA_test, by='SITE_ID')
+
             testOut <- calcNLA_BentMMImets(inCts=indf.eco,inTaxa=bentTaxa_nla,sampID=c('SITE_ID')
                                        ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG'
                                        ,habit='HABIT',ptv='PTV',ecoreg='ECO_BIO')
@@ -129,13 +127,14 @@ test_that("MMI metrics correct",
 
           })
 
-testIn <- reshape(bentMetsNLA_test, idvar = c('SITE_ID','ECO_BIO'), direction = 'wide',
-                 timevar = 'PARAMETER', v.names = 'RESULT')
-names(testIn) <- gsub('RESULT\\.', '', names(testIn))
 # testIn <- data.table::dcast(bentMetsNLA_test,SITE_ID+ECO_BIO~PARAMETER,value.var='RESULT')
 
 test_that("NRSA Benthic MMI scores correct",
 {
+  testIn <- reshape(bentMetsNLA_test, idvar = c('SITE_ID','ECO_BIO'), direction = 'wide',
+                    timevar = 'PARAMETER', v.names = 'RESULT')
+  names(testIn) <- gsub('RESULT\\.', '', names(testIn))
+
   testOut <- calcNLA_BenthicMMI(testIn,sampID=c('SITE_ID')
                                  ,ecoreg='ECO_BIO',totlnind='TOTLNIND')
   varLong <- names(testOut)[names(testOut) %nin% c('SITE_ID','ECO_BIO')]

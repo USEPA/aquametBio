@@ -1,7 +1,4 @@
-library(testthat)
-library(aquametBio)
-
-context("Test NRSA benthic metric and MMI calculations")
+# context("Test NRSA benthic metric and MMI calculations")
 
 
 test_that("Data prep correct",
@@ -130,12 +127,14 @@ test_that("All benthic metric values correct",
           })
 
 
-ecoTest <- data.frame(UID=c(11245,11703,11821,12483,12571,12999,13971,14822,15073,15803)
-                      ,AGGR_ECO9_2015=c('TPL','CPL','NAP','SAP','SAP','UMW','CPL','NPL'
-                                        ,'UMW','XER'),stringsAsFactors=F)
-indf.eco <- merge(indf_test,ecoTest,by='UID')
+
 test_that("MMI metrics correct",
           {
+            ecoTest <- data.frame(UID=c(11245,11703,11821,12483,12571,12999,13971,14822,15073,15803)
+                                  ,AGGR_ECO9_2015=c('TPL','CPL','NAP','SAP','SAP','UMW','CPL','NPL'
+                                                    ,'UMW','XER'),stringsAsFactors=F)
+            indf.eco <- merge(indf_test,ecoTest,by='UID')
+
             testOut <- calcNRSA_BentMMImets(inCts=indf.eco,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                        ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
                                        ,habit='HABIT_WSA',ptv='PTV_WSA',ecoreg='AGGR_ECO9_2015')
@@ -153,15 +152,21 @@ test_that("MMI metrics correct",
 
           })
 
-testIn <- merge(bentMet_test,ecoTest,by='UID')
-testIn.wide <- reshape(testIn, idvar = c('UID','SAMPLE_TYPE','SAMPLE_CAT','AGGR_ECO9_2015'), direction = 'wide',
-                       v.names = 'RESULT', timevar = 'PARAMETER')
-names(testIn.wide) <- gsub('RESULT\\.', '', names(testIn.wide))
+
 # testIn <- merge(bentMet_test,ecoTest,by='UID') %>%
 #   data.table::dcast(UID+SAMPLE_TYPE+SAMPLE_CAT+AGGR_ECO9_2015~PARAMETER,value.var='RESULT')
 
 test_that("NRSA Benthic MMI scores correct",
 {
+  ecoTest <- data.frame(UID=c(11245,11703,11821,12483,12571,12999,13971,14822,15073,15803)
+                        ,AGGR_ECO9_2015=c('TPL','CPL','NAP','SAP','SAP','UMW','CPL','NPL'
+                                          ,'UMW','XER'),stringsAsFactors=F)
+
+  testIn <- merge(bentMet_test, ecoTest, by='UID')
+  testIn.wide <- reshape(testIn, idvar = c('UID','SAMPLE_TYPE','SAMPLE_CAT','AGGR_ECO9_2015'), direction = 'wide',
+                         v.names = 'RESULT', timevar = 'PARAMETER')
+  names(testIn.wide) <- gsub('RESULT\\.', '', names(testIn.wide))
+
   testOut <- calcNRSA_BenthicMMI(testIn.wide,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,ecoreg='AGGR_ECO9_2015',totlnind='TOTLNIND')
   varLong <- names(testOut)[names(testOut) %nin% c('UID','SAMPLE_TYPE','SAMPLE_CAT')]
