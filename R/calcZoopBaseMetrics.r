@@ -202,14 +202,41 @@ calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
       if(nrow(metsIn)==0){
         print(paste("No observations for ", params[i], sep=''))
         numSamps <- nrow(metsOut)
-        met.1.long <- merge(samps, data.frame(PARAMETER=c(paste(params[i],'DEN', sep='_'),
-                                               paste(params[i],'PDEN', sep='_'),
-                                               paste(params[i],'BIO',sep='_'),
-                                               paste(params[i],'PBIO',sep='_'),
-                                               paste(params[i],'PIND',sep='_'),
-                                               paste(params[i],'PTAX',sep='_'),
-                                               paste(params[i],'NTAX',sep='_')),
-                                              RESULT=0))
+        # met.1.long <- merge(samps, data.frame(PARAMETER=c(paste(params[i],'DEN', sep='_'),
+        #                                        paste(params[i],'PDEN', sep='_'),
+        #                                        paste(params[i],'BIO',sep='_'),
+        #                                        paste(params[i],'PBIO',sep='_'),
+        #                                        paste(params[i],'NIND',sep='_'),
+        #                                        paste(params[i],'PIND',sep='_'),
+        #                                        paste(params[i],'PTAX',sep='_'),
+        #                                        paste(params[i],'NTAX',sep='_')),
+        #                                       RESULT=0))
+
+        if(!is.null(density)){
+          met.1.long <- merge(samps, data.frame(PARAMETER=c(paste(params[i],'DEN', sep='_'),
+                                                            paste(params[i],'PDEN', sep='_'),
+                                                            paste(params[i],'BIO',sep='_'),
+                                                            paste(params[i],'PBIO',sep='_'),
+                                                            paste(params[i],'NIND',sep='_'),
+                                                            paste(params[i],'PIND',sep='_'),
+                                                            paste(params[i],'PTAX',sep='_'),
+                                                            paste(params[i],'NTAX',sep='_')),
+                                                RESULT=0))
+        }else{
+          met.1.long <- merge(samps, data.frame(PARAMETER=c(paste(params[i],'BIO',sep='_'),
+                                                            paste(params[i],'PBIO',sep='_'),
+                                                            paste(params[i],'NIND',sep='_'),
+                                                            paste(params[i],'PIND',sep='_'),
+                                                            paste(params[i],'PTAX',sep='_'),
+                                                            paste(params[i],'NTAX',sep='_')),
+                                                RESULT=0))
+        }
+
+        if(nativeMetrics==TRUE){
+          met.1.long$PARAMETER <- with(met.1.long, gsub(params[i], paste(params[i], 'NAT', sep='_'), PARAMETER))
+        }
+
+
         metsOut <- rbind(metsOut, met.1.long)
 
       }else{ # Include NIND only for full metrics, not native only

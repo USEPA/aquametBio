@@ -591,7 +591,7 @@ testAllMets <- calcZoopAllMets(indata = zonwIn,
                                inCoarse = zocnIn,
                                inFine = zofnIn,
                                inTaxa = zpTaxa,
-                               sampID = c('UID','SAMPLE_TYPE'),
+                               sampID = c('UID'),
                                is_distinct = 'IS_DISTINCT',
                                ct = 'COUNT', biomass = 'BIOMASS',
                                density = 'DENSITY',
@@ -603,6 +603,8 @@ testAllMets <- calcZoopAllMets(indata = zonwIn,
                                family = 'FAMILY', ffg = 'FFG',
                                clad_size = 'CLADOCERA_SIZE',
                                net_size = 'NET_SIZECLS_NEW')
+
+dups <- testAllMets[duplicated(testAllMets[, c('UID', 'PARAMETER')]),]
 
 curMets <- dbGet('ALL_THE_NLA', 'tblZOOPMET') %>%
   filter(UID %nin% exclude_UIDs$UID)
@@ -651,16 +653,16 @@ testMMI.long <- pivot_longer(testMMI, cols = MMI_ZOOP:TROP_PT,
 
 
 matchMMI <- merge(curMets, testMMI.long, by = c('UID', 'PARAMETER')) %>%
-  mutate(RESULT.x = ifelse(PARAMETER=='MMI_ZOOP_2017', as.character(round(as.numeric(RESULT.x), 1)),
+  mutate(RESULT.x = ifelse(PARAMETER=='MMI_ZOOP_2017', as.character(round(as.numeric(RESULT.x), 2)),
                            RESULT.x))
 
-filter(matchMMI, RESULT.x!=RESULT.y) # All values match except due to rounding of MMI values - NOTE code rounds to 1 decimal point but original code does not.
+diffs <- filter(matchMMI, abs(as.numeric(RESULT.x)-as.numeric(RESULT.y))>0.01)
 
 # Now compare condition
 curCond <- dbGet('ALL_THE_NLA', 'tblCONDITION', where = "PARAMETER = 'ZOOP_MMI_COND_2017'")
 
 matchCond <- merge(curCond, testMMI.long, by=c('UID', 'PARAMETER'))
 
-filter(matchCond, RESULT.x!=RESULT.y) # 3 differences because the thresholds are at too many decimal points and rounding has shifted the MMI scores for these. Talk to Dave about this.
+filter(matchCond, RESULT.x!=RESULT.y) # 0 differences now
 
-filter(testMMI, UID %in% c(2010296, 2010360, 2011071))
+

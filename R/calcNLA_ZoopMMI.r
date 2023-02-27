@@ -147,7 +147,7 @@ calcNLA_ZoopMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', totlnind = 'T
   mmi.scores <- aggregate(x = list(SUMMETS = scored.mets$RESULT), by = scored.mets[c('SAMPID','TOTLNIND','ECO_BIO')], FUN = sum)
 
   mmi.scores$PARAMETER <- "MMI_ZOOP"
-  mmi.scores$RESULT <- with(mmi.scores, round((100/60)*SUMMETS, 1))
+  mmi.scores$RESULT <- with(mmi.scores, round((100/60)*SUMMETS, 2))
   mmi.scores$SUMMETS <- NULL
 
   ## Set condition class for each sample, which is based on ECO_BIO region
@@ -182,7 +182,7 @@ calcNLA_ZoopMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', totlnind = 'T
                                                                                     'MMI_ZOOP',
                                                                                     'ZOOP_MMI_COND')]))
   names(mmiOut.final)[names(mmiOut.final)=='ECO_BIO'] <- ecoreg
-
+  mmiOut.final$SAMPID <- NULL
   mmiOut.final$ZOOP_MMI_COND <- with(mmiOut.final, ifelse(is.na(MMI_ZOOP), 'Not Assessed', ZOOP_MMI_COND))
 
   return(mmiOut.final)
