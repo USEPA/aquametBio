@@ -231,4 +231,32 @@
 #' @keywords datasets
 "zoopTaxa"
 
+#' Zooplankton Example Taxa
+#'
+#' A dataset containing example raw zooplankton count data.
+#'
+#' @name zpRawEx
+#' @format A data frame with 198 rows and the following 9 columns:
+#' \describe{
+#' \item{UID}{Unique site visit identifer}
+#' \item{SAMPLE_TYPE}{Sample type: ZOCN = coarse mesh sample,
+#' ZOFN = fine mesh sample}
+#' \item{TAXA_ID}{TAxonomic ID number from taxa list}
+#' \item{BIOMASS_FACTOR}{Biomass factor that allows calculation of biomass
+#' from count data}
+#' \item{ABUNDANCE_TOTAL}{Total number of individuals of taxon counted in
+#' sample}
+#' \item{CONCENTRATED_VOLUME}{Volume of sample concentrate received in lab}
+#' \item{VOLUME_COUNTED}{Volume of subsample counted}
+#' \item{LARGE_RARE_TAXA}{Indicator of whether taxon was identified in
+#' large/rare scan}
+#' \item{TOW_VOLUME}{Estimated volume of water filtered for sample}
+#' }
+#' @note Unless a data frame name is provided for argument inTaxa to the
+#' zooplankton metric functions, this dataset provides the inTaxa data frame.
+#' @examples
+#'   data(zpRawEx)
+#'   head(zpRawEx)
+#' @keywords datasets
+"zpRawEx"
 
