@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Karen BLocksom" />
+
+<meta name="date" content="2024-01-18" />
+
+<title>Calculating Zooplankton Metrics &amp; MMI</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Calculating Zooplankton Metrics &amp;
+MMI</h1>
+<h4 class="author">Karen BLocksom</h4>
+<h4 class="date">2024-01-18</h4>
+
+
+
+<div id="preliminaries" class="section level1">
+<h1>Preliminaries</h1>
+<p>One of the primary goals of this package is to calculate zooplankton
+metrics and the zooplankton MMI as used in the National Lakes Assessment
+(NLA) conducted in 2012 and 2017 by EPA’s Office of Water. Two
+zooplankton samples were collected at sites, one with a coarse mesh net
+(ZOCN sample type) and one with a fine mesh net (ZOFN). Samples were
+processed in the laboratory to obtain the taxon name, number of
+individuals, and biomass information. Using the tow volume for each
+sample, densities, counts, and biomass were calculated for each taxon in
+each sample. In addition, a 300-count random subsample was taken using
+the <code>rarifyCounts()</code> function. In coarse mesh samples, a scan
+was used to identify large and rare taxa. No counts were recorded for
+these taxa, so they were used only for taxa richness metrics and only
+for the original counts (not 300-organism subsampling). Then the
+original and 300-organism fine and coarse mesh sample data were combined
+into a new sample type (ZONW). Distinctness of each taxon in each sample
+and sample type was determined using the <code>assignDistinct()</code>
+function. Non-native status was then determined for all taxa on a
+site-specific basis.</p>
+<p>For the purposes of calculations, the metrics were broken down into
+several subsets, depending on which autecology traits were required to
+calculate them. There are also separate functions to calculate the
+regional multimetric indices (MMIs) (component and overall scores and
+condition classes) based on metric inputs. This vignette describes how
+to use the various functions along with the example datasets provided
+and the included taxa lists, to obtain the full set of metrics, a subset
+of metrics based on metric type, and the benthic multimetric index used
+in assigning biological condition.</p>
+<p>The functions in this package allow for a great deal of flexibility
+in terms of input variable names and the taxalist used in calculating
+metrics. However, the actual values of various traits are assumed to
+match those used in NLA. This means that some metrics will not be
+calculated correctly if the taxalist used in the function does not use
+the same trait values. In addition, the functions assume that data have
+already been summarized to the level of sample and taxon, and a
+within-sample distinctness (0/1) already assigned to each taxon, so any
+steps required to get to this point must be done prior to use of the
+functions. All taxa in the count data must be included in the taxa list
+in order to be included in the calculations. Functions will look for
+specific types of inconsistencies, like missing variables, and either
+provide a warning or will fail to run, depending on the issue.</p>
+<p>There are two functions that are used to process the initial raw data
+for coarse- and fine-mesh net samples. The first,
+<code>convertZoopCts_NLA()</code>, uses count data, tow volume, the
+concentrated sample volume, the volume counted, and the biomass factor.
+This function is used to calculate density and biomass for each taxon
+with the original and 300-organism count data. The second function,
+<code>prepZoopCombCts_NLA</code>, combines the data from the coarse- and
+fine-mesh net samples. Once these functions are run, the data are ready
+for metric calculations. All three sample types (ZOCN, ZOFN, ZONW) are
+necessary to calculate the full set of metrics. Metrics of all types are
+ultimately used in the regional MMIs, so it is easiest to calculate the
+full set to obtain those necessary for calculating MMIs.</p>
+<hr />
+</div>
+<div id="prepare-data-for-metric-calculation" class="section level1">
+<h1>2 Prepare Data for Metric Calculation</h1>
+<p>In this example, the initial raw data for the two sample types (ZOCN
+and ZOFN) are already combined with the tow volume for each sample into
+a single dataset. From there, we need to combine the data to create the
+ZONW sample. For this, we start with the function
+<code>convertZoopCts_NLA()</code>, create the 300-organism subsamples
+using <code>rarifyCounts()</code>, and then combine the ZOFN and ZOCN
+samples using <code>prepZoopCombCts_NLA()</code>.</p>
+<div id="calculate-density-and-biomass-original-counts" class="section level2">
+<h2>2.1 Calculate density and biomass (original counts)</h2>
+<p>First run for the original counts. Convert counts to biomass and
+densities. Then create combined sample (ZONW) for original samples. To
+this data, we need to add the IS_DISTINCT variable to identify distinct
+taxa for richness-related metrics. We do this using the
+<code>assignDistinct()</code> function. We need to first remove any taxa
+without merge the dataset with the taxalist in order to add taxonomic
+hierarchical information. This taxonomic hierarchy is used to determine
+whether each taxon is unique within a sample. We will leave the
+additional taxonomic information in the data frame for now.</p>
+<p><em>Note:</em> For one UID, the ZOCN sample contained 0 organisms,
+denoted by the TAXA_ID 9999. Because the COUNT for this row is 0, we
+exclude it when we assign distinctness.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(aquametBio)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">head</span>(zpRawEx)</span></code></pre></div>
+<pre><code>##          UID SAMPLE_TYPE TAXA_ID BIOMASS_FACTOR ABUNDANCE_TOTAL
+## 5510 2010287        ZOCN    1080       3.019279              13
+## 5511 2010287        ZOCN    1088       1.001428               1
+## 5512 2010287        ZOCN    1098       0.429414               3
+## 5513 2010287        ZOCN    1121       1.562736               3
+## 5514 2010287        ZOCN    1124       3.862367             324
+## 5515 2010287        ZOCN    1131       4.617338             136
+##      CONCENTRATED_VOLUME VOLUME_COUNTED LARGE_RARE_TAXA TOW_VOLUME
+## 5510                 146              4            &lt;NA&gt;   157.0795
+## 5511                 146              4            &lt;NA&gt;   157.0795
+## 5512                 146              4            &lt;NA&gt;   157.0795
+## 5513                 146              4            &lt;NA&gt;   157.0795
+## 5514                 146              4            &lt;NA&gt;   157.0795
+## 5515                 146              4            &lt;NA&gt;   157.0795</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>zpCts.full <span class="ot">&lt;-</span> <span class="fu">convertZoopCts_NLA</span>(zpRawEx, <span class="at">sampID=</span><span class="st">&#39;UID&#39;</span>, <span class="at">sampType=</span><span class="st">&#39;SAMPLE_TYPE&#39;</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>                            <span class="at">rawCt =</span> <span class="st">&#39;ABUNDANCE_TOTAL&#39;</span>, <span class="at">biofactor =</span> <span class="st">&#39;BIOMASS_FACTOR&#39;</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>                            <span class="at">tow_vol =</span> <span class="st">&#39;TOW_VOLUME&#39;</span>, <span class="at">vol_ctd =</span> <span class="st">&#39;VOLUME_COUNTED&#39;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>                            <span class="at">conc_vol =</span> <span class="st">&#39;CONCENTRATED_VOLUME&#39;</span>, <span class="at">lr_taxon =</span> <span class="st">&#39;LARGE_RARE_TAXA&#39;</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>                            <span class="at">taxa_id =</span> <span class="st">&#39;TAXA_ID&#39;</span>, <span class="at">subsample=</span><span class="cn">FALSE</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>zpCts.full <span class="ot">&lt;-</span> <span class="fu">subset</span>(zpCts.full, COUNT<span class="sc">!=</span><span class="dv">0</span><span class="sc">|</span>LARGE_RARE_TAXA<span class="sc">==</span><span class="st">&#39;Y&#39;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="fu">merge</span>(zoopTaxa, <span class="at">by =</span> <span class="st">&#39;TAXA_ID&#39;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="fu">assignDistinct</span>(<span class="at">sampleID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>), </span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>                 <span class="at">taxlevels=</span><span class="fu">c</span>(<span class="st">&#39;PHYLUM&#39;</span>,<span class="st">&#39;CLASS&#39;</span>,<span class="st">&#39;SUBCLASS&#39;</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>                             <span class="st">&#39;ORDER&#39;</span>,<span class="st">&#39;SUBORDER&#39;</span>,<span class="st">&#39;FAMILY&#39;</span>,<span class="st">&#39;GENUS&#39;</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>                             <span class="st">&#39;SPECIES&#39;</span>,<span class="st">&#39;SUBSPECIES&#39;</span>)) </span></code></pre></div>
+<pre><code>## [1] &quot;PHYLUM&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;SUBCLASS&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;SUBORDER&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;SPECIES&quot;
+## [1] &quot;SUBSPECIES&quot;
+## [1] &quot;SUBSPECIES&quot;
+## [1] &quot;SPECIES&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;SUBORDER&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;SUBCLASS&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;PHYLUM&quot;</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">head</span>(zpCts.full)</span></code></pre></div>
+<pre><code>##   TAXA_ID     UID SAMPLE_TYPE COUNT      BIOMASS    DENSITY LARGE_RARE_TAXA
+## 1    1098 2010287        ZOCN     3   0.29934417  0.6970992            &lt;NA&gt;
+## 2    1265 2010287        ZOCN     1   0.55536595  0.2323664            &lt;NA&gt;
+## 3    1088 2010287        ZOCN     1   0.23269823  0.2323664            &lt;NA&gt;
+## 4    1124 2010287        ZOCN   324 290.78493465 75.2867179            &lt;NA&gt;
+## 5    1131 2010287        ZOCN   136 145.91634066 31.6018322            &lt;NA&gt;
+## 6    1150 2010287        ZOCN     1   0.04398173  0.2323664            &lt;NA&gt;
+##               TARGET_TAXON     PHYLUM        CLASS   SUBCLASS       ORDER
+## 1      CHYDORUS SPHAERICUS ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 2             KURZIA MEDIA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 3             CERIODAPHNIA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 4                  DAPHNIA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 5 DAPHNIA GALEATA MENDOTAE ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 6             DIAPHANOSOMA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+##    SUBORDER     FAMILY SUBFAMILY        GENUS    SPECIES SUBSPECIES  FFG
+## 1 CLADOCERA CHYDORIDAE      &lt;NA&gt;     CHYDORUS SPHAERICUS            HERB
+## 2 CLADOCERA CHYDORIDAE      &lt;NA&gt;       KURZIA      MEDIA            HERB
+## 3 CLADOCERA DAPHNIIDAE      &lt;NA&gt; CERIODAPHNIA                       HERB
+## 4 CLADOCERA DAPHNIIDAE      &lt;NA&gt;      DAPHNIA                       HERB
+## 5 CLADOCERA DAPHNIIDAE      &lt;NA&gt;      DAPHNIA    GALEATA   MENDOTAE HERB
+## 6 CLADOCERA    SIDIDAE      &lt;NA&gt; DIAPHANOSOMA                       HERB
+##   NON_TARGET NON_NATIVE NET_SIZECLS_NEW CLADOCERA_SIZE PUBLICATION_DATE
+## 1       &lt;NA&gt;       &lt;NA&gt;          COARSE          SMALL       2023-02-23
+## 2       &lt;NA&gt;       &lt;NA&gt;          COARSE          SMALL       2023-02-23
+## 3       &lt;NA&gt;       &lt;NA&gt;          COARSE          SMALL       2023-02-23
+## 4       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+## 5       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+## 6       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+##   IS_DISTINCT
+## 1           1
+## 2           1
+## 3           1
+## 4           0
+## 5           1
+## 6           1</code></pre>
+</div>
+<div id="create-zonw-sample" class="section level2">
+<h2>2.2 Create ZONW sample</h2>
+<p>Then create combined sample (ZONW) from the original coarse and fine
+net samples. We again need to add the IS_DISTINCT variable, using the
+same approach as above.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>zpCts.zonw <span class="ot">&lt;-</span> <span class="fu">prepZoopCombCts_NLA</span>(zpCts.full, <span class="at">sampID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>),</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>                                  <span class="at">sampType =</span> <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="at">typeFine =</span> <span class="st">&#39;ZOFN&#39;</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                                  <span class="at">typeCoarse =</span> <span class="st">&#39;ZOCN&#39;</span>, <span class="at">ct =</span> <span class="st">&#39;COUNT&#39;</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                                  <span class="at">biomass =</span> <span class="st">&#39;BIOMASS&#39;</span>, <span class="at">density =</span> <span class="st">&#39;DENSITY&#39;</span>, </span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>                                  <span class="at">taxa_id =</span> <span class="st">&#39;TAXA_ID&#39;</span>, <span class="at">lr_taxon =</span> <span class="st">&#39;LARGE_RARE_TAXA&#39;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>zpCts.zonw <span class="ot">&lt;-</span> <span class="fu">subset</span>(zpCts.zonw, COUNT<span class="sc">!=</span><span class="dv">0</span><span class="sc">|</span>LARGE_RARE_TAXA<span class="sc">==</span><span class="st">&#39;Y&#39;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="fu">merge</span>(zoopTaxa, <span class="at">by =</span> <span class="st">&#39;TAXA_ID&#39;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="fu">assignDistinct</span>(<span class="at">sampleID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>), </span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>                 <span class="at">taxlevels=</span><span class="fu">c</span>(<span class="st">&#39;PHYLUM&#39;</span>,<span class="st">&#39;CLASS&#39;</span>,<span class="st">&#39;SUBCLASS&#39;</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>                             <span class="st">&#39;ORDER&#39;</span>,<span class="st">&#39;SUBORDER&#39;</span>,<span class="st">&#39;FAMILY&#39;</span>,<span class="st">&#39;GENUS&#39;</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>                             <span class="st">&#39;SPECIES&#39;</span>,<span class="st">&#39;SUBSPECIES&#39;</span>)) </span></code></pre></div>
+<pre><code>## [1] &quot;PHYLUM&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;SUBCLASS&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;SUBORDER&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;SPECIES&quot;
+## [1] &quot;SUBSPECIES&quot;
+## [1] &quot;SUBSPECIES&quot;
+## [1] &quot;SPECIES&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;SUBORDER&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;SUBCLASS&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;PHYLUM&quot;</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">head</span>(zpCts.zonw)</span></code></pre></div>
+<pre><code>##   TAXA_ID     UID COUNT      BIOMASS    DENSITY LARGE_RARE_TAXA SAMPLE_TYPE
+## 1    1098 2010287     6   0.46792380  1.3941979            &lt;NA&gt;        ZONW
+## 2    1265 2010287     1   0.55536595  0.2323664            &lt;NA&gt;        ZONW
+## 3    1088 2010287     1   0.23269823  0.2323664            &lt;NA&gt;        ZONW
+## 4    1124 2010287   324 290.78493465 75.2867179            &lt;NA&gt;        ZONW
+## 5    1131 2010287   136 145.91634066 31.6018322            &lt;NA&gt;        ZONW
+## 6    1150 2010287     1   0.04398173  0.2323664            &lt;NA&gt;        ZONW
+##               TARGET_TAXON     PHYLUM        CLASS   SUBCLASS       ORDER
+## 1      CHYDORUS SPHAERICUS ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 2             KURZIA MEDIA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 3             CERIODAPHNIA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 4                  DAPHNIA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 5 DAPHNIA GALEATA MENDOTAE ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 6             DIAPHANOSOMA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+##    SUBORDER     FAMILY SUBFAMILY        GENUS    SPECIES SUBSPECIES  FFG
+## 1 CLADOCERA CHYDORIDAE      &lt;NA&gt;     CHYDORUS SPHAERICUS            HERB
+## 2 CLADOCERA CHYDORIDAE      &lt;NA&gt;       KURZIA      MEDIA            HERB
+## 3 CLADOCERA DAPHNIIDAE      &lt;NA&gt; CERIODAPHNIA                       HERB
+## 4 CLADOCERA DAPHNIIDAE      &lt;NA&gt;      DAPHNIA                       HERB
+## 5 CLADOCERA DAPHNIIDAE      &lt;NA&gt;      DAPHNIA    GALEATA   MENDOTAE HERB
+## 6 CLADOCERA    SIDIDAE      &lt;NA&gt; DIAPHANOSOMA                       HERB
+##   NON_TARGET NON_NATIVE NET_SIZECLS_NEW CLADOCERA_SIZE PUBLICATION_DATE
+## 1       &lt;NA&gt;       &lt;NA&gt;          COARSE          SMALL       2023-02-23
+## 2       &lt;NA&gt;       &lt;NA&gt;          COARSE          SMALL       2023-02-23
+## 3       &lt;NA&gt;       &lt;NA&gt;          COARSE          SMALL       2023-02-23
+## 4       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+## 5       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+## 6       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+##   IS_DISTINCT
+## 1           1
+## 2           1
+## 3           1
+## 4           0
+## 5           1
+## 6           1</code></pre>
+</div>
+<div id="create-random-subsamples-and-prepare-data" class="section level2">
+<h2>2.3 Create random subsamples and prepare data</h2>
+<p>Now we can create the random subsamples from the original count data
+using <code>rarifyCounts()</code>, and then repeat the process from
+above for the 300-organism subsamples. We append the COUNT and BIOMASS
+variables with the subsample size (300) to distinguish these values from
+the original counts since we will combine them all</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>zpRawEx<span class="fl">.300</span> <span class="ot">&lt;-</span> <span class="fu">rarifyCounts</span>(zpRawEx, <span class="at">sampID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>),</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>                            <span class="at">abund =</span> <span class="st">&#39;ABUNDANCE_TOTAL&#39;</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>                            <span class="at">subsize =</span> <span class="dv">300</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>                            <span class="at">seed =</span> <span class="dv">1234</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="fu">subset</span>(ABUNDANCE_TOTAL <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="at">select =</span> <span class="sc">-</span>LARGE_RARE_TAXA)</span></code></pre></div>
+<pre><code>## [1] &quot;2010287.ZOCN&quot;
+## [1] &quot;2010287.ZOFN&quot;
+## [1] &quot;2010569.ZOCN&quot;
+## [1] &quot;2010569.ZOFN&quot;
+## [1] &quot;2010833.ZOCN&quot;
+## [1] &quot;2010833.ZOFN&quot;
+## [1] &quot;7100.ZOCN&quot;
+## [1] &quot;7100.ZOFN&quot;
+## [1] &quot;7122.ZOCN&quot;
+## [1] &quot;7122.ZOFN&quot;
+## [1] &quot;7477.ZOFN&quot;
+## [1] &quot;7548.ZOCN&quot;
+## [1] &quot;7548.ZOFN&quot;
+## [1] &quot;7748.ZOCN&quot;
+## [1] &quot;7748.ZOFN&quot;
+## [1] &quot;8395.ZOCN&quot;
+## [1] &quot;8395.ZOFN&quot;
+## [1] &quot;8499.ZOCN&quot;
+## [1] &quot;8499.ZOFN&quot;
+## [1] Rarefaction complete. Number of samples = 
+## [2] 19                                        
+##                                     user.self 
+## Execution time (sec)=                    0.02</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">head</span>(zpRawEx<span class="fl">.300</span>)</span></code></pre></div>
+<pre><code>##          UID SAMPLE_TYPE TAXA_ID BIOMASS_FACTOR ABUNDANCE_TOTAL
+## 5510 2010287        ZOCN    1080      3.0192790               6
+## 5512 2010287        ZOCN    1098      0.4294140               2
+## 5513 2010287        ZOCN    1121      1.5627360               3
+## 5514 2010287        ZOCN    1124      3.8623670             204
+## 5515 2010287        ZOCN    1131      4.6173380              73
+## 5516 2010287        ZOCN    1150      0.1892775               1
+##      CONCENTRATED_VOLUME VOLUME_COUNTED TOW_VOLUME
+## 5510                 146              4   157.0795
+## 5512                 146              4   157.0795
+## 5513                 146              4   157.0795
+## 5514                 146              4   157.0795
+## 5515                 146              4   157.0795
+## 5516                 146              4   157.0795</code></pre>
+<p>Now that we have the 300 organism subsamples for coarse- and
+fine-mesh net samples, we can convert counts to biomass. We cannot use
+large and rare taxa for the 300-organism subsample and we do not use
+densities for the subsetted data, so these variables are missing. We
+also need to calculate IS_DISTINCT at this point using the
+<code>assignDistinct()</code> function. We add the suffix _300 to the
+variable name to distinguish it from original count data.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>zpCts<span class="fl">.300</span> <span class="ot">&lt;-</span> <span class="fu">convertZoopCts_NLA</span>(zpRawEx<span class="fl">.300</span>, <span class="at">sampID=</span><span class="st">&#39;UID&#39;</span>, <span class="at">sampType=</span><span class="st">&#39;SAMPLE_TYPE&#39;</span>,</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>                            <span class="at">rawCt =</span> <span class="st">&#39;ABUNDANCE_TOTAL&#39;</span>, <span class="at">biofactor =</span> <span class="st">&#39;BIOMASS_FACTOR&#39;</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>                            <span class="at">tow_vol =</span> <span class="st">&#39;TOW_VOLUME&#39;</span>, <span class="at">vol_ctd =</span> <span class="st">&#39;VOLUME_COUNTED&#39;</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>                            <span class="at">conc_vol =</span> <span class="st">&#39;CONCENTRATED_VOLUME&#39;</span>, </span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>                            <span class="at">taxa_id =</span> <span class="st">&#39;TAXA_ID&#39;</span>, <span class="at">subsample=</span><span class="cn">TRUE</span>) </span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>zpCts<span class="fl">.300</span> <span class="ot">&lt;-</span> <span class="fu">subset</span>(zpCts<span class="fl">.300</span>, COUNT<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>  <span class="fu">merge</span>(zoopTaxa, <span class="at">by =</span> <span class="st">&#39;TAXA_ID&#39;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>  <span class="fu">assignDistinct</span>(<span class="at">sampleID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>), </span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>                 <span class="at">taxlevels=</span><span class="fu">c</span>(<span class="st">&#39;PHYLUM&#39;</span>,<span class="st">&#39;CLASS&#39;</span>,<span class="st">&#39;SUBCLASS&#39;</span>,</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>                             <span class="st">&#39;ORDER&#39;</span>,<span class="st">&#39;SUBORDER&#39;</span>,<span class="st">&#39;FAMILY&#39;</span>,<span class="st">&#39;GENUS&#39;</span>,</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>                             <span class="st">&#39;SPECIES&#39;</span>,<span class="st">&#39;SUBSPECIES&#39;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a>  <span class="fu">subset</span>(<span class="at">select =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>, <span class="st">&#39;COUNT&#39;</span>, <span class="st">&#39;BIOMASS&#39;</span>, <span class="st">&#39;IS_DISTINCT&#39;</span>))</span></code></pre></div>
+<pre><code>## [1] &quot;PHYLUM&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;SUBCLASS&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;SUBORDER&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;SPECIES&quot;
+## [1] &quot;SUBSPECIES&quot;
+## [1] &quot;SUBSPECIES&quot;
+## [1] &quot;SPECIES&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;SUBORDER&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;SUBCLASS&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;PHYLUM&quot;</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">names</span>(zpCts<span class="fl">.300</span>)[<span class="fu">names</span>(zpCts<span class="fl">.300</span>) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&#39;COUNT&#39;</span>, <span class="st">&#39;BIOMASS&#39;</span>, <span class="st">&#39;IS_DISTINCT&#39;</span>)] <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="fu">names</span>(zpCts<span class="fl">.300</span>)[<span class="fu">names</span>(zpCts<span class="fl">.300</span>) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&#39;COUNT&#39;</span>, <span class="st">&#39;BIOMASS&#39;</span>, <span class="st">&#39;IS_DISTINCT&#39;</span>)], <span class="st">&quot;300&quot;</span>, <span class="at">sep=</span><span class="st">&quot;_&quot;</span>) </span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="fu">head</span>(zpCts<span class="fl">.300</span>)</span></code></pre></div>
+<pre><code>##       UID SAMPLE_TYPE TAXA_ID COUNT_300  BIOMASS_300 IS_DISTINCT_300
+## 1 2010287        ZOCN    1098         2   0.19956278               1
+## 2 2010287        ZOCN    1265         1   0.55536595               1
+## 3 2010287        ZOCN    1124       204 183.08681070               0
+## 4 2010287        ZOCN    1131        73  78.32274168               1
+## 5 2010287        ZOCN    1150         1   0.04398173               1
+## 6 2010287        ZOCN    1080         6   4.20947419               0</code></pre>
+<p>Finally, we combine the coarse and fine net samples into the ZONW
+sample type for the 300-count data. After combining, we need to
+calculate IS_DISTINCT as above. Again, we add the suffix _300 to the
+name to distinguish it from original count data. Again, only keep
+necessary variables because we will be merging with the broader original
+count data, which contains non-native status information.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>zpCts.zonw<span class="fl">.300</span> <span class="ot">&lt;-</span> <span class="fu">prepZoopCombCts_NLA</span>(zpCts<span class="fl">.300</span>, <span class="at">sampID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>),</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>                                  <span class="at">sampType =</span> <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="at">typeFine =</span> <span class="st">&#39;ZOFN&#39;</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>                                  <span class="at">typeCoarse =</span> <span class="st">&#39;ZOCN&#39;</span>, <span class="at">ct =</span> <span class="st">&#39;COUNT_300&#39;</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>                                  <span class="at">biomass =</span> <span class="st">&#39;BIOMASS_300&#39;</span>, </span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>                                  <span class="at">taxa_id =</span> <span class="st">&#39;TAXA_ID&#39;</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>zpCts.zonw<span class="fl">.300</span> <span class="ot">&lt;-</span> <span class="fu">subset</span>(zpCts.zonw<span class="fl">.300</span>, COUNT_300<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>  <span class="fu">merge</span>(zoopTaxa, <span class="at">by =</span> <span class="st">&#39;TAXA_ID&#39;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a>  <span class="fu">assignDistinct</span>(<span class="at">sampleID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>), </span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a>                 <span class="at">taxlevels=</span><span class="fu">c</span>(<span class="st">&#39;PHYLUM&#39;</span>,<span class="st">&#39;CLASS&#39;</span>,<span class="st">&#39;SUBCLASS&#39;</span>,</span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a>                             <span class="st">&#39;ORDER&#39;</span>,<span class="st">&#39;SUBORDER&#39;</span>,<span class="st">&#39;FAMILY&#39;</span>,<span class="st">&#39;GENUS&#39;</span>,</span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a>                             <span class="st">&#39;SPECIES&#39;</span>,<span class="st">&#39;SUBSPECIES&#39;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a>  <span class="fu">subset</span>(<span class="at">select =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>, <span class="st">&#39;COUNT_300&#39;</span>, <span class="st">&#39;BIOMASS_300&#39;</span>, <span class="st">&#39;IS_DISTINCT&#39;</span>))</span></code></pre></div>
+<pre><code>## [1] &quot;PHYLUM&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;SUBCLASS&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;SUBORDER&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;SPECIES&quot;
+## [1] &quot;SUBSPECIES&quot;
+## [1] &quot;SUBSPECIES&quot;
+## [1] &quot;SPECIES&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;SUBORDER&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;SUBCLASS&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;PHYLUM&quot;</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">names</span>(zpCts.zonw<span class="fl">.300</span>)[<span class="fu">names</span>(zpCts.zonw<span class="fl">.300</span>) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&#39;IS_DISTINCT&#39;</span>)] <span class="ot">&lt;-</span> <span class="st">&#39;IS_DISTINCT_300&#39;</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">head</span>(zpCts.zonw<span class="fl">.300</span>)</span></code></pre></div>
+<pre><code>##       UID SAMPLE_TYPE TAXA_ID COUNT_300  BIOMASS_300 IS_DISTINCT_300
+## 1 2010287        ZONW    1098         3   0.25575599               1
+## 2 2010287        ZONW    1265         1   0.55536595               1
+## 3 2010287        ZONW    1124       204 183.08681070               0
+## 4 2010287        ZONW    1131        73  78.32274168               1
+## 5 2010287        ZONW    1150         1   0.04398173               1
+## 6 2010287        ZONW    1120        44   0.60319171               0</code></pre>
+</div>
+<div id="create-inputs-for-metric-calculation" class="section level2">
+<h2>2.4 Create inputs for metric calculation</h2>
+<p>We have converted counts to biomass and density for both the original
+and 300-organism subsamples, and combined the coarse (ZOCN) and fine
+(ZOFN) samples into a new sample type (ZONW). Now we need to combine all
+of the data into a single data frame for each sample type (ZOCN, ZOFN,
+and ZONW).</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>zpCts.zonw.all <span class="ot">&lt;-</span> <span class="fu">merge</span>(zpCts.zonw, zpCts.zonw<span class="fl">.300</span>, </span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>                   <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>), <span class="at">all.x=</span><span class="cn">TRUE</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a><span class="fu">head</span>(zpCts.zonw.all)</span></code></pre></div>
+<pre><code>##    UID SAMPLE_TYPE TAXA_ID COUNT      BIOMASS      DENSITY LARGE_RARE_TAXA
+## 1 7100        ZONW    1080    13  0.202013061  0.082760640            &lt;NA&gt;
+## 2 7100        ZONW    1099     1  0.005663017  0.006366203            &lt;NA&gt;
+## 3 7100        ZONW    1119   157  0.528681012 23.987853284            &lt;NA&gt;
+## 4 7100        ZONW    1120    57  0.812512809  8.708965842            &lt;NA&gt;
+## 5 7100        ZONW    1121    38  0.940206109  0.827606403            &lt;NA&gt;
+## 6 7100        ZONW    1131   128 13.367636264  0.814873997            &lt;NA&gt;
+##               TARGET_TAXON     PHYLUM        CLASS    SUBCLASS           ORDER
+## 1                CALANOIDA ARTHROPODA  MAXILLOPODA    COPEPODA       CALANOIDA
+## 2                CLADOCERA ARTHROPODA BRANCHIOPODA  PHYLLOPODA     DIPLOSTRACA
+## 3     CONOCHILUS UNICORNIS   ROTIFERA  EUROTATORIA MONOGONONTA FLOSCULARIACEAE
+## 4                 COPEPODA ARTHROPODA  MAXILLOPODA    COPEPODA                
+## 5               CYCLOPOIDA ARTHROPODA  MAXILLOPODA    COPEPODA      CYCLOPOIDA
+## 6 DAPHNIA GALEATA MENDOTAE ARTHROPODA BRANCHIOPODA  PHYLLOPODA     DIPLOSTRACA
+##    SUBORDER       FAMILY SUBFAMILY      GENUS   SPECIES SUBSPECIES  FFG
+## 1                             &lt;NA&gt;                                 HERB
+## 2 CLADOCERA                   &lt;NA&gt;                                 HERB
+## 3           CONOCHILIDAE      &lt;NA&gt; CONOCHILUS UNICORNIS            HERB
+## 4                             &lt;NA&gt;                                  UNK
+## 5                             &lt;NA&gt;                                  UNK
+## 6 CLADOCERA   DAPHNIIDAE      &lt;NA&gt;    DAPHNIA   GALEATA   MENDOTAE HERB
+##   NON_TARGET NON_NATIVE NET_SIZECLS_NEW CLADOCERA_SIZE PUBLICATION_DATE
+## 1       &lt;NA&gt;       &lt;NA&gt;          COARSE           &lt;NA&gt;       2023-02-23
+## 2       &lt;NA&gt;       &lt;NA&gt;          COARSE          SMALL       2023-02-23
+## 3       &lt;NA&gt;       &lt;NA&gt;            FINE           &lt;NA&gt;       2023-02-23
+## 4       &lt;NA&gt;       &lt;NA&gt;            FINE           &lt;NA&gt;       2023-02-23
+## 5       &lt;NA&gt;       &lt;NA&gt;          COARSE           &lt;NA&gt;       2023-02-23
+## 6       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+##   IS_DISTINCT COUNT_300 BIOMASS_300 IS_DISTINCT_300
+## 1           0        12   0.1864736               0
+## 2           0        NA          NA              NA
+## 3           1       118   0.3973526               1
+## 4           0        38   0.5416752               0
+## 5           0        34   0.8076407               0
+## 6           1       106  11.0700738               1</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>zpCts.full.zocn <span class="ot">&lt;-</span> <span class="fu">subset</span>(zpCts.full, SAMPLE_TYPE<span class="sc">==</span><span class="st">&#39;ZOCN&#39;</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>zpCts.<span class="fl">300.</span>zocn <span class="ot">&lt;-</span> <span class="fu">subset</span>(zpCts<span class="fl">.300</span>, SAMPLE_TYPE<span class="sc">==</span><span class="st">&#39;ZOCN&#39;</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>zpCts.zocn.all <span class="ot">&lt;-</span> <span class="fu">merge</span>(zpCts.full.zocn, zpCts.<span class="fl">300.</span>zocn, </span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>                  <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>), <span class="at">all.x=</span><span class="cn">TRUE</span>)</span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a><span class="fu">head</span>(zpCts.zocn.all)</span></code></pre></div>
+<pre><code>##    UID SAMPLE_TYPE TAXA_ID COUNT      BIOMASS     DENSITY LARGE_RARE_TAXA
+## 1 7100        ZOCN    1080    13  0.202013061 0.082760640            &lt;NA&gt;
+## 2 7100        ZOCN    1099     1  0.005663017 0.006366203            &lt;NA&gt;
+## 3 7100        ZOCN    1121    34  0.633550411 0.216450905            &lt;NA&gt;
+## 4 7100        ZOCN    1131   128 13.367636264 0.814873997            &lt;NA&gt;
+## 5 7100        ZOCN    1142    82 16.257360076 0.522028654            &lt;NA&gt;
+## 6 7100        ZOCN    1149     6  0.100333832 0.038197219            &lt;NA&gt;
+##               TARGET_TAXON     PHYLUM        CLASS   SUBCLASS       ORDER
+## 1                CALANOIDA ARTHROPODA  MAXILLOPODA   COPEPODA   CALANOIDA
+## 2                CLADOCERA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 3               CYCLOPOIDA ARTHROPODA  MAXILLOPODA   COPEPODA  CYCLOPOIDA
+## 4 DAPHNIA GALEATA MENDOTAE ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 5        DAPHNIA PULICARIA ARTHROPODA BRANCHIOPODA PHYLLOPODA DIPLOSTRACA
+## 6       DIACYCLOPS THOMASI ARTHROPODA  MAXILLOPODA   COPEPODA  CYCLOPOIDA
+##    SUBORDER     FAMILY SUBFAMILY      GENUS   SPECIES SUBSPECIES  FFG
+## 1                           &lt;NA&gt;                                 HERB
+## 2 CLADOCERA                 &lt;NA&gt;                                 HERB
+## 3                           &lt;NA&gt;                                  UNK
+## 4 CLADOCERA DAPHNIIDAE      &lt;NA&gt;    DAPHNIA   GALEATA   MENDOTAE HERB
+## 5 CLADOCERA DAPHNIIDAE      &lt;NA&gt;    DAPHNIA PULICARIA            HERB
+## 6           CYCLOPIDAE      &lt;NA&gt; DIACYCLOPS   THOMASI            OMNI
+##   NON_TARGET NON_NATIVE NET_SIZECLS_NEW CLADOCERA_SIZE PUBLICATION_DATE
+## 1       &lt;NA&gt;       &lt;NA&gt;          COARSE           &lt;NA&gt;       2023-02-23
+## 2       &lt;NA&gt;       &lt;NA&gt;          COARSE          SMALL       2023-02-23
+## 3       &lt;NA&gt;       &lt;NA&gt;          COARSE           &lt;NA&gt;       2023-02-23
+## 4       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+## 5       &lt;NA&gt;       &lt;NA&gt;          COARSE          LARGE       2023-02-23
+## 6       &lt;NA&gt;       &lt;NA&gt;          COARSE           &lt;NA&gt;       2023-02-23
+##   IS_DISTINCT COUNT_300 BIOMASS_300 IS_DISTINCT_300
+## 1           0        12  0.18647360               0
+## 2           0        NA          NA              NA
+## 3           0        31  0.57764890               0
+## 4           1       106 11.07007378               1
+## 5           1        70 13.87823421               1
+## 6           1         5  0.08361153               1</code></pre>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>zpCts.full.zofn <span class="ot">&lt;-</span> <span class="fu">subset</span>(zpCts.full, SAMPLE_TYPE<span class="sc">==</span><span class="st">&#39;ZOFN&#39;</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>zpCts.<span class="fl">300.</span>zofn <span class="ot">&lt;-</span> <span class="fu">subset</span>(zpCts<span class="fl">.300</span>, SAMPLE_TYPE<span class="sc">==</span><span class="st">&#39;ZOFN&#39;</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>zpCts.zofn.all <span class="ot">&lt;-</span> <span class="fu">merge</span>(zpCts.full.zofn, zpCts.<span class="fl">300.</span>zofn, </span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a>                  <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>), <span class="at">all.x=</span><span class="cn">TRUE</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a><span class="fu">head</span>(zpCts.zofn.all)</span></code></pre></div>
+<pre><code>##    UID SAMPLE_TYPE TAXA_ID COUNT    BIOMASS    DENSITY LARGE_RARE_TAXA
+## 1 7100        ZOFN    1119   157 0.52868101 23.9878533            &lt;NA&gt;
+## 2 7100        ZOFN    1120    57 0.81251281  8.7089658            &lt;NA&gt;
+## 3 7100        ZOFN    1121     4 0.30665570  0.6111555            &lt;NA&gt;
+## 4 7100        ZOFN    1254     1 0.01334699  0.1527889            &lt;NA&gt;
+## 5 7100        ZOFN    1407   164 4.36744040 25.0573754            &lt;NA&gt;
+## 6 7100        ZOFN    1409    40 0.41700674  6.1115550            &lt;NA&gt;
+##           TARGET_TAXON     PHYLUM       CLASS    SUBCLASS           ORDER
+## 1 CONOCHILUS UNICORNIS   ROTIFERA EUROTATORIA MONOGONONTA FLOSCULARIACEAE
+## 2             COPEPODA ARTHROPODA MAXILLOPODA    COPEPODA                
+## 3           CYCLOPOIDA ARTHROPODA MAXILLOPODA    COPEPODA      CYCLOPOIDA
+## 4   KERATELLA QUADRATA   ROTIFERA EUROTATORIA MONOGONONTA          PLOIMA
+## 5     POLYARTHRA MAJOR   ROTIFERA EUROTATORIA MONOGONONTA          PLOIMA
+## 6  POLYARTHRA VULGARIS   ROTIFERA EUROTATORIA MONOGONONTA          PLOIMA
+##   SUBORDER       FAMILY SUBFAMILY      GENUS   SPECIES SUBSPECIES  FFG
+## 1          CONOCHILIDAE      &lt;NA&gt; CONOCHILUS UNICORNIS            HERB
+## 2                            &lt;NA&gt;                                  UNK
+## 3                            &lt;NA&gt;                                  UNK
+## 4          BRACHIONIDAE      &lt;NA&gt;  KERATELLA  QUADRATA            HERB
+## 5          SYNCHAETIDAE      &lt;NA&gt; POLYARTHRA     MAJOR            OMNI
+## 6          SYNCHAETIDAE      &lt;NA&gt; POLYARTHRA  VULGARIS            OMNI
+##   NON_TARGET NON_NATIVE NET_SIZECLS_NEW CLADOCERA_SIZE PUBLICATION_DATE
+## 1       &lt;NA&gt;       &lt;NA&gt;            FINE           &lt;NA&gt;       2023-02-23
+## 2       &lt;NA&gt;       &lt;NA&gt;            FINE           &lt;NA&gt;       2023-02-23
+## 3       &lt;NA&gt;       &lt;NA&gt;          COARSE           &lt;NA&gt;       2023-02-23
+## 4       &lt;NA&gt;       &lt;NA&gt;            FINE           &lt;NA&gt;       2023-02-23
+## 5       &lt;NA&gt;       &lt;NA&gt;            FINE           &lt;NA&gt;       2023-02-23
+## 6       &lt;NA&gt;       &lt;NA&gt;            FINE           &lt;NA&gt;       2023-02-23
+##   IS_DISTINCT COUNT_300 BIOMASS_300 IS_DISTINCT_300
+## 1           1       118  0.39735261               1
+## 2           0        38  0.54167521               0
+## 3           1         3  0.22999177               1
+## 4           1         1  0.01334699               1
+## 5           1       114  3.03590369               1
+## 6           1        26  0.27105438               1</code></pre>
+</div>
+<div id="assign-native-status-to-taxa" class="section level2">
+<h2>2.5 Assign native status to taxa</h2>
+<p>We have the NON_NATIVE variable from the taxalist now included in the
+three input files for metric calculations. We will create a data frame
+that contains the state and the ecoregion of each UID. The state
+variable is needed to assign non-native status based on the way the
+NON_NATIVE variable exists in the taxalist (zoopTaxa). The ecoregion
+variable (ECO_BIO) variable will be used later to calculate the MMI.
+After we add NON_NATIVE_TAXON to each input dataset with values of 1 for
+non-native and 0 for native, we can select only the variables we need
+for metric calculation.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">UID =</span> <span class="fu">c</span>(<span class="dv">7100</span>, <span class="dv">7122</span>, <span class="dv">7477</span>, <span class="dv">7548</span>, <span class="dv">7748</span>, <span class="dv">8395</span>, <span class="dv">8499</span>, </span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>                             <span class="dv">2010287</span>, <span class="dv">2010569</span>, <span class="dv">2010833</span>),</span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a>                     <span class="at">STATE =</span> <span class="fu">c</span>(<span class="st">&#39;OR&#39;</span>, <span class="st">&#39;PA&#39;</span>, <span class="st">&#39;ID&#39;</span>, <span class="st">&#39;IN&#39;</span>, <span class="st">&#39;MN&#39;</span>, <span class="st">&#39;UT&#39;</span>, <span class="st">&#39;IL&#39;</span>, <span class="st">&#39;MI&#39;</span>, </span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a>                               <span class="st">&#39;SD&#39;</span>, <span class="st">&#39;SC&#39;</span>),</span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a>                     <span class="at">ECO_BIO =</span> <span class="fu">c</span>(<span class="st">&#39;WMTNS&#39;</span>, <span class="st">&#39;EHIGH&#39;</span>, <span class="st">&#39;WMTNS&#39;</span>, <span class="st">&#39;EHIGH&#39;</span>, <span class="st">&#39;UMW&#39;</span>,</span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a>                                 <span class="st">&#39;WMTNS&#39;</span>, <span class="st">&#39;PLAINS&#39;</span>, <span class="st">&#39;UMW&#39;</span>, <span class="st">&#39;PLAINS&#39;</span>, <span class="st">&#39;EHIGH&#39;</span>))</span>
+<span id="cb29-7"><a href="#cb29-7" tabindex="-1"></a></span>
+<span id="cb29-8"><a href="#cb29-8" tabindex="-1"></a><span class="co"># Combined sample</span></span>
+<span id="cb29-9"><a href="#cb29-9" tabindex="-1"></a>zonwIn.nn <span class="ot">&lt;-</span> <span class="fu">merge</span>(zpCts.zonw.all, states, <span class="at">by =</span> <span class="st">&#39;UID&#39;</span>) </span>
+<span id="cb29-10"><a href="#cb29-10" tabindex="-1"></a></span>
+<span id="cb29-11"><a href="#cb29-11" tabindex="-1"></a>zonwIn.nn<span class="sc">$</span>NON_NATIVE_TAXON <span class="ot">&lt;-</span> <span class="fu">with</span>(zonwIn.nn, </span>
+<span id="cb29-12"><a href="#cb29-12" tabindex="-1"></a>                                          <span class="fu">ifelse</span>(<span class="fu">is.na</span>(NON_NATIVE), <span class="dv">0</span>,</span>
+<span id="cb29-13"><a href="#cb29-13" tabindex="-1"></a>                                            <span class="fu">ifelse</span>(NON_NATIVE<span class="sc">==</span><span class="st">&#39;ALL&#39;</span>, <span class="dv">1</span>,</span>
+<span id="cb29-14"><a href="#cb29-14" tabindex="-1"></a>                                              <span class="fu">ifelse</span>(<span class="fu">grep</span>(STATE, NON_NATIVE), <span class="dv">1</span>, <span class="dv">0</span>)))) </span>
+<span id="cb29-15"><a href="#cb29-15" tabindex="-1"></a></span>
+<span id="cb29-16"><a href="#cb29-16" tabindex="-1"></a>zonwIn.nn <span class="ot">&lt;-</span> zonwIn.nn[, <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>, </span>
+<span id="cb29-17"><a href="#cb29-17" tabindex="-1"></a>                                           <span class="st">&#39;COUNT&#39;</span>, <span class="st">&#39;BIOMASS&#39;</span>, <span class="st">&#39;DENSITY&#39;</span>,</span>
+<span id="cb29-18"><a href="#cb29-18" tabindex="-1"></a>                                           <span class="st">&#39;IS_DISTINCT&#39;</span>, <span class="st">&#39;LARGE_RARE_TAXA&#39;</span>,</span>
+<span id="cb29-19"><a href="#cb29-19" tabindex="-1"></a>                                           <span class="st">&#39;COUNT_300&#39;</span>, <span class="st">&#39;BIOMASS_300&#39;</span>,</span>
+<span id="cb29-20"><a href="#cb29-20" tabindex="-1"></a>                                           <span class="st">&#39;IS_DISTINCT_300&#39;</span>,</span>
+<span id="cb29-21"><a href="#cb29-21" tabindex="-1"></a>                                           <span class="st">&#39;ECO_BIO&#39;</span>, <span class="st">&#39;NON_NATIVE_TAXON&#39;</span>)]</span>
+<span id="cb29-22"><a href="#cb29-22" tabindex="-1"></a></span>
+<span id="cb29-23"><a href="#cb29-23" tabindex="-1"></a><span class="fu">head</span>(zonwIn.nn)</span></code></pre></div>
+<pre><code>##    UID SAMPLE_TYPE TAXA_ID COUNT      BIOMASS      DENSITY IS_DISTINCT
+## 1 7100        ZONW    1080    13  0.202013061  0.082760640           0
+## 2 7100        ZONW    1099     1  0.005663017  0.006366203           0
+## 3 7100        ZONW    1119   157  0.528681012 23.987853284           1
+## 4 7100        ZONW    1120    57  0.812512809  8.708965842           0
+## 5 7100        ZONW    1121    38  0.940206109  0.827606403           0
+## 6 7100        ZONW    1131   128 13.367636264  0.814873997           1
+##   LARGE_RARE_TAXA COUNT_300 BIOMASS_300 IS_DISTINCT_300 ECO_BIO
+## 1            &lt;NA&gt;        12   0.1864736               0   WMTNS
+## 2            &lt;NA&gt;        NA          NA              NA   WMTNS
+## 3            &lt;NA&gt;       118   0.3973526               1   WMTNS
+## 4            &lt;NA&gt;        38   0.5416752               0   WMTNS
+## 5            &lt;NA&gt;        34   0.8076407               0   WMTNS
+## 6            &lt;NA&gt;       106  11.0700738               1   WMTNS
+##   NON_NATIVE_TAXON
+## 1                0
+## 2                0
+## 3                0
+## 4                0
+## 5                0
+## 6                0</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="co"># Coarse mesh net sample</span></span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>zocnIn.nn <span class="ot">&lt;-</span> <span class="fu">merge</span>(zpCts.zocn.all, states, <span class="at">by =</span> <span class="st">&#39;UID&#39;</span>) </span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a>zocnIn.nn<span class="sc">$</span>NON_NATIVE_TAXON <span class="ot">&lt;-</span> <span class="fu">with</span>(zocnIn.nn, </span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>                                          <span class="fu">ifelse</span>(<span class="fu">is.na</span>(NON_NATIVE), <span class="dv">0</span>,</span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a>                                            <span class="fu">ifelse</span>(NON_NATIVE<span class="sc">==</span><span class="st">&#39;ALL&#39;</span>, <span class="dv">1</span>,</span>
+<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a>                                              <span class="fu">ifelse</span>(<span class="fu">grep</span>(STATE, NON_NATIVE), <span class="dv">1</span>, <span class="dv">0</span>)))) </span>
+<span id="cb31-8"><a href="#cb31-8" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" tabindex="-1"></a>zocnIn.nn <span class="ot">&lt;-</span> zocnIn.nn[, <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>, </span>
+<span id="cb31-10"><a href="#cb31-10" tabindex="-1"></a>                                           <span class="st">&#39;COUNT&#39;</span>, <span class="st">&#39;BIOMASS&#39;</span>, <span class="st">&#39;DENSITY&#39;</span>,</span>
+<span id="cb31-11"><a href="#cb31-11" tabindex="-1"></a>                                           <span class="st">&#39;IS_DISTINCT&#39;</span>, <span class="st">&#39;LARGE_RARE_TAXA&#39;</span>,</span>
+<span id="cb31-12"><a href="#cb31-12" tabindex="-1"></a>                                           <span class="st">&#39;COUNT_300&#39;</span>, <span class="st">&#39;BIOMASS_300&#39;</span>,</span>
+<span id="cb31-13"><a href="#cb31-13" tabindex="-1"></a>                                           <span class="st">&#39;IS_DISTINCT_300&#39;</span>,</span>
+<span id="cb31-14"><a href="#cb31-14" tabindex="-1"></a>                                           <span class="st">&#39;ECO_BIO&#39;</span>, <span class="st">&#39;NON_NATIVE_TAXON&#39;</span>)]</span>
+<span id="cb31-15"><a href="#cb31-15" tabindex="-1"></a></span>
+<span id="cb31-16"><a href="#cb31-16" tabindex="-1"></a><span class="fu">head</span>(zocnIn.nn) </span></code></pre></div>
+<pre><code>##    UID SAMPLE_TYPE TAXA_ID COUNT      BIOMASS     DENSITY IS_DISTINCT
+## 1 7100        ZOCN    1080    13  0.202013061 0.082760640           0
+## 2 7100        ZOCN    1099     1  0.005663017 0.006366203           0
+## 3 7100        ZOCN    1121    34  0.633550411 0.216450905           0
+## 4 7100        ZOCN    1131   128 13.367636264 0.814873997           1
+## 5 7100        ZOCN    1142    82 16.257360076 0.522028654           1
+## 6 7100        ZOCN    1149     6  0.100333832 0.038197219           1
+##   LARGE_RARE_TAXA COUNT_300 BIOMASS_300 IS_DISTINCT_300 ECO_BIO
+## 1            &lt;NA&gt;        12  0.18647360               0   WMTNS
+## 2            &lt;NA&gt;        NA          NA              NA   WMTNS
+## 3            &lt;NA&gt;        31  0.57764890               0   WMTNS
+## 4            &lt;NA&gt;       106 11.07007378               1   WMTNS
+## 5            &lt;NA&gt;        70 13.87823421               1   WMTNS
+## 6            &lt;NA&gt;         5  0.08361153               1   WMTNS
+##   NON_NATIVE_TAXON
+## 1                0
+## 2                0
+## 3                0
+## 4                0
+## 5                0
+## 6                0</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co"># Fine mesh net sample</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>zofnIn.nn <span class="ot">&lt;-</span> <span class="fu">merge</span>(zpCts.zofn.all, states, <span class="at">by =</span> <span class="st">&#39;UID&#39;</span>) </span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>zofnIn.nn<span class="sc">$</span>NON_NATIVE_TAXON <span class="ot">&lt;-</span> <span class="fu">with</span>(zofnIn.nn, </span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>                                          <span class="fu">ifelse</span>(<span class="fu">is.na</span>(NON_NATIVE), <span class="dv">0</span>,</span>
+<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>                                            <span class="fu">ifelse</span>(NON_NATIVE<span class="sc">==</span><span class="st">&#39;ALL&#39;</span>, <span class="dv">1</span>,</span>
+<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a>                                              <span class="fu">ifelse</span>(<span class="fu">grep</span>(STATE, NON_NATIVE), <span class="dv">1</span>, <span class="dv">0</span>)))) </span>
+<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a></span>
+<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a>zofnIn.nn <span class="ot">&lt;-</span> zofnIn.nn[, <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>, </span>
+<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a>                                           <span class="st">&#39;COUNT&#39;</span>, <span class="st">&#39;BIOMASS&#39;</span>, <span class="st">&#39;DENSITY&#39;</span>,</span>
+<span id="cb33-11"><a href="#cb33-11" tabindex="-1"></a>                                           <span class="st">&#39;IS_DISTINCT&#39;</span>, <span class="st">&#39;LARGE_RARE_TAXA&#39;</span>,</span>
+<span id="cb33-12"><a href="#cb33-12" tabindex="-1"></a>                                           <span class="st">&#39;COUNT_300&#39;</span>, <span class="st">&#39;BIOMASS_300&#39;</span>,</span>
+<span id="cb33-13"><a href="#cb33-13" tabindex="-1"></a>                                           <span class="st">&#39;IS_DISTINCT_300&#39;</span>,</span>
+<span id="cb33-14"><a href="#cb33-14" tabindex="-1"></a>                                           <span class="st">&#39;ECO_BIO&#39;</span>, <span class="st">&#39;NON_NATIVE_TAXON&#39;</span>)]</span>
+<span id="cb33-15"><a href="#cb33-15" tabindex="-1"></a></span>
+<span id="cb33-16"><a href="#cb33-16" tabindex="-1"></a><span class="fu">head</span>(zofnIn.nn)</span></code></pre></div>
+<pre><code>##    UID SAMPLE_TYPE TAXA_ID COUNT    BIOMASS    DENSITY IS_DISTINCT
+## 1 7100        ZOFN    1119   157 0.52868101 23.9878533           1
+## 2 7100        ZOFN    1120    57 0.81251281  8.7089658           0
+## 3 7100        ZOFN    1121     4 0.30665570  0.6111555           1
+## 4 7100        ZOFN    1254     1 0.01334699  0.1527889           1
+## 5 7100        ZOFN    1407   164 4.36744040 25.0573754           1
+## 6 7100        ZOFN    1409    40 0.41700674  6.1115550           1
+##   LARGE_RARE_TAXA COUNT_300 BIOMASS_300 IS_DISTINCT_300 ECO_BIO
+## 1            &lt;NA&gt;       118  0.39735261               1   WMTNS
+## 2            &lt;NA&gt;        38  0.54167521               0   WMTNS
+## 3            &lt;NA&gt;         3  0.22999177               1   WMTNS
+## 4            &lt;NA&gt;         1  0.01334699               1   WMTNS
+## 5            &lt;NA&gt;       114  3.03590369               1   WMTNS
+## 6            &lt;NA&gt;        26  0.27105438               1   WMTNS
+##   NON_NATIVE_TAXON
+## 1                0
+## 2                0
+## 3                0
+## 4                0
+## 5                0
+## 6                0</code></pre>
+</div>
+</div>
+<div id="calculate-metrics" class="section level1">
+<h1>3 Calculate Metrics</h1>
+<p>Because of the complexity of the full set of metrics, there are
+several functions that can be used to calculate subsets of metrics. To
+use the functions that run individual sets of metrics, we need to run
+for each set of data (original data and based on the 300-organism
+subsamples), and we need to account for native status. The process is
+somewhat cumbersome, so there is also a function that just calculates
+all of the metrics that were evaluated for NLA at once. We will first
+show a run of a few of the functions that calculate subsets of the
+data.</p>
+<div id="calculate-base-metrics" class="section level2">
+<h2>3.1 Calculate base metrics</h2>
+<p>Base metrics are a large set of metrics based on taxonomic, trait
+information or a combination of the two. This would need to be run for
+each combination desired: 1) original data, 2) original native only, 3)
+300-organism subsample data, and 4) 300-organism subsample native only.
+In this example, we will only show the original native taxa only and the
+300-organism subsample with all taxa. The output from the metric
+function is in the form of: sample ID variables (here UID), PARAMETER,
+and RESULT. Thus, to show the metrics calculated, we show the unique
+PARAMETER values in each data frame.</p>
+<p>For base metrics, only the combined data (coarse + fine) are used.
+Not that for subsample data, only counts and biomass are available for
+calculating metrics.</p>
+<div id="full-counts-with-only-native-taxa" class="section level3">
+<h3>3.1.1 Full counts with only native taxa</h3>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="co"># Full counts with native taxa only</span></span>
+<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>zoopMets.base.nat <span class="ot">&lt;-</span> <span class="fu">calcZoopBaseMetrics</span>(<span class="at">indata =</span> zonwIn.nn, </span>
+<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a>                                         <span class="at">sampID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>), </span>
+<span id="cb35-4"><a href="#cb35-4" tabindex="-1"></a>                                         <span class="at">is_distinct =</span> <span class="st">&#39;IS_DISTINCT&#39;</span>,</span>
+<span id="cb35-5"><a href="#cb35-5" tabindex="-1"></a>                                         <span class="at">ct =</span> <span class="st">&#39;COUNT&#39;</span>, </span>
+<span id="cb35-6"><a href="#cb35-6" tabindex="-1"></a>                                         <span class="at">biomass =</span> <span class="st">&#39;BIOMASS&#39;</span>, </span>
+<span id="cb35-7"><a href="#cb35-7" tabindex="-1"></a>                                         <span class="at">density =</span> <span class="st">&#39;DENSITY&#39;</span>,</span>
+<span id="cb35-8"><a href="#cb35-8" tabindex="-1"></a>                                         <span class="at">inTaxa =</span> zoopTaxa, </span>
+<span id="cb35-9"><a href="#cb35-9" tabindex="-1"></a>                                         <span class="at">taxa_id=</span><span class="st">&#39;TAXA_ID&#39;</span>,</span>
+<span id="cb35-10"><a href="#cb35-10" tabindex="-1"></a>                                         <span class="at">ffg =</span> <span class="st">&#39;FFG&#39;</span>, </span>
+<span id="cb35-11"><a href="#cb35-11" tabindex="-1"></a>                                         <span class="at">clad_size =</span> <span class="st">&#39;CLADOCERA_SIZE&#39;</span>,</span>
+<span id="cb35-12"><a href="#cb35-12" tabindex="-1"></a>                                         <span class="at">net_size =</span> <span class="st">&#39;NET_SIZECLS_NEW&#39;</span>,</span>
+<span id="cb35-13"><a href="#cb35-13" tabindex="-1"></a>                                         <span class="at">nativeMetrics =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb35-14"><a href="#cb35-14" tabindex="-1"></a>                                         <span class="at">nonnative =</span> <span class="st">&#39;NON_NATIVE_TAXON&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets.base.nat<span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>##  [1] CALAN_NAT_NIND    CALAN_NAT_NTAX    CALAN_NAT_BIO     CALAN_NAT_DEN    
+##  [5] CALAN_NAT_PIND    CALAN_NAT_PTAX    CALAN_NAT_PDEN    CALAN_NAT_PBIO   
+##  [9] COPE_NAT_NIND     COPE_NAT_NTAX     COPE_NAT_BIO      COPE_NAT_DEN     
+## [13] COPE_NAT_PIND     COPE_NAT_PTAX     COPE_NAT_PDEN     COPE_NAT_PBIO    
+## [17] COARSE_NAT_NIND   COARSE_NAT_NTAX   COARSE_NAT_BIO    COARSE_NAT_DEN   
+## [21] COARSE_NAT_PIND   COARSE_NAT_PTAX   COARSE_NAT_PDEN   COARSE_NAT_PBIO  
+## [25] FINE_NAT_NIND     FINE_NAT_NTAX     FINE_NAT_BIO      FINE_NAT_DEN     
+## [29] FINE_NAT_PIND     FINE_NAT_PTAX     FINE_NAT_PDEN     FINE_NAT_PBIO    
+## [33] SMCLAD_NAT_NIND   SMCLAD_NAT_NTAX   SMCLAD_NAT_BIO    SMCLAD_NAT_DEN   
+## [37] SMCLAD_NAT_PIND   SMCLAD_NAT_PTAX   SMCLAD_NAT_PDEN   SMCLAD_NAT_PBIO  
+## [41] LGCLAD_NAT_NIND   LGCLAD_NAT_NTAX   LGCLAD_NAT_BIO    LGCLAD_NAT_DEN   
+## [45] LGCLAD_NAT_PIND   LGCLAD_NAT_PTAX   LGCLAD_NAT_PDEN   LGCLAD_NAT_PBIO  
+## [49] CLAD_NAT_NIND     CLAD_NAT_NTAX     CLAD_NAT_BIO      CLAD_NAT_DEN     
+## [53] CLAD_NAT_PIND     CLAD_NAT_PTAX     CLAD_NAT_PDEN     CLAD_NAT_PBIO    
+## [57] DAPHNIID_NAT_NIND DAPHNIID_NAT_NTAX DAPHNIID_NAT_BIO  DAPHNIID_NAT_DEN 
+## [61] DAPHNIID_NAT_PIND DAPHNIID_NAT_PTAX DAPHNIID_NAT_PDEN DAPHNIID_NAT_PBIO
+## [65] BOSM_NAT_NIND     BOSM_NAT_NTAX     BOSM_NAT_BIO      BOSM_NAT_DEN     
+## [69] BOSM_NAT_PIND     BOSM_NAT_PTAX     BOSM_NAT_PDEN     BOSM_NAT_PBIO</code></pre>
+</div>
+<div id="subsample-counts-with-all-taxa" class="section level3">
+<h3>3.1.2 Subsample counts with all taxa</h3>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="co"># 300-organism subsamples</span></span>
+<span id="cb39-2"><a href="#cb39-2" tabindex="-1"></a>zoopMets<span class="fl">.300</span> <span class="ot">&lt;-</span> <span class="fu">calcZoopBaseMetrics</span>(<span class="at">indata =</span> zonwIn.nn, </span>
+<span id="cb39-3"><a href="#cb39-3" tabindex="-1"></a>                                    <span class="at">sampID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;SAMPLE_TYPE&#39;</span>), </span>
+<span id="cb39-4"><a href="#cb39-4" tabindex="-1"></a>                                    <span class="at">is_distinct =</span> <span class="st">&#39;IS_DISTINCT_300&#39;</span>,</span>
+<span id="cb39-5"><a href="#cb39-5" tabindex="-1"></a>                                    <span class="at">ct =</span> <span class="st">&#39;COUNT_300&#39;</span>, </span>
+<span id="cb39-6"><a href="#cb39-6" tabindex="-1"></a>                                    <span class="at">biomass =</span> <span class="st">&#39;BIOMASS_300&#39;</span>,</span>
+<span id="cb39-7"><a href="#cb39-7" tabindex="-1"></a>                                    <span class="at">inTaxa =</span> zoopTaxa, </span>
+<span id="cb39-8"><a href="#cb39-8" tabindex="-1"></a>                                    <span class="at">taxa_id=</span><span class="st">&#39;TAXA_ID&#39;</span>,</span>
+<span id="cb39-9"><a href="#cb39-9" tabindex="-1"></a>                                    <span class="at">ffg =</span> <span class="st">&#39;FFG&#39;</span>, </span>
+<span id="cb39-10"><a href="#cb39-10" tabindex="-1"></a>                                    <span class="at">clad_size =</span> <span class="st">&#39;CLADOCERA_SIZE&#39;</span>,</span>
+<span id="cb39-11"><a href="#cb39-11" tabindex="-1"></a>                                    <span class="at">net_size =</span> <span class="st">&#39;NET_SIZECLS_NEW&#39;</span>,</span>
+<span id="cb39-12"><a href="#cb39-12" tabindex="-1"></a>                                    <span class="at">nativeMetrics =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9
+## [1] 10
+## [1] 11
+## [1] 12
+## [1] 13
+## [1] 14
+## [1] 15
+## [1] 16
+## [1] 17
+## [1] 18
+## [1] 19
+## [1] &quot;No observations for ASPLAN&quot;
+## [1] 20
+## [1] 21
+## [1] 22
+## [1] 23
+## [1] 24
+## [1] &quot;No observations for COPE_PRED&quot;
+## [1] 25
+## [1] 26
+## [1] 27
+## [1] &quot;No observations for CLAD_OMNI&quot;
+## [1] 28</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets.base.nat<span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>##  [1] CALAN_NAT_NIND    CALAN_NAT_NTAX    CALAN_NAT_BIO     CALAN_NAT_DEN    
+##  [5] CALAN_NAT_PIND    CALAN_NAT_PTAX    CALAN_NAT_PDEN    CALAN_NAT_PBIO   
+##  [9] COPE_NAT_NIND     COPE_NAT_NTAX     COPE_NAT_BIO      COPE_NAT_DEN     
+## [13] COPE_NAT_PIND     COPE_NAT_PTAX     COPE_NAT_PDEN     COPE_NAT_PBIO    
+## [17] COARSE_NAT_NIND   COARSE_NAT_NTAX   COARSE_NAT_BIO    COARSE_NAT_DEN   
+## [21] COARSE_NAT_PIND   COARSE_NAT_PTAX   COARSE_NAT_PDEN   COARSE_NAT_PBIO  
+## [25] FINE_NAT_NIND     FINE_NAT_NTAX     FINE_NAT_BIO      FINE_NAT_DEN     
+## [29] FINE_NAT_PIND     FINE_NAT_PTAX     FINE_NAT_PDEN     FINE_NAT_PBIO    
+## [33] SMCLAD_NAT_NIND   SMCLAD_NAT_NTAX   SMCLAD_NAT_BIO    SMCLAD_NAT_DEN   
+## [37] SMCLAD_NAT_PIND   SMCLAD_NAT_PTAX   SMCLAD_NAT_PDEN   SMCLAD_NAT_PBIO  
+## [41] LGCLAD_NAT_NIND   LGCLAD_NAT_NTAX   LGCLAD_NAT_BIO    LGCLAD_NAT_DEN   
+## [45] LGCLAD_NAT_PIND   LGCLAD_NAT_PTAX   LGCLAD_NAT_PDEN   LGCLAD_NAT_PBIO  
+## [49] CLAD_NAT_NIND     CLAD_NAT_NTAX     CLAD_NAT_BIO      CLAD_NAT_DEN     
+## [53] CLAD_NAT_PIND     CLAD_NAT_PTAX     CLAD_NAT_PDEN     CLAD_NAT_PBIO    
+## [57] DAPHNIID_NAT_NIND DAPHNIID_NAT_NTAX DAPHNIID_NAT_BIO  DAPHNIID_NAT_DEN 
+## [61] DAPHNIID_NAT_PIND DAPHNIID_NAT_PTAX DAPHNIID_NAT_PDEN DAPHNIID_NAT_PBIO
+## [65] BOSM_NAT_NIND     BOSM_NAT_NTAX     BOSM_NAT_BIO      BOSM_NAT_DEN     
+## [69] BOSM_NAT_PIND     BOSM_NAT_PTAX     BOSM_NAT_PDEN     BOSM_NAT_PBIO</code></pre>
+</div>
+</div>
+<div id="calculate-diversity-metrics" class="section level2">
+<h2>3.2 Calculate diversity metrics</h2>
+<p>Diversity metrics are again calculated for each subset of data
+desired, with the appropriate inputs. For these metrics, the combined
+ZONW sample is used. For the full data set, the process is
+straightforward. For subsampled data, the names of the output metrics
+must be modified manually. To run diversity metrics on specific
+taxonomic groups, the input data must already be subset, but suffix can
+be specified and will be added automatically to parameter names.</p>
+<div id="using-full-counts-but-native-taxa-only" class="section level3">
+<h3>3.2.1 Using full counts but native taxa only</h3>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a><span class="co"># Full counts with native taxa only</span></span>
+<span id="cb43-2"><a href="#cb43-2" tabindex="-1"></a>zoopMets.div <span class="ot">&lt;-</span> <span class="fu">calcZoopDivMetrics</span>(zonwIn.nn, </span>
+<span id="cb43-3"><a href="#cb43-3" tabindex="-1"></a>                                        <span class="at">sampID =</span> <span class="st">&#39;UID&#39;</span>, </span>
+<span id="cb43-4"><a href="#cb43-4" tabindex="-1"></a>                                        <span class="at">is_distinct =</span> <span class="st">&#39;IS_DISTINCT&#39;</span>,</span>
+<span id="cb43-5"><a href="#cb43-5" tabindex="-1"></a>                                        <span class="at">ct =</span> <span class="st">&#39;COUNT&#39;</span>, </span>
+<span id="cb43-6"><a href="#cb43-6" tabindex="-1"></a>                                        <span class="at">biomass =</span> <span class="st">&#39;BIOMASS&#39;</span>, </span>
+<span id="cb43-7"><a href="#cb43-7" tabindex="-1"></a>                                        <span class="at">density =</span> <span class="st">&#39;DENSITY&#39;</span>)</span>
+<span id="cb43-8"><a href="#cb43-8" tabindex="-1"></a></span>
+<span id="cb43-9"><a href="#cb43-9" tabindex="-1"></a><span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets.div<span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>## [1] HPRIME_NIND  SIMPSON_NIND PIE_NIND     EVEN_NIND    HPRIME_DEN  
+## [6] SIMPSON_DEN  HPRIME_BIO   SIMPSON_BIO</code></pre>
+</div>
+<div id="using-300-organism-subsamples-all-taxa" class="section level3">
+<h3>3.2.2 Using 300-organism subsamples, all taxa</h3>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a><span class="co"># 300-organism subsamples</span></span>
+<span id="cb45-2"><a href="#cb45-2" tabindex="-1"></a>zoopMets.div<span class="fl">.300</span> <span class="ot">&lt;-</span> <span class="fu">calcZoopDivMetrics</span>(zonwIn.nn, </span>
+<span id="cb45-3"><a href="#cb45-3" tabindex="-1"></a>                                       <span class="at">sampID =</span> <span class="st">&#39;UID&#39;</span>, </span>
+<span id="cb45-4"><a href="#cb45-4" tabindex="-1"></a>                                       <span class="at">is_distinct =</span> <span class="st">&#39;IS_DISTINCT_300&#39;</span>,</span>
+<span id="cb45-5"><a href="#cb45-5" tabindex="-1"></a>                                       <span class="at">ct =</span> <span class="st">&#39;COUNT_300&#39;</span>, </span>
+<span id="cb45-6"><a href="#cb45-6" tabindex="-1"></a>                                       <span class="at">biomass =</span> <span class="st">&#39;BIOMASS_300&#39;</span>)</span>
+<span id="cb45-7"><a href="#cb45-7" tabindex="-1"></a></span>
+<span id="cb45-8"><a href="#cb45-8" tabindex="-1"></a><span class="co"># Update parameter names to reflect subsample</span></span>
+<span id="cb45-9"><a href="#cb45-9" tabindex="-1"></a>zoopMets.div<span class="fl">.300</span><span class="sc">$</span>PARAMETER <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">_NIND&quot;</span>, <span class="st">&quot;300</span><span class="sc">\\</span><span class="st">_NIND&quot;</span>, zoopMets.div<span class="fl">.300</span><span class="sc">$</span>PARAMETER)</span>
+<span id="cb45-10"><a href="#cb45-10" tabindex="-1"></a>zoopMets.div<span class="fl">.300</span><span class="sc">$</span>PARAMETER <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">_BIO&quot;</span>, <span class="st">&quot;300</span><span class="sc">\\</span><span class="st">_BIO&quot;</span>, zoopMets.div<span class="fl">.300</span><span class="sc">$</span>PARAMETER)</span>
+<span id="cb45-11"><a href="#cb45-11" tabindex="-1"></a></span>
+<span id="cb45-12"><a href="#cb45-12" tabindex="-1"></a><span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets.div<span class="fl">.300</span><span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>## [1] HPRIME300_NIND  SIMPSON300_NIND PIE300_NIND     EVEN300_NIND   
+## [5] HPRIME300_BIO   SIMPSON300_BIO</code></pre>
+</div>
+<div id="using-full-counts-but-only-rotifers" class="section level3">
+<h3>3.2.3 Using full counts but only rotifers</h3>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="co"># Rotifer diversity</span></span>
+<span id="cb47-2"><a href="#cb47-2" tabindex="-1"></a><span class="co"># First need to merge taxa list with data to be able to select rotifers only</span></span>
+<span id="cb47-3"><a href="#cb47-3" tabindex="-1"></a>zonwIn.taxa <span class="ot">&lt;-</span> <span class="fu">merge</span>(zonwIn.nn, zoopTaxa, <span class="at">by =</span> <span class="st">&#39;TAXA_ID&#39;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb47-4"><a href="#cb47-4" tabindex="-1"></a>    <span class="fu">subset</span>(<span class="at">select =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;TAXA_ID&#39;</span>, <span class="st">&#39;COUNT&#39;</span>, <span class="st">&#39;COUNT_300&#39;</span>, <span class="st">&#39;BIOMASS&#39;</span>, </span>
+<span id="cb47-5"><a href="#cb47-5" tabindex="-1"></a>                      <span class="st">&#39;BIOMASS_300&#39;</span>, <span class="st">&#39;DENSITY&#39;</span>, <span class="st">&#39;IS_DISTINCT&#39;</span>, </span>
+<span id="cb47-6"><a href="#cb47-6" tabindex="-1"></a>                      <span class="st">&#39;IS_DISTINCT_300&#39;</span>, <span class="st">&#39;SUBORDER&#39;</span>, <span class="st">&#39;SUBCLASS&#39;</span>, <span class="st">&#39;PHYLUM&#39;</span>))</span>
+<span id="cb47-7"><a href="#cb47-7" tabindex="-1"></a></span>
+<span id="cb47-8"><a href="#cb47-8" tabindex="-1"></a><span class="co"># Calculate rotifer diversity for full counts</span></span>
+<span id="cb47-9"><a href="#cb47-9" tabindex="-1"></a>zoopMets.div.rot <span class="ot">&lt;-</span> <span class="fu">calcZoopDivMetrics</span>(<span class="fu">subset</span>(zonwIn.taxa, PHYLUM<span class="sc">==</span><span class="st">&#39;ROTIFERA&#39;</span>),</span>
+<span id="cb47-10"><a href="#cb47-10" tabindex="-1"></a>                                       <span class="at">sampID =</span> <span class="st">&#39;UID&#39;</span>, </span>
+<span id="cb47-11"><a href="#cb47-11" tabindex="-1"></a>                                       <span class="at">is_distinct =</span> <span class="st">&#39;IS_DISTINCT&#39;</span>,</span>
+<span id="cb47-12"><a href="#cb47-12" tabindex="-1"></a>                                       <span class="at">ct =</span> <span class="st">&#39;COUNT&#39;</span>, </span>
+<span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a>                                       <span class="at">suffix =</span> <span class="st">&#39;ROT&#39;</span>)</span>
+<span id="cb47-14"><a href="#cb47-14" tabindex="-1"></a></span>
+<span id="cb47-15"><a href="#cb47-15" tabindex="-1"></a><span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets.div.rot<span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>## [1] HPRIME_ROT  SIMPSON_ROT PIE_ROT     EVEN_ROT</code></pre>
+</div>
+<div id="using-subsample-data-but-only-rotifers" class="section level3">
+<h3>3.2.4 Using subsample data but only rotifers</h3>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="co"># Calculate rotifer diversity for subsample data</span></span>
+<span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a>zoopMets.div.rot<span class="fl">.300</span> <span class="ot">&lt;-</span> <span class="fu">calcZoopDivMetrics</span>(<span class="fu">subset</span>(zonwIn.taxa, PHYLUM<span class="sc">==</span><span class="st">&#39;ROTIFERA&#39;</span>),</span>
+<span id="cb49-3"><a href="#cb49-3" tabindex="-1"></a>                                       <span class="at">sampID =</span> <span class="st">&#39;UID&#39;</span>, </span>
+<span id="cb49-4"><a href="#cb49-4" tabindex="-1"></a>                                       <span class="at">is_distinct =</span> <span class="st">&#39;IS_DISTINCT_300&#39;</span>,</span>
+<span id="cb49-5"><a href="#cb49-5" tabindex="-1"></a>                                       <span class="at">ct =</span> <span class="st">&#39;COUNT_300&#39;</span>, </span>
+<span id="cb49-6"><a href="#cb49-6" tabindex="-1"></a>                                       <span class="at">suffix =</span> <span class="st">&#39;ROT&#39;</span>)</span>
+<span id="cb49-7"><a href="#cb49-7" tabindex="-1"></a><span class="co"># Update parameter names to reflect subsample</span></span>
+<span id="cb49-8"><a href="#cb49-8" tabindex="-1"></a>zoopMets.div.rot<span class="fl">.300</span><span class="sc">$</span>PARAMETER <span class="ot">&lt;-</span> <span class="fu">paste0</span>(zoopMets.div.rot<span class="fl">.300</span><span class="sc">$</span>PARAMETER, <span class="st">&#39;300&#39;</span>)</span>
+<span id="cb49-9"><a href="#cb49-9" tabindex="-1"></a></span>
+<span id="cb49-10"><a href="#cb49-10" tabindex="-1"></a><span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets.div.rot<span class="fl">.300</span><span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>## [1] HPRIME_ROT300  SIMPSON_ROT300 PIE_ROT300     EVEN_ROT300</code></pre>
+</div>
+</div>
+<div id="calculate-richness-metrics" class="section level2">
+<h2>3.3 Calculate richness metrics</h2>
+<p>For richness metrics, we use all three datasets created based on
+sample type (coarse-mesh, fine-mesh, and combined). The main metrics
+come from the combined dataset (ZONW), and others based on data from a
+single mesh size (ZOCN and ZOFN) have modified names. In all of these
+examples, a version of TOTL_NTAX is included in the output dataset.
+Normally, if we were combining these results with those from other
+datasets, these would be removed from the output because they are
+calculated elsewhere. They have been left in the output here for
+demonstration purposes.</p>
+<div id="full-and-subsample-counts---combined-sample" class="section level3">
+<h3>3.3.1 Full and subsample counts - combined sample</h3>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a>zoopMets.zonw <span class="ot">&lt;-</span> <span class="fu">calcZoopRichnessMetrics</span>(zonwIn.nn, </span>
+<span id="cb51-2"><a href="#cb51-2" tabindex="-1"></a>                                         <span class="at">sampID =</span> <span class="st">&#39;UID&#39;</span>,</span>
+<span id="cb51-3"><a href="#cb51-3" tabindex="-1"></a>                                         <span class="at">distVars=</span><span class="fu">c</span>(<span class="st">&#39;IS_DISTINCT&#39;</span>, <span class="st">&#39;IS_DISTINCT_300&#39;</span>),</span>
+<span id="cb51-4"><a href="#cb51-4" tabindex="-1"></a>                                         <span class="at">nonnative =</span> <span class="st">&#39;NON_NATIVE_TAXON&#39;</span>, </span>
+<span id="cb51-5"><a href="#cb51-5" tabindex="-1"></a>                                         <span class="at">inTaxa =</span> zoopTaxa,</span>
+<span id="cb51-6"><a href="#cb51-6" tabindex="-1"></a>                                         <span class="at">taxa_id =</span> <span class="st">&#39;TAXA_ID&#39;</span>, </span>
+<span id="cb51-7"><a href="#cb51-7" tabindex="-1"></a>                                         <span class="at">genus =</span> <span class="st">&#39;GENUS&#39;</span>,</span>
+<span id="cb51-8"><a href="#cb51-8" tabindex="-1"></a>                                         <span class="at">family =</span> <span class="st">&#39;FAMILY&#39;</span>, </span>
+<span id="cb51-9"><a href="#cb51-9" tabindex="-1"></a>                                         <span class="at">prefix =</span> <span class="fu">c</span>(<span class="st">&#39;&#39;</span>, <span class="st">&#39;300&#39;</span>)) </span>
+<span id="cb51-10"><a href="#cb51-10" tabindex="-1"></a></span>
+<span id="cb51-11"><a href="#cb51-11" tabindex="-1"></a><span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets.zonw<span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>##  [1] TOTL_NTAX       GEN_NTAX        FAM_NTAX        GEN_NAT_NTAX   
+##  [5] FAM_NAT_NTAX    TOTL300_NTAX    GEN300_NTAX     FAM300_NTAX    
+##  [9] GEN300_NAT_NTAX FAM300_NAT_NTAX</code></pre>
+</div>
+<div id="full-and-subsample-counts---coarse-mesh-sample-data" class="section level3">
+<h3>3.3.2 Full and subsample counts - coarse-mesh sample data</h3>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a>  zoopMets.zocn <span class="ot">&lt;-</span> <span class="fu">calcZoopRichnessMetrics</span>(zocnIn.nn, </span>
+<span id="cb53-2"><a href="#cb53-2" tabindex="-1"></a>                                             <span class="at">sampID =</span> <span class="st">&#39;UID&#39;</span>,</span>
+<span id="cb53-3"><a href="#cb53-3" tabindex="-1"></a>                                             <span class="at">distVars=</span><span class="fu">c</span>(<span class="st">&#39;IS_DISTINCT&#39;</span>, <span class="st">&#39;IS_DISTINCT_300&#39;</span>),</span>
+<span id="cb53-4"><a href="#cb53-4" tabindex="-1"></a>                                             <span class="at">nonnative =</span> <span class="st">&#39;NON_NATIVE_TAXON&#39;</span>, </span>
+<span id="cb53-5"><a href="#cb53-5" tabindex="-1"></a>                                             <span class="at">inTaxa =</span> zoopTaxa,</span>
+<span id="cb53-6"><a href="#cb53-6" tabindex="-1"></a>                                             <span class="at">taxa_id =</span> <span class="st">&#39;TAXA_ID&#39;</span>, </span>
+<span id="cb53-7"><a href="#cb53-7" tabindex="-1"></a>                                             <span class="at">genus =</span> <span class="st">&#39;GENUS&#39;</span>,</span>
+<span id="cb53-8"><a href="#cb53-8" tabindex="-1"></a>                                             <span class="at">family =</span> <span class="st">&#39;FAMILY&#39;</span>, </span>
+<span id="cb53-9"><a href="#cb53-9" tabindex="-1"></a>                                             <span class="at">prefix =</span> <span class="fu">c</span>(<span class="st">&#39;&#39;</span>, <span class="st">&#39;300&#39;</span>))</span>
+<span id="cb53-10"><a href="#cb53-10" tabindex="-1"></a></span>
+<span id="cb53-11"><a href="#cb53-11" tabindex="-1"></a>  zoopMets.zocn<span class="sc">$</span>PARAMETER <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&#39;FAM</span><span class="sc">\\</span><span class="st">_&#39;</span>, <span class="st">&#39;ZOCN</span><span class="sc">\\</span><span class="st">_FAM</span><span class="sc">\\</span><span class="st">_&#39;</span>, zoopMets.zocn<span class="sc">$</span>PARAMETER)</span>
+<span id="cb53-12"><a href="#cb53-12" tabindex="-1"></a>  zoopMets.zocn<span class="sc">$</span>PARAMETER <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&#39;GEN</span><span class="sc">\\</span><span class="st">_&#39;</span>, <span class="st">&#39;ZOCN</span><span class="sc">\\</span><span class="st">_GEN</span><span class="sc">\\</span><span class="st">_&#39;</span>, zoopMets.zocn<span class="sc">$</span>PARAMETER)</span>
+<span id="cb53-13"><a href="#cb53-13" tabindex="-1"></a>  zoopMets.zocn<span class="sc">$</span>PARAMETER <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&#39;FAM300&#39;</span>, <span class="st">&#39;ZOCN300</span><span class="sc">\\</span><span class="st">_FAM&#39;</span>,</span>
+<span id="cb53-14"><a href="#cb53-14" tabindex="-1"></a>                                    zoopMets.zocn<span class="sc">$</span>PARAMETER)</span>
+<span id="cb53-15"><a href="#cb53-15" tabindex="-1"></a>  zoopMets.zocn<span class="sc">$</span>PARAMETER <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&#39;GEN300&#39;</span>, <span class="st">&#39;ZOCN300</span><span class="sc">\\</span><span class="st">_GEN&#39;</span>,</span>
+<span id="cb53-16"><a href="#cb53-16" tabindex="-1"></a>                                    zoopMets.zocn<span class="sc">$</span>PARAMETER)</span>
+<span id="cb53-17"><a href="#cb53-17" tabindex="-1"></a>  </span>
+<span id="cb53-18"><a href="#cb53-18" tabindex="-1"></a>  <span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets.zocn<span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>##  [1] TOTL_NTAX            ZOCN_GEN_NTAX        ZOCN_FAM_NTAX       
+##  [4] ZOCN_GEN_NAT_NTAX    ZOCN_FAM_NAT_NTAX    TOTL300_NTAX        
+##  [7] ZOCN300_GEN_NTAX     ZOCN300_FAM_NTAX     ZOCN300_GEN_NAT_NTAX
+## [10] ZOCN300_FAM_NAT_NTAX</code></pre>
+</div>
+</div>
+<div id="calculate-all-metrics" class="section level2">
+<h2>3.4 Calculate all metrics</h2>
+<p>Above were just two examples of using the functions to calculate
+subsets of the zooplankton metrics. The easiest approach to calculating
+all of the metrics is to use the function
+<code>calcZoopAllMets()</code>. It requires both original and subsamples
+counts, as well as a native status designation for each taxon in the
+count data, with values of 0 = native and 1 = non-native.</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a>zoopMets <span class="ot">&lt;-</span> <span class="fu">calcZoopAllMets</span>(<span class="at">indata =</span> zonwIn.nn,</span>
+<span id="cb55-2"><a href="#cb55-2" tabindex="-1"></a>                               <span class="at">inCoarse =</span> zocnIn.nn,</span>
+<span id="cb55-3"><a href="#cb55-3" tabindex="-1"></a>                               <span class="at">inFine =</span> zofnIn.nn,</span>
+<span id="cb55-4"><a href="#cb55-4" tabindex="-1"></a>                               <span class="at">inTaxa =</span> zoopTaxa,</span>
+<span id="cb55-5"><a href="#cb55-5" tabindex="-1"></a>                               <span class="at">sampID =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>),</span>
+<span id="cb55-6"><a href="#cb55-6" tabindex="-1"></a>                               <span class="at">is_distinct =</span> <span class="st">&#39;IS_DISTINCT&#39;</span>,</span>
+<span id="cb55-7"><a href="#cb55-7" tabindex="-1"></a>                               <span class="at">ct =</span> <span class="st">&#39;COUNT&#39;</span>, <span class="at">biomass =</span> <span class="st">&#39;BIOMASS&#39;</span>,</span>
+<span id="cb55-8"><a href="#cb55-8" tabindex="-1"></a>                               <span class="at">density =</span> <span class="st">&#39;DENSITY&#39;</span>,</span>
+<span id="cb55-9"><a href="#cb55-9" tabindex="-1"></a>                               <span class="at">is_distinct_sub =</span> <span class="st">&#39;IS_DISTINCT_300&#39;</span>,</span>
+<span id="cb55-10"><a href="#cb55-10" tabindex="-1"></a>                               <span class="at">ct_sub =</span> <span class="st">&#39;COUNT_300&#39;</span>,</span>
+<span id="cb55-11"><a href="#cb55-11" tabindex="-1"></a>                               <span class="at">biomass_sub =</span> <span class="st">&#39;BIOMASS_300&#39;</span>,</span>
+<span id="cb55-12"><a href="#cb55-12" tabindex="-1"></a>                               <span class="at">sub_mod =</span> <span class="st">&#39;300&#39;</span>, <span class="at">taxa_id =</span> <span class="st">&#39;TAXA_ID&#39;</span>,</span>
+<span id="cb55-13"><a href="#cb55-13" tabindex="-1"></a>                               <span class="at">nonnative =</span> <span class="st">&#39;NON_NATIVE_TAXON&#39;</span>, <span class="at">genus =</span> <span class="st">&#39;GENUS&#39;</span>,</span>
+<span id="cb55-14"><a href="#cb55-14" tabindex="-1"></a>                               <span class="at">family =</span> <span class="st">&#39;FAMILY&#39;</span>, <span class="at">ffg =</span> <span class="st">&#39;FFG&#39;</span>,</span>
+<span id="cb55-15"><a href="#cb55-15" tabindex="-1"></a>                               <span class="at">clad_size =</span> <span class="st">&#39;CLADOCERA_SIZE&#39;</span>,</span>
+<span id="cb55-16"><a href="#cb55-16" tabindex="-1"></a>                               <span class="at">net_size =</span> <span class="st">&#39;NET_SIZECLS_NEW&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9
+## [1] 10
+## [1] 11
+## [1] 12
+## [1] 13
+## [1] 14
+## [1] 15
+## [1] 16
+## [1] 17
+## [1] 18
+## [1] 19
+## [1] &quot;No observations for ASPLAN&quot;
+## [1] 20
+## [1] 21
+## [1] 22
+## [1] 23
+## [1] 24
+## [1] &quot;No observations for COPE_PRED&quot;
+## [1] 25
+## [1] 26
+## [1] 27
+## [1] &quot;No observations for CLAD_OMNI&quot;
+## [1] 28
+## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9
+## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9
+## [1] 10
+## [1] 11
+## [1] 12
+## [1] 13
+## [1] 14
+## [1] 15
+## [1] 16
+## [1] 17
+## [1] 18
+## [1] 19
+## [1] &quot;No observations for ASPLAN&quot;
+## [1] 20
+## [1] 21
+## [1] 22
+## [1] 23
+## [1] 24
+## [1] &quot;No observations for COPE_PRED&quot;
+## [1] 25
+## [1] 26
+## [1] 27
+## [1] &quot;No observations for CLAD_OMNI&quot;
+## [1] 28
+## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9
+## [1] &quot;Finished with base metrics&quot;
+## [1] &quot;Finished copepod ratio merics&quot;
+## [1] &quot;Finished overall diversity metrics&quot;
+## [1] &quot;Finished group diversity metrics&quot;
+## [1] &quot;Finished dominance metrics&quot;
+## [1] &quot;Finished richness metrics&quot;
+## [1] &quot;Finished totals metrics for combined sample&quot;
+## [1] &quot;Finished totals metrics for fine and coarse mesh data&quot;
+## [1] &quot;Combined totals metrics&quot;
+## [1] &quot;Finished native metrics&quot;
+## [1] &quot;Finished calculating metrics.&quot;</code></pre>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" tabindex="-1"></a><span class="fu">head</span>(zoopMets)</span></code></pre></div>
+<pre><code>##    UID  PARAMETER RESULT
+## 1 7100 CALAN_NIND     38
+## 2 7122 CALAN_NIND      0
+## 3 7477 CALAN_NIND      0
+## 4 7548 CALAN_NIND    261
+## 5 7748 CALAN_NIND    265
+## 6 8395 CALAN_NIND    103</code></pre>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" tabindex="-1"></a><span class="fu">noquote</span>(<span class="fu">unique</span>(zoopMets<span class="sc">$</span>PARAMETER))</span></code></pre></div>
+<pre><code>##   [1] CALAN_NIND           CALAN_NTAX           CALAN_BIO           
+##   [4] CALAN_DEN            CALAN_PIND           CALAN_PTAX          
+##   [7] CALAN_PDEN           CALAN_PBIO           COPE_NIND           
+##  [10] COPE_NTAX            COPE_BIO             COPE_DEN            
+##  [13] COPE_PIND            COPE_PTAX            COPE_PDEN           
+##  [16] COPE_PBIO            COPE_HERB_NIND       COPE_HERB_NTAX      
+##  [19] COPE_HERB_BIO        COPE_HERB_DEN        COPE_HERB_PIND      
+##  [22] COPE_HERB_PTAX       COPE_HERB_PDEN       COPE_HERB_PBIO      
+##  [25] ROT_NIND             ROT_NTAX             ROT_BIO             
+##  [28] ROT_DEN              ROT_PIND             ROT_PTAX            
+##  [31] ROT_PDEN             ROT_PBIO             COARSE_NIND         
+##  [34] COARSE_NTAX          COARSE_BIO           COARSE_DEN          
+##  [37] COARSE_PIND          COARSE_PTAX          COARSE_PDEN         
+##  [40] COARSE_PBIO          FINE_NIND            FINE_NTAX           
+##  [43] FINE_BIO             FINE_DEN             FINE_PIND           
+##  [46] FINE_PTAX            FINE_PDEN            FINE_PBIO           
+##  [49] SMCLAD_NIND          SMCLAD_NTAX          SMCLAD_BIO          
+##  [52] SMCLAD_DEN           SMCLAD_PIND          SMCLAD_PTAX         
+##  [55] SMCLAD_PDEN          SMCLAD_PBIO          DAPHNIID_NIND       
+##  [58] DAPHNIID_NTAX        DAPHNIID_BIO         DAPHNIID_DEN        
+##  [61] DAPHNIID_PIND        DAPHNIID_PTAX        DAPHNIID_PDEN       
+##  [64] DAPHNIID_PBIO        HERB_NIND            HERB_NTAX           
+##  [67] HERB_BIO             HERB_DEN             HERB_PIND           
+##  [70] HERB_PTAX            HERB_PDEN            HERB_PBIO           
+##  [73] LGCLAD_NIND          LGCLAD_NTAX          LGCLAD_BIO          
+##  [76] LGCLAD_DEN           LGCLAD_PIND          LGCLAD_PTAX         
+##  [79] LGCLAD_PDEN          LGCLAD_PBIO          OMNI_NIND           
+##  [82] OMNI_NTAX            OMNI_BIO             OMNI_DEN            
+##  [85] OMNI_PIND            OMNI_PTAX            OMNI_PDEN           
+##  [88] OMNI_PBIO            PLOIMA_NIND          PLOIMA_NTAX         
+##  [91] PLOIMA_BIO           PLOIMA_DEN           PLOIMA_PIND         
+##  [94] PLOIMA_PTAX          PLOIMA_PDEN          PLOIMA_PBIO         
+##  [97] SIDID_NIND           SIDID_NTAX           SIDID_BIO           
+## [100] SIDID_DEN            SIDID_PIND           SIDID_PTAX          
+## [103] SIDID_PDEN           SIDID_PBIO           CLAD_NIND           
+## [106] CLAD_NTAX            CLAD_BIO             CLAD_DEN            
+## [109] CLAD_PIND            CLAD_PTAX            CLAD_PDEN           
+## [112] CLAD_PBIO            BOSM_NIND            BOSM_NTAX           
+## [115] BOSM_BIO             BOSM_DEN             BOSM_PIND           
+## [118] BOSM_PTAX            BOSM_PDEN            BOSM_PBIO           
+## [121] CYCLOP_NIND          CYCLOP_NTAX          CYCLOP_BIO          
+## [124] CYCLOP_DEN           CYCLOP_PIND          CYCLOP_PTAX         
+## [127] CYCLOP_PDEN          CYCLOP_PBIO          FLOS_NIND           
+## [130] FLOS_NTAX            FLOS_BIO             FLOS_DEN            
+## [133] FLOS_PIND            FLOS_PTAX            FLOS_PDEN           
+## [136] FLOS_PBIO            COLLO_NIND           COLLO_NTAX          
+## [139] COLLO_BIO            COLLO_DEN            COLLO_PIND          
+## [142] COLLO_PTAX           COLLO_PDEN           COLLO_PBIO          
+## [145] ASPLAN_DEN           ASPLAN_PDEN          ASPLAN_BIO          
+## [148] ASPLAN_PBIO          ASPLAN_NIND          ASPLAN_PIND         
+## [151] ASPLAN_PTAX          ASPLAN_NTAX          PRED_NIND           
+## [154] PRED_NTAX            PRED_BIO             PRED_DEN            
+## [157] PRED_PIND            PRED_PTAX            PRED_PDEN           
+## [160] PRED_PBIO            ROT_HERB_NIND        ROT_HERB_NTAX       
+## [163] ROT_HERB_BIO         ROT_HERB_DEN         ROT_HERB_PIND       
+## [166] ROT_HERB_PTAX        ROT_HERB_PDEN        ROT_HERB_PBIO       
+## [169] ROT_PRED_NIND        ROT_PRED_NTAX        ROT_PRED_BIO        
+## [172] ROT_PRED_DEN         ROT_PRED_PIND        ROT_PRED_PTAX       
+## [175] ROT_PRED_PDEN        ROT_PRED_PBIO        ROT_OMNI_NIND       
+## [178] ROT_OMNI_NTAX        ROT_OMNI_BIO         ROT_OMNI_DEN        
+## [181] ROT_OMNI_PIND        ROT_OMNI_PTAX        ROT_OMNI_PDEN       
+## [184] ROT_OMNI_PBIO        COPE_PRED_DEN        COPE_PRED_PDEN      
+## [187] COPE_PRED_BIO        COPE_PRED_PBIO       COPE_PRED_NIND      
+## [190] COPE_PRED_PIND       COPE_PRED_PTAX       COPE_PRED_NTAX      
+## [193] COPE_OMNI_NIND       COPE_OMNI_NTAX       COPE_OMNI_BIO       
+## [196] COPE_OMNI_DEN        COPE_OMNI_PIND       COPE_OMNI_PTAX      
+## [199] COPE_OMNI_PDEN       COPE_OMNI_PBIO       CLAD_HERB_NIND      
+## [202] CLAD_HERB_NTAX       CLAD_HERB_BIO        CLAD_HERB_DEN       
+## [205] CLAD_HERB_PIND       CLAD_HERB_PTAX       CLAD_HERB_PDEN      
+## [208] CLAD_HERB_PBIO       CLAD_OMNI_DEN        CLAD_OMNI_PDEN      
+## [211] CLAD_OMNI_BIO        CLAD_OMNI_PBIO       CLAD_OMNI_NIND      
+## [214] CLAD_OMNI_PIND       CLAD_OMNI_PTAX       CLAD_OMNI_NTAX      
+## [217] CLAD_PRED_NIND       CLAD_PRED_NTAX       CLAD_PRED_BIO       
+## [220] CLAD_PRED_DEN        CLAD_PRED_PIND       CLAD_PRED_PTAX      
+## [223] CLAD_PRED_PDEN       CLAD_PRED_PBIO       CALAN_NAT_NIND      
+## [226] CALAN_NAT_NTAX       CALAN_NAT_BIO        CALAN_NAT_DEN       
+## [229] CALAN_NAT_PIND       CALAN_NAT_PTAX       CALAN_NAT_PDEN      
+## [232] CALAN_NAT_PBIO       COPE_NAT_NIND        COPE_NAT_NTAX       
+## [235] COPE_NAT_BIO         COPE_NAT_DEN         COPE_NAT_PIND       
+## [238] COPE_NAT_PTAX        COPE_NAT_PDEN        COPE_NAT_PBIO       
+## [241] COARSE_NAT_NIND      COARSE_NAT_NTAX      COARSE_NAT_BIO      
+## [244] COARSE_NAT_DEN       COARSE_NAT_PIND      COARSE_NAT_PTAX     
+## [247] COARSE_NAT_PDEN      COARSE_NAT_PBIO      FINE_NAT_NIND       
+## [250] FINE_NAT_NTAX        FINE_NAT_BIO         FINE_NAT_DEN        
+## [253] FINE_NAT_PIND        FINE_NAT_PTAX        FINE_NAT_PDEN       
+## [256] FINE_NAT_PBIO        SMCLAD_NAT_NIND      SMCLAD_NAT_NTAX     
+## [259] SMCLAD_NAT_BIO       SMCLAD_NAT_DEN       SMCLAD_NAT_PIND     
+## [262] SMCLAD_NAT_PTAX      SMCLAD_NAT_PDEN      SMCLAD_NAT_PBIO     
+## [265] LGCLAD_NAT_NIND      LGCLAD_NAT_NTAX      LGCLAD_NAT_BIO      
+## [268] LGCLAD_NAT_DEN       LGCLAD_NAT_PIND      LGCLAD_NAT_PTAX     
+## [271] LGCLAD_NAT_PDEN      LGCLAD_NAT_PBIO      CLAD_NAT_NIND       
+## [274] CLAD_NAT_NTAX        CLAD_NAT_BIO         CLAD_NAT_DEN        
+## [277] CLAD_NAT_PIND        CLAD_NAT_PTAX        CLAD_NAT_PDEN       
+## [280] CLAD_NAT_PBIO        DAPHNIID_NAT_NIND    DAPHNIID_NAT_NTAX   
+## [283] DAPHNIID_NAT_BIO     DAPHNIID_NAT_DEN     DAPHNIID_NAT_PIND   
+## [286] DAPHNIID_NAT_PTAX    DAPHNIID_NAT_PDEN    DAPHNIID_NAT_PBIO   
+## [289] BOSM_NAT_NIND        BOSM_NAT_NTAX        BOSM_NAT_BIO        
+## [292] BOSM_NAT_DEN         BOSM_NAT_PIND        BOSM_NAT_PTAX       
+## [295] BOSM_NAT_PDEN        BOSM_NAT_PBIO        CALAN300_NIND       
+## [298] CALAN300_NTAX        CALAN300_BIO         CALAN300_PIND       
+## [301] CALAN300_PTAX        CALAN300_PBIO        COPE300_NIND        
+## [304] COPE300_NTAX         COPE300_BIO          COPE300_PIND        
+## [307] COPE300_PTAX         COPE300_PBIO         COPE_HERB300_NIND   
+## [310] COPE_HERB300_NTAX    COPE_HERB300_BIO     COPE_HERB300_PIND   
+## [313] COPE_HERB300_PTAX    COPE_HERB300_PBIO    ROT300_NIND         
+## [316] ROT300_NTAX          ROT300_BIO           ROT300_PIND         
+## [319] ROT300_PTAX          ROT300_PBIO          COARSE300_NIND      
+## [322] COARSE300_NTAX       COARSE300_BIO        COARSE300_PIND      
+## [325] COARSE300_PTAX       COARSE300_PBIO       FINE300_NIND        
+## [328] FINE300_NTAX         FINE300_BIO          FINE300_PIND        
+## [331] FINE300_PTAX         FINE300_PBIO         SMCLAD300_NIND      
+## [334] SMCLAD300_NTAX       SMCLAD300_BIO        SMCLAD300_PIND      
+## [337] SMCLAD300_PTAX       SMCLAD300_PBIO       DAPHNIID300_NIND    
+## [340] DAPHNIID300_NTAX     DAPHNIID300_BIO      DAPHNIID300_PIND    
+## [343] DAPHNIID300_PTAX     DAPHNIID300_PBIO     HERB300_NIND        
+## [346] HERB300_NTAX         HERB300_BIO          HERB300_PIND        
+## [349] HERB300_PTAX         HERB300_PBIO         LGCLAD300_NIND      
+## [352] LGCLAD300_NTAX       LGCLAD300_BIO        LGCLAD300_PIND      
+## [355] LGCLAD300_PTAX       LGCLAD300_PBIO       OMNI300_NIND        
+## [358] OMNI300_NTAX         OMNI300_BIO          OMNI300_PIND        
+## [361] OMNI300_PTAX         OMNI300_PBIO         PLOIMA300_NIND      
+## [364] PLOIMA300_NTAX       PLOIMA300_BIO        PLOIMA300_PIND      
+## [367] PLOIMA300_PTAX       PLOIMA300_PBIO       SIDID300_NIND       
+## [370] SIDID300_NTAX        SIDID300_BIO         SIDID300_PIND       
+## [373] SIDID300_PTAX        SIDID300_PBIO        CLAD300_NIND        
+## [376] CLAD300_NTAX         CLAD300_BIO          CLAD300_PIND        
+## [379] CLAD300_PTAX         CLAD300_PBIO         BOSM300_NIND        
+## [382] BOSM300_NTAX         BOSM300_BIO          BOSM300_PIND        
+## [385] BOSM300_PTAX         BOSM300_PBIO         CYCLOP300_NIND      
+## [388] CYCLOP300_NTAX       CYCLOP300_BIO        CYCLOP300_PIND      
+## [391] CYCLOP300_PTAX       CYCLOP300_PBIO       FLOS300_NIND        
+## [394] FLOS300_NTAX         FLOS300_BIO          FLOS300_PIND        
+## [397] FLOS300_PTAX         FLOS300_PBIO         COLLO300_NIND       
+## [400] COLLO300_NTAX        COLLO300_BIO         COLLO300_PIND       
+## [403] COLLO300_PTAX        COLLO300_PBIO        ASPLAN300_BIO       
+## [406] ASPLAN300_PBIO       ASPLAN300_NIND       ASPLAN300_PIND      
+## [409] ASPLAN300_PTAX       ASPLAN300_NTAX       PRED300_NIND        
+## [412] PRED300_NTAX         PRED300_BIO          PRED300_PIND        
+## [415] PRED300_PTAX         PRED300_PBIO         ROT_HERB300_NIND    
+## [418] ROT_HERB300_NTAX     ROT_HERB300_BIO      ROT_HERB300_PIND    
+## [421] ROT_HERB300_PTAX     ROT_HERB300_PBIO     ROT_PRED300_NIND    
+## [424] ROT_PRED300_NTAX     ROT_PRED300_BIO      ROT_PRED300_PIND    
+## [427] ROT_PRED300_PTAX     ROT_PRED300_PBIO     ROT_OMNI300_NIND    
+## [430] ROT_OMNI300_NTAX     ROT_OMNI300_BIO      ROT_OMNI300_PIND    
+## [433] ROT_OMNI300_PTAX     ROT_OMNI300_PBIO     COPE_PRED300_BIO    
+## [436] COPE_PRED300_PBIO    COPE_PRED300_NIND    COPE_PRED300_PIND   
+## [439] COPE_PRED300_PTAX    COPE_PRED300_NTAX    COPE_OMNI300_NIND   
+## [442] COPE_OMNI300_NTAX    COPE_OMNI300_BIO     COPE_OMNI300_PIND   
+## [445] COPE_OMNI300_PTAX    COPE_OMNI300_PBIO    CLAD_HERB300_NIND   
+## [448] CLAD_HERB300_NTAX    CLAD_HERB300_BIO     CLAD_HERB300_PIND   
+## [451] CLAD_HERB300_PTAX    CLAD_HERB300_PBIO    CLAD_OMNI300_BIO    
+## [454] CLAD_OMNI300_PBIO    CLAD_OMNI300_NIND    CLAD_OMNI300_PIND   
+## [457] CLAD_OMNI300_PTAX    CLAD_OMNI300_NTAX    CLAD_PRED300_NIND   
+## [460] CLAD_PRED300_NTAX    CLAD_PRED300_BIO     CLAD_PRED300_PIND   
+## [463] CLAD_PRED300_PTAX    CLAD_PRED300_PBIO    CALAN300_NAT_NIND   
+## [466] CALAN300_NAT_NTAX    CALAN300_NAT_BIO     CALAN300_NAT_PIND   
+## [469] CALAN300_NAT_PTAX    CALAN300_NAT_PBIO    COPE300_NAT_NIND    
+## [472] COPE300_NAT_NTAX     COPE300_NAT_BIO      COPE300_NAT_PIND    
+## [475] COPE300_NAT_PTAX     COPE300_NAT_PBIO     COARSE300_NAT_NIND  
+## [478] COARSE300_NAT_NTAX   COARSE300_NAT_BIO    COARSE300_NAT_PIND  
+## [481] COARSE300_NAT_PTAX   COARSE300_NAT_PBIO   FINE300_NAT_NIND    
+## [484] FINE300_NAT_NTAX     FINE300_NAT_BIO      FINE300_NAT_PIND    
+## [487] FINE300_NAT_PTAX     FINE300_NAT_PBIO     SMCLAD300_NAT_NIND  
+## [490] SMCLAD300_NAT_NTAX   SMCLAD300_NAT_BIO    SMCLAD300_NAT_PIND  
+## [493] SMCLAD300_NAT_PTAX   SMCLAD300_NAT_PBIO   LGCLAD300_NAT_NIND  
+## [496] LGCLAD300_NAT_NTAX   LGCLAD300_NAT_BIO    LGCLAD300_NAT_PIND  
+## [499] LGCLAD300_NAT_PTAX   LGCLAD300_NAT_PBIO   CLAD300_NAT_NIND    
+## [502] CLAD300_NAT_NTAX     CLAD300_NAT_BIO      CLAD300_NAT_PIND    
+## [505] CLAD300_NAT_PTAX     CLAD300_NAT_PBIO     DAPHNIID300_NAT_NIND
+## [508] DAPHNIID300_NAT_NTAX DAPHNIID300_NAT_BIO  DAPHNIID300_NAT_PIND
+## [511] DAPHNIID300_NAT_PTAX DAPHNIID300_NAT_PBIO BOSM300_NAT_NIND    
+## [514] BOSM300_NAT_NTAX     BOSM300_NAT_BIO      BOSM300_NAT_PIND    
+## [517] BOSM300_NAT_PTAX     BOSM300_NAT_PBIO     COPE_RATIO_NIND     
+## [520] COPE_RATIO_BIO       COPE_RATIO_DEN       COPE_RATIO_300_NIND 
+## [523] COPE_RATIO_300_BIO   HPRIME_NIND          SIMPSON_NIND        
+## [526] PIE_NIND             EVEN_NIND            HPRIME_DEN          
+## [529] SIMPSON_DEN          HPRIME_BIO           SIMPSON_BIO         
+## [532] HPRIME300_NIND       SIMPSON300_NIND      PIE300_NIND         
+## [535] EVEN300_NIND         HPRIME300_BIO        SIMPSON300_BIO      
+## [538] HPRIME_ROT           SIMPSON_ROT          PIE_ROT             
+## [541] EVEN_ROT             HPRIME_CLAD          SIMPSON_CLAD        
+## [544] PIE_CLAD             EVEN_CLAD            HPRIME_COPE         
+## [547] SIMPSON_COPE         PIE_COPE             EVEN_COPE           
+## [550] HPRIME_ROT300        SIMPSON_ROT300       PIE_ROT300          
+## [553] EVEN_ROT300          HPRIME_CLAD300       SIMPSON_CLAD300     
+## [556] PIE_CLAD300          EVEN_CLAD300         HPRIME_COPE300      
+## [559] SIMPSON_COPE300      PIE_COPE300          EVEN_COPE300        
+## [562] DOM1_PIND            DOM3_PIND            DOM5_PIND           
+## [565] DOM1_PBIO            DOM3_PBIO            DOM5_PBIO           
+## [568] DOM1_PDEN            DOM3_PDEN            DOM5_PDEN           
+## [571] DOM1_300_PIND        DOM3_300_PIND        DOM5_300_PIND       
+## [574] DOM1_300_PBIO        DOM3_300_PBIO        DOM5_300_PBIO       
+## [577] DOM1_ROT_PIND        DOM3_ROT_PIND        DOM5_ROT_PIND       
+## [580] DOM1_ROT_PBIO        DOM3_ROT_PBIO        DOM5_ROT_PBIO       
+## [583] DOM1_ROT_PDEN        DOM3_ROT_PDEN        DOM5_ROT_PDEN       
+## [586] DOM1_CLAD_PIND       DOM3_CLAD_PIND       DOM5_CLAD_PIND      
+## [589] DOM1_CLAD_PBIO       DOM3_CLAD_PBIO       DOM5_CLAD_PBIO      
+## [592] DOM1_CLAD_PDEN       DOM3_CLAD_PDEN       DOM5_CLAD_PDEN      
+## [595] DOM1_COPE_PIND       DOM3_COPE_PIND       DOM5_COPE_PIND      
+## [598] DOM1_COPE_PBIO       DOM3_COPE_PBIO       DOM5_COPE_PBIO      
+## [601] DOM1_COPE_PDEN       DOM3_COPE_PDEN       DOM5_COPE_PDEN      
+## [604] DOM1_300_ROT_PIND    DOM3_300_ROT_PIND    DOM5_300_ROT_PIND   
+## [607] DOM1_300_ROT_PBIO    DOM3_300_ROT_PBIO    DOM5_300_ROT_PBIO   
+## [610] DOM1_300_CLAD_PIND   DOM3_300_CLAD_PIND   DOM5_300_CLAD_PIND  
+## [613] DOM1_300_CLAD_PBIO   DOM3_300_CLAD_PBIO   DOM5_300_CLAD_PBIO  
+## [616] DOM1_300_COPE_PIND   DOM3_300_COPE_PIND   DOM5_300_COPE_PIND  
+## [619] DOM1_300_COPE_PBIO   DOM3_300_COPE_PBIO   DOM5_300_COPE_PBIO  
+## [622] GEN_NTAX             FAM_NTAX             GEN_NAT_NTAX        
+## [625] FAM_NAT_NTAX         GEN300_NTAX          FAM300_NTAX         
+## [628] GEN300_NAT_NTAX      FAM300_NAT_NTAX      ZOCN_GEN_NTAX       
+## [631] ZOCN_FAM_NTAX        ZOCN_GEN_NAT_NTAX    ZOCN_FAM_NAT_NTAX   
+## [634] ZOCN300_GEN_NTAX     ZOCN300_FAM_NTAX     ZOCN300_GEN_NAT_NTAX
+## [637] ZOCN300_FAM_NAT_NTAX ZOFN_GEN_NTAX        ZOFN_FAM_NTAX       
+## [640] ZOFN_GEN_NAT_NTAX    ZOFN_FAM_NAT_NTAX    ZOFN300_GEN_NTAX    
+## [643] ZOFN300_FAM_NTAX     ZOFN300_GEN_NAT_NTAX ZOFN300_FAM_NAT_NTAX
+## [646] TOTL_NIND            TOTL_BIO             TOTL_DEN            
+## [649] TOTL_NTAX            TOTL_NAT_NIND        TOTL_NAT_BIO        
+## [652] TOTL_NAT_DEN         TOTL_NAT_NTAX        TOTL300_NIND        
+## [655] TOTL300_BIO          TOTL300_NTAX         TOTL300_NAT_NIND    
+## [658] TOTL300_NAT_BIO      TOTL300_NAT_NTAX     ZOCN_NIND           
+## [661] ZOCN_BIO             ZOCN_DEN             ZOCN_NTAX           
+## [664] ZOCN_NAT_NIND        ZOCN_NAT_BIO         ZOCN_NAT_DEN        
+## [667] ZOCN_NAT_NTAX        ZOCN300_NIND         ZOCN300_BIO         
+## [670] ZOCN300_NTAX         ZOCN300_NAT_NIND     ZOCN300_NAT_BIO     
+## [673] ZOCN300_NAT_NTAX     ZOFN_NIND            ZOFN_BIO            
+## [676] ZOFN_DEN             ZOFN_NTAX            ZOFN_NAT_NIND       
+## [679] ZOFN_NAT_BIO         ZOFN_NAT_DEN         ZOFN_NAT_NTAX       
+## [682] ZOFN300_NIND         ZOFN300_BIO          ZOFN300_NTAX        
+## [685] ZOFN300_NAT_NIND     ZOFN300_NAT_BIO      ZOFN300_NAT_NTAX    
+## [688] TOTL_NAT_PTAX        TOTL300_NAT_PTAX     ZOCN_NAT_PTAX       
+## [691] ZOCN300_NAT_PTAX     ZOFN_NAT_PTAX        ZOFN300_NAT_PTAX    
+## [694] TOTL_NAT_PDEN        TOTL_NAT_PBIO        TOTL_NAT_PIND       
+## [697] TOTL300_NAT_PIND     TOTL300_NAT_PBIO     ZOCN_NAT_PIND       
+## [700] ZOCN300_NAT_PIND     ZOCN_NAT_PBIO        ZOCN300_NAT_PBIO    
+## [703] ZOCN_NAT_PDEN        ZOFN_NAT_PIND        ZOFN300_NAT_PIND    
+## [706] ZOFN_NAT_PBIO        ZOFN300_NAT_PBIO     ZOFN_NAT_PDEN</code></pre>
+</div>
+</div>
+<div id="calculate-mmi-and-assign-condition" class="section level1">
+<h1>4 Calculate MMI and assign condition</h1>
+<p>Now that we have the full set of metrics, we can calculate the MMI
+and assign a condition class to each sample. To determine which MMI to
+apply to each site, we need the aggregated ecoregion (ECO_BIO) as used
+in the National Lakes Assessment (NLA). We created a data frame with
+this information in section 2.5 where native status was assigned. Thus,
+we will start by merging the <code>states</code> data frame with the
+output from section 3.4, then reshaping the data frame wide because that
+is what is expected in the <code>calcNLA_ZoopMMI</code> function.</p>
+<div id="calculate-mmi" class="section level2">
+<h2>4.1 Calculate MMI</h2>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" tabindex="-1"></a>mmiIn <span class="ot">&lt;-</span> <span class="fu">merge</span>(states, zoopMets, <span class="at">by =</span> <span class="st">&#39;UID&#39;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb61-2"><a href="#cb61-2" tabindex="-1"></a>  <span class="fu">reshape</span>(<span class="at">idvar =</span> <span class="fu">c</span>(<span class="st">&#39;UID&#39;</span>, <span class="st">&#39;ECO_BIO&#39;</span>), <span class="at">direction =</span> <span class="st">&#39;wide&#39;</span>,</span>
+<span id="cb61-3"><a href="#cb61-3" tabindex="-1"></a>                             <span class="at">timevar =</span> <span class="st">&#39;PARAMETER&#39;</span>, <span class="at">v.names =</span> <span class="st">&#39;RESULT&#39;</span>)</span>
+<span id="cb61-4"><a href="#cb61-4" tabindex="-1"></a></span>
+<span id="cb61-5"><a href="#cb61-5" tabindex="-1"></a><span class="fu">names</span>(mmiIn) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&#39;RESULT</span><span class="sc">\\</span><span class="st">.&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="fu">names</span>(mmiIn))</span>
+<span id="cb61-6"><a href="#cb61-6" tabindex="-1"></a></span>
+<span id="cb61-7"><a href="#cb61-7" tabindex="-1"></a>mmiOut <span class="ot">&lt;-</span> <span class="fu">calcNLA_ZoopMMI</span>(<span class="at">inMets =</span> mmiIn, </span>
+<span id="cb61-8"><a href="#cb61-8" tabindex="-1"></a>                          <span class="at">sampID =</span> <span class="st">&#39;UID&#39;</span>,</span>
+<span id="cb61-9"><a href="#cb61-9" tabindex="-1"></a>                          <span class="at">ecoreg =</span> <span class="st">&#39;ECO_BIO&#39;</span>,</span>
+<span id="cb61-10"><a href="#cb61-10" tabindex="-1"></a>                          <span class="at">totlnind =</span> <span class="st">&#39;TOTL_NIND&#39;</span>)</span>
+<span id="cb61-11"><a href="#cb61-11" tabindex="-1"></a></span>
+<span id="cb61-12"><a href="#cb61-12" tabindex="-1"></a><span class="fu">head</span>(mmiOut)</span></code></pre></div>
+<pre><code>##    UID ECO_BIO MMI_ZOOP ZOOP_MMI_COND CLAD_PT COPE_PT RICH_PT ABUN_PT TROP_PT
+## 1 7100   WMTNS    66.25          Good      10    9.84    8.33    8.61       1
+## 2 7122   EHIGH    55.43          Poor    8.25    7.25    0.15    9.92    6.09
+## 3 7477   WMTNS    51.38          Fair       0      10    0.83       0      10
+## 4 7548   EHIGH    52.53          Poor    9.98    2.28    3.18    9.82       0
+## 5 7748     UMW    36.53          Poor    4.45       0    4.48      10       0
+## 6 8395   WMTNS    61.13          Good    4.88    9.02    8.33    9.95       0
+##   ROTI_PT
+## 1    1.97
+## 2     1.6
+## 3      10
+## 4    6.26
+## 5    2.99
+## 6     4.5</code></pre>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,3 +1,7 @@
+# aquametBio 2.2.1
+
+3/1/2024 Updated zooplankton MMI thresholds.
+
 # aquametBio 2.2.0
 
 2/10/2023 Added code to calculate zooplankton metrics and MMI.

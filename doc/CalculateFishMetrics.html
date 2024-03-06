@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Karen Blocksom" />
+
+<meta name="date" content="2024-01-18" />
+
+<title>Calculating Fish Metrics</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Calculating Fish Metrics</h1>
+<h4 class="author">Karen Blocksom</h4>
+<h4 class="date">2024-01-18</h4>
+
+
+
+<div id="preliminaries" class="section level1">
+<h1>1 Preliminaries</h1>
+<p>One of the primary goals of this package is to calculate fish metrics
+as used in the National Rivers and Streams Assessment (NRSA) conducted
+in 2008-9 and 2013-14 by EPA’s Office of Water. Fish were collected at
+all sites where present, and the common name, number of individuals, and
+number of anomalies were recorded in the field. Non-native status was
+then determined for all taxa on a site-specific basis. For the purposes
+of calculations, the metrics were broken down into several subsets,
+depending on which autecology traits were required to calculate them. In
+addition, if the non-native status is included with input data, the
+native version of metrics is also calculated, as well as alien species
+metrics, if desired. There are also separate functions to calculate just
+the metrics used in the regional multimetric indices (MMIs) and the MMI
+scores themselves based on metric inputs. This vignette will describe
+how to use the various functions along with the example datasets
+provided and the included taxa lists, to obtain the full set of metrics,
+a subset of metrics based on metric type, and the fish multimetric index
+used in assigning biological condition.</p>
+<p>The functions in this package allow for a great deal of flexibility
+in terms of input variable names and the taxalist used in calculating
+metrics. However, the actual values of various traits, and the fish
+names as used in the taxalist are assumed to match those used in NRSA.
+This means that some metrics will not calculate correctly if the NRSA
+taxalist is not used. In addition, the functions assume that data have
+already been summarized to the level of sample and taxon, and a
+within-sample distinctness (0/1) already assigned to each taxon, so any
+steps required to get to this point must be done prior to use of the
+functions. All taxa in the count data must be included in the taxa list
+in order to be included in the calculations. Functions will look for
+specific types of inconsistencies, like missing variables, and either
+provide a warning or will fail to run, depending on the issue.</p>
+<hr />
+</div>
+<div id="calculating-nrsa-fish-metrics" class="section level1">
+<h1>2 Calculating NRSA fish metrics</h1>
+<p>There are two main approaches to calculating the fish metrics. One
+may either calculate all fish metrics at once, which may take a long
+time with larger datasets, or one may calculate various subsets of
+metrics. The latter approach may be helpful if only certain metrics are
+of interest or only certain traits are available. In the first approach,
+the function <code>calcAllFishMets</code> serves as a wrapper function
+for a number of metric subset functions. The other approach involves
+using individual funcions, including <code>calcFishTaxMets</code>,
+<code>calcFishTolMets</code>, <code>calcFishTrophicMets</code>,
+<code>calcFishOtherMets</code>, <code>calcFishNativeMets</code>, and/or
+<code>calcFishAnomMets</code>. The metrics used in regional fish MMIs
+and the MMIs themselves, can be calculated using the functions
+<code>calcNRSA_FishMMImets()</code> and <code>calcFishMMI()</code>,
+respectively.</p>
+<div id="all-metrics-at-once" class="section level2">
+<h2>2.1 All metrics at once</h2>
+<p>Calculate all metrics using the example fish count data included in
+the package, <code>fishEx</code>, along with the included taxalist,
+<code>fishTaxa</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(aquametBio)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">head</span>(fishEx)</span></code></pre></div>
+<pre><code>##     UID TAXA_ID FINAL_CT ANOM_CT IS_DISTINCT NON_NATIVE
+## 1 10000     522       15       0           1          N
+## 2 10000     143        1       1           1          Y
+## 3 10000     336        9       0           1          N
+## 4 10000     380      121       0           1          N
+## 5 10000     118       93       2           1          N
+## 6 10000     151        8       0           1          N</code></pre>
+<p>This example dataset contains all of the necessary variables required
+to calculate all of the fish metrics. For this dataset, <code>UID</code>
+identifies individual samples, <code>TAXA_ID</code> identifies the taxon
+and links to same field in the taxalist, <code>FINAL_CT</code> is the
+count for the taxon, <code>ANOM_CT</code> is the number of anomalies for
+a given taxon, <code>IS_DISTINCT</code> is the distinctness, which 0
+indicating non-distinct within the sample and 1 distinct, and
+<code>NON_NATIVE</code> indicates whether the taxon is non-native in
+this particular site (Y=YES, N=NO).</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">head</span>(fishTaxa)</span></code></pre></div>
+<pre><code>##   TAXA_ID          FAMILY      FAM_OR_CLS             FINAL_NAME        GENUS
+## 1       1    CATOSTOMIDAE    CATOSTOMIDAE     ALABAMA HOG SUCKER  HYPENTELIUM
+## 2       2       CLUPEIDAE       CLUPEIDAE           ALABAMA SHAD        ALOSA
+## 3       3      CYPRINIDAE      CYPRINIDAE         ALABAMA SHINER   CYPRINELLA
+## 4       4       CLUPEIDAE       CLUPEIDAE                ALEWIFE        ALOSA
+## 5       5   LEPISOSTEIDAE   LEPISOSTEIDAE          ALLIGATOR GAR ATRACTOSTEUS
+## 6       6 PETROMYZONTIDAE PETROMYZONTIDAE AMERICAN BROOK LAMPREY     LAMPETRA
+##   HABITAT_NRSA HERP ITISTSN MIGR_NRSA REPROD_NRSA TEMP_NRSA TOLERANCE_NRSA
+## 1            B &lt;NA&gt;  163950         N           C        WM              S
+## 2            W &lt;NA&gt;  161705         Y           C        WM              I
+## 3            W &lt;NA&gt;  163772         N           O        WM           &lt;NA&gt;
+## 4            W &lt;NA&gt;  161706         N           O        CL              I
+## 5            W &lt;NA&gt;  201897         N           O        WM              I
+## 6            B &lt;NA&gt;  159708         Y           C        WM              I
+##   TOL_VAL_EMAPW TROPHIC_NRSA VEL_NRSA PUBLICATION_DATE
+## 1            NA            I        R       2020-01-29
+## 2            NA            C        O       2020-01-29
+## 3            NA            I        O       2020-01-29
+## 4            NA            I        O       2020-01-29
+## 5            NA            C        P       2020-01-29
+## 6            NA            O        O       2020-01-29</code></pre>
+<p>This is the desired format of the taxalist. All of the necessary
+traits are included in the taxalist for metric calculation. The variable
+<code>FAM_OR_CLS</code> is the same as <code>FAMILY</code> and is an
+artifact from the NRSA 2008-9 study.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>outdf <span class="ot">&lt;-</span> <span class="fu">calcAllFishMets</span>(fishEx,fishTaxa,<span class="at">sampID=</span><span class="fu">c</span>(<span class="st">&quot;UID&quot;</span>), <span class="at">dist=</span><span class="st">&quot;IS_DISTINCT&quot;</span>,</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>                            <span class="at">ct=</span><span class="st">&quot;FINAL_CT&quot;</span>,<span class="at">anomct=</span><span class="st">&#39;ANOM_CT&#39;</span>,<span class="at">taxa_id=</span><span class="st">&#39;TAXA_ID&#39;</span>,<span class="at">tol=</span><span class="st">&#39;TOLERANCE_NRSA&#39;</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>                            , <span class="at">tolval=</span><span class="st">&#39;TOL_VAL_EMAPW&#39;</span>, <span class="at">vel=</span><span class="st">&#39;VEL_NRSA&#39;</span>, <span class="at">habitat=</span><span class="st">&#39;HABITAT_NRSA&#39;</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>                            , <span class="at">trophic=</span><span class="st">&#39;TROPHIC_NRSA&#39;</span>, <span class="at">migr=</span><span class="st">&#39;MIGR_NRSA&#39;</span>, <span class="at">nonnat=</span><span class="st">&#39;NON_NATIVE&#39;</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                            , <span class="at">reprod=</span><span class="st">&#39;REPROD_NRSA&#39;</span>, <span class="at">temp=</span><span class="st">&#39;TEMP_NRSA&#39;</span>, <span class="at">family=</span><span class="st">&#39;FAMILY&#39;</span>, <span class="at">genus=</span><span class="st">&#39;GENUS&#39;</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                            , <span class="at">comname=</span><span class="st">&#39;FINAL_NAME&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;Done calculating taxonomic metrics.&quot;
+## [1] &quot;Done calculating tolerance metrics.&quot;
+## [1] &quot;Done calculating trophic metrics.&quot;
+## [1] &quot;Done calculating other metrics.&quot;
+## [1] &quot;Done calculating native metrics.&quot;
+## [1] &quot;Done calculating anomaly metrics.&quot;</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">names</span>(outdf)</span></code></pre></div>
+<pre><code>##   [1] &quot;UID&quot;              &quot;CENTPIND&quot;         &quot;CYPRPIND&quot;        
+##   [4] &quot;ICTAPIND&quot;         &quot;CENTPTAX&quot;         &quot;CYPRPTAX&quot;        
+##   [7] &quot;ICTAPTAX&quot;         &quot;CENTNTAX&quot;         &quot;CYPRNTAX&quot;        
+##  [10] &quot;ICTANTAX&quot;         &quot;NAT_CENTNTAX&quot;     &quot;NAT_CYPRNTAX&quot;    
+##  [13] &quot;NAT_ICTANTAX&quot;     &quot;NAT_CENTPIND&quot;     &quot;NAT_CYPRPIND&quot;    
+##  [16] &quot;NAT_ICTAPIND&quot;     &quot;NAT_CENTPTAX&quot;     &quot;NAT_CYPRPTAX&quot;    
+##  [19] &quot;NAT_ICTAPTAX&quot;     &quot;NAT_TOTLNIND&quot;     &quot;NAT_TOTLNTAX&quot;    
+##  [22] &quot;NAT_PTAX&quot;         &quot;NAT_PIND&quot;         &quot;SALMPIND&quot;        
+##  [25] &quot;SALMNTAX&quot;         &quot;SALMPTAX&quot;         &quot;CATOPIND&quot;        
+##  [28] &quot;CATONTAX&quot;         &quot;CATOPTAX&quot;         &quot;RBCATOPIND&quot;      
+##  [31] &quot;RBCATONTAX&quot;       &quot;RBCATOPTAX&quot;       &quot;NAT_SALMPIND&quot;    
+##  [34] &quot;NAT_SALMNTAX&quot;     &quot;NAT_SALMPTAX&quot;     &quot;NAT_CATOPIND&quot;    
+##  [37] &quot;NAT_CATONTAX&quot;     &quot;NAT_CATOPTAX&quot;     &quot;NAT_RBCATOPIND&quot;  
+##  [40] &quot;NAT_RBCATONTAX&quot;   &quot;NAT_RBCATOPTAX&quot;   &quot;TOTLNIND&quot;        
+##  [43] &quot;TOTLNTAX&quot;         &quot;MTOLNTAX&quot;         &quot;NTOLNTAX&quot;        
+##  [46] &quot;NTOLBENTNTAX&quot;     &quot;NTOLINVNTAX&quot;      &quot;TOLRNTAX&quot;        
+##  [49] &quot;INTLNTAX&quot;         &quot;INTLINVNTAX&quot;      &quot;INTLLOTNTAX&quot;     
+##  [52] &quot;INTLRHEONTAX&quot;     &quot;MTOLPIND&quot;         &quot;NTOLPIND&quot;        
+##  [55] &quot;NTOLBENTPIND&quot;     &quot;NTOLINVPIND&quot;      &quot;TOLRPIND&quot;        
+##  [58] &quot;INTLPIND&quot;         &quot;INTLINVPIND&quot;      &quot;INTLLOTPIND&quot;     
+##  [61] &quot;INTLRHEOPIND&quot;     &quot;MTOLPTAX&quot;         &quot;NTOLPTAX&quot;        
+##  [64] &quot;NTOLBENTPTAX&quot;     &quot;NTOLINVPTAX&quot;      &quot;TOLRPTAX&quot;        
+##  [67] &quot;INTLPTAX&quot;         &quot;INTLINVPTAX&quot;      &quot;INTLLOTPTAX&quot;     
+##  [70] &quot;INTLRHEOPTAX&quot;     &quot;WTD_TV&quot;           &quot;NAT_MTOLNTAX&quot;    
+##  [73] &quot;NAT_NTOLNTAX&quot;     &quot;NAT_NTOLBENTNTAX&quot; &quot;NAT_NTOLINVNTAX&quot; 
+##  [76] &quot;NAT_TOLRNTAX&quot;     &quot;NAT_INTLNTAX&quot;     &quot;NAT_INTLINVNTAX&quot; 
+##  [79] &quot;NAT_INTLLOTNTAX&quot;  &quot;NAT_INTLRHEONTAX&quot; &quot;NAT_MTOLPIND&quot;    
+##  [82] &quot;NAT_NTOLPIND&quot;     &quot;NAT_NTOLBENTPIND&quot; &quot;NAT_NTOLINVPIND&quot; 
+##  [85] &quot;NAT_TOLRPIND&quot;     &quot;NAT_INTLPIND&quot;     &quot;NAT_INTLINVPIND&quot; 
+##  [88] &quot;NAT_INTLLOTPIND&quot;  &quot;NAT_INTLRHEOPIND&quot; &quot;NAT_MTOLPTAX&quot;    
+##  [91] &quot;NAT_NTOLPTAX&quot;     &quot;NAT_NTOLBENTPTAX&quot; &quot;NAT_NTOLINVPTAX&quot; 
+##  [94] &quot;NAT_TOLRPTAX&quot;     &quot;NAT_INTLPTAX&quot;     &quot;NAT_INTLINVPTAX&quot; 
+##  [97] &quot;NAT_INTLLOTPTAX&quot;  &quot;NAT_INTLRHEOPTAX&quot; &quot;NAT_WTD_TV&quot;      
+## [100] &quot;INTLCARNNTAX&quot;     &quot;INTLCARNPIND&quot;     &quot;INTLCARNPTAX&quot;    
+## [103] &quot;NTOLCARNNTAX&quot;     &quot;NTOLCARNPIND&quot;     &quot;NTOLCARNPTAX&quot;    
+## [106] &quot;NAT_INTLCARNNTAX&quot; &quot;NAT_INTLCARNPIND&quot; &quot;NAT_INTLCARNPTAX&quot;
+## [109] &quot;NAT_NTOLCARNNTAX&quot; &quot;NAT_NTOLCARNPIND&quot; &quot;NAT_NTOLCARNPTAX&quot;
+## [112] &quot;INTLMIGRNTAX&quot;     &quot;INTLMIGRPIND&quot;     &quot;INTLMIGRPTAX&quot;    
+## [115] &quot;NAT_INTLMIGRNTAX&quot; &quot;NAT_INTLMIGRPIND&quot; &quot;NAT_INTLMIGRPTAX&quot;
+## [118] &quot;BENTINVPIND&quot;      &quot;CARNPIND&quot;         &quot;HERBPIND&quot;        
+## [121] &quot;INVPIND&quot;          &quot;OMNIPIND&quot;         &quot;BENTINVPTAX&quot;     
+## [124] &quot;CARNPTAX&quot;         &quot;HERBPTAX&quot;         &quot;INVPTAX&quot;         
+## [127] &quot;OMNIPTAX&quot;         &quot;BENTINVNTAX&quot;      &quot;CARNNTAX&quot;        
+## [130] &quot;HERBNTAX&quot;         &quot;INVNTAX&quot;          &quot;OMNINTAX&quot;        
+## [133] &quot;NAT_BENTINVNTAX&quot;  &quot;NAT_CARNNTAX&quot;     &quot;NAT_HERBNTAX&quot;    
+## [136] &quot;NAT_INVNTAX&quot;      &quot;NAT_OMNINTAX&quot;     &quot;NAT_BENTINVPIND&quot; 
+## [139] &quot;NAT_CARNPIND&quot;     &quot;NAT_HERBPIND&quot;     &quot;NAT_INVPIND&quot;     
+## [142] &quot;NAT_OMNIPIND&quot;     &quot;NAT_BENTINVPTAX&quot;  &quot;NAT_CARNPTAX&quot;    
+## [145] &quot;NAT_HERBPTAX&quot;     &quot;NAT_INVPTAX&quot;      &quot;NAT_OMNIPTAX&quot;    
+## [148] &quot;LITHPIND&quot;         &quot;LOTPIND&quot;          &quot;RHEOPIND&quot;        
+## [151] &quot;LITHPTAX&quot;         &quot;LOTPTAX&quot;          &quot;RHEOPTAX&quot;        
+## [154] &quot;LITHNTAX&quot;         &quot;LOTNTAX&quot;          &quot;RHEONTAX&quot;        
+## [157] &quot;NAT_LITHNTAX&quot;     &quot;NAT_LOTNTAX&quot;      &quot;NAT_RHEONTAX&quot;    
+## [160] &quot;NAT_LITHPIND&quot;     &quot;NAT_LOTPIND&quot;      &quot;NAT_RHEOPIND&quot;    
+## [163] &quot;NAT_LITHPTAX&quot;     &quot;NAT_LOTPTAX&quot;      &quot;NAT_RHEOPTAX&quot;    
+## [166] &quot;MIGRNTAX&quot;         &quot;MIGRPIND&quot;         &quot;MIGRPTAX&quot;        
+## [169] &quot;NAT_MIGRNTAX&quot;     &quot;NAT_MIGRPIND&quot;     &quot;NAT_MIGRPTAX&quot;    
+## [172] &quot;COLDNTAX&quot;         &quot;COLDPIND&quot;         &quot;COLDPTAX&quot;        
+## [175] &quot;NAT_COLDNTAX&quot;     &quot;NAT_COLDPIND&quot;     &quot;NAT_COLDPTAX&quot;    
+## [178] &quot;ALIENNTAX&quot;        &quot;ALIENPIND&quot;        &quot;ALIENPTAX&quot;       
+## [181] &quot;ANOMPIND&quot;</code></pre>
+<p>The definitions of all metrics can be found in
+<strong>NRSA_Fish_Metric_Descriptions.pdf</strong> found in this
+package.</p>
+</div>
+<div id="subsets-of-metrics" class="section level2">
+<h2>2.2 Subsets of metrics</h2>
+<p>Suppose only tolerance-related and taxonomic metrics are of interest.
+Then we need only to run the <code>calcFishTolMets()</code> and
+<code>calcFishTaxMets()</code> functions. For each of these functions,
+if we include a variable for <code>nonnat</code> in the input data
+frame, native status versions of metrics will also be calculated. For
+the purposes of demonstration, we will included this non-native status
+variable for the tolerance metrics but not the taxonomy metrics.</p>
+<div id="taxonomy-metrics" class="section level3">
+<h3>Taxonomy metrics</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>outTax <span class="ot">&lt;-</span> <span class="fu">calcFishTaxMets</span>(fishEx, fishTaxa, <span class="at">sampID=</span><span class="st">&#39;UID&#39;</span>, <span class="at">dist=</span><span class="st">&#39;IS_DISTINCT&#39;</span>,</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>                          <span class="at">ct=</span><span class="st">&#39;FINAL_CT&#39;</span>, <span class="at">taxa_id=</span><span class="st">&#39;TAXA_ID&#39;</span>, <span class="at">family=</span><span class="st">&#39;FAMILY&#39;</span>, <span class="at">genus=</span><span class="st">&#39;GENUS&#39;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>                          <span class="at">comname=</span><span class="st">&#39;FINAL_NAME&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;Cannot calculate native status-based metrics without a non-native status variable. Will calculate other metrics.&quot;</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">names</span>(outTax)</span></code></pre></div>
+<pre><code>##  [1] &quot;CENTPIND&quot;   &quot;CYPRPIND&quot;   &quot;ICTAPIND&quot;   &quot;CENTPTAX&quot;   &quot;CYPRPTAX&quot;  
+##  [6] &quot;ICTAPTAX&quot;   &quot;CENTNTAX&quot;   &quot;CYPRNTAX&quot;   &quot;ICTANTAX&quot;   &quot;SALMPIND&quot;  
+## [11] &quot;SALMNTAX&quot;   &quot;SALMPTAX&quot;   &quot;CATOPIND&quot;   &quot;CATONTAX&quot;   &quot;CATOPTAX&quot;  
+## [16] &quot;RBCATOPIND&quot; &quot;RBCATONTAX&quot; &quot;RBCATOPTAX&quot; &quot;UID&quot;        &quot;TOTLNIND&quot;  
+## [21] &quot;TOTLNTAX&quot;</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">head</span>(outTax)</span></code></pre></div>
+<pre><code>##   CENTPIND CYPRPIND ICTAPIND CENTPTAX CYPRPTAX ICTAPTAX CENTNTAX CYPRNTAX
+## 1     3.03    93.33     0.00     9.09    54.55     0.00        1        6
+## 2     5.26    36.84    12.28     9.09    36.36     9.09        1        4
+##   ICTANTAX SALMPIND SALMNTAX SALMPTAX CATOPIND CATONTAX CATOPTAX RBCATOPIND
+## 1        0        0        0        0        0        0        0          0
+## 2        1        0        0        0        0        0        0          0
+##   RBCATONTAX RBCATOPTAX   UID TOTLNIND TOTLNTAX
+## 1          0          0 10000      330       11
+## 2          0          0 10001      228       11</code></pre>
+</div>
+<div id="tolerance-metrics" class="section level3">
+<h3>Tolerance metrics</h3>
+<p>For the tolerance metrics, we will suppose we only have trait
+information for or care about tolerance and habitat, so only metrics
+based on tolerance alone and tolerance in combination with habitat will
+be calculated. Since we will also specify the name of the non-native
+status variable in the input dataset, native versions of metrics will
+also be calculated.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>outTol <span class="ot">&lt;-</span> <span class="fu">calcFishTolMets</span>(fishEx, fishTaxa, <span class="at">sampID=</span><span class="st">&#39;UID&#39;</span>, <span class="at">dist=</span><span class="st">&#39;IS_DISTINCT&#39;</span>,</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>                          <span class="at">ct=</span><span class="st">&#39;FINAL_CT&#39;</span>, <span class="at">taxa_id=</span><span class="st">&#39;TAXA_ID&#39;</span>, <span class="at">tol=</span><span class="st">&#39;TOLERANCE_NRSA&#39;</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>                          <span class="at">tolval=</span><span class="st">&#39;TOL_VAL_EMAPW&#39;</span>, <span class="at">nonnat=</span><span class="st">&#39;NON_NATIVE&#39;</span>, </span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>                          <span class="at">habitat=</span><span class="st">&#39;HABITAT_NRSA&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;Optional traits are missing from the taxa list. Any tolerance metrics also using these traits will not be calculated: TROPHIC,MIGRATORY,VELOCITY&quot;</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">names</span>(outTol)</span></code></pre></div>
+<pre><code>##  [1] &quot;MTOLNTAX&quot;         &quot;NTOLNTAX&quot;         &quot;NTOLBENTNTAX&quot;     &quot;TOLRNTAX&quot;        
+##  [5] &quot;INTLNTAX&quot;         &quot;MTOLPIND&quot;         &quot;NTOLPIND&quot;         &quot;NTOLBENTPIND&quot;    
+##  [9] &quot;TOLRPIND&quot;         &quot;INTLPIND&quot;         &quot;MTOLPTAX&quot;         &quot;NTOLPTAX&quot;        
+## [13] &quot;NTOLBENTPTAX&quot;     &quot;TOLRPTAX&quot;         &quot;INTLPTAX&quot;         &quot;WTD_TV&quot;          
+## [17] &quot;NAT_MTOLNTAX&quot;     &quot;NAT_NTOLNTAX&quot;     &quot;NAT_NTOLBENTNTAX&quot; &quot;NAT_TOLRNTAX&quot;    
+## [21] &quot;NAT_INTLNTAX&quot;     &quot;NAT_MTOLPIND&quot;     &quot;NAT_NTOLPIND&quot;     &quot;NAT_NTOLBENTPIND&quot;
+## [25] &quot;NAT_TOLRPIND&quot;     &quot;NAT_INTLPIND&quot;     &quot;NAT_MTOLPTAX&quot;     &quot;NAT_NTOLPTAX&quot;    
+## [29] &quot;NAT_NTOLBENTPTAX&quot; &quot;NAT_TOLRPTAX&quot;     &quot;NAT_INTLPTAX&quot;     &quot;NAT_TOTLNIND&quot;    
+## [33] &quot;NAT_TOTLNTAX&quot;     &quot;NAT_WTD_TV&quot;       &quot;NAT_PTAX&quot;         &quot;NAT_PIND&quot;        
+## [37] &quot;UID&quot;              &quot;TOTLNIND&quot;         &quot;TOTLNTAX&quot;</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">head</span>(outTol)</span></code></pre></div>
+<pre><code>##   MTOLNTAX NTOLNTAX NTOLBENTNTAX TOLRNTAX INTLNTAX MTOLPIND NTOLPIND
+## 1        4        4            2        7        0    15.45    15.45
+## 2        5        6            3        5        1    21.93    26.32
+##   NTOLBENTPIND TOLRPIND INTLPIND MTOLPTAX NTOLPTAX NTOLBENTPTAX TOLRPTAX
+## 1         7.27    84.55     0.00    36.36    36.36        18.18    63.64
+## 2        18.42    73.68     4.39    45.45    54.55        27.27    45.45
+##   INTLPTAX WTD_TV NAT_MTOLNTAX NAT_NTOLNTAX NAT_NTOLBENTNTAX NAT_TOLRNTAX
+## 1     0.00   7.32            4            4                2            5
+## 2     9.09   7.39            5            6                3            5
+##   NAT_INTLNTAX NAT_MTOLPIND NAT_NTOLPIND NAT_NTOLBENTPIND NAT_TOLRPIND
+## 1            0        15.55        15.55             7.32        84.45
+## 2            1        21.93        26.32            18.42        73.68
+##   NAT_INTLPIND NAT_MTOLPTAX NAT_NTOLPTAX NAT_NTOLBENTPTAX NAT_TOLRPTAX
+## 1         0.00        44.44        44.44            22.22        55.56
+## 2         4.39        45.45        54.55            27.27        45.45
+##   NAT_INTLPTAX NAT_TOTLNIND NAT_TOTLNTAX NAT_WTD_TV NAT_PTAX NAT_PIND   UID
+## 1         0.00          328            9       7.31    81.82    99.39 10000
+## 2         9.09          228           11       7.39   100.00   100.00 10001
+##   TOTLNIND TOTLNTAX
+## 1      330       11
+## 2      228       11</code></pre>
+<hr />
+</div>
+</div>
+</div>
+<div id="calculate-only-fish-mmi-metrics-and-mmi" class="section level1">
+<h1>3 Calculate only fish MMI metrics and MMI</h1>
+<p>First, we will need to create a data frame containing the
+three-letter code for the 9 aggregated ecoregions and add that to the
+input data frame (<code>indata</code>). Then run the function
+<code>calcNRSA_FishMMImets()</code>, followed by
+<code>calcFishMMI()</code>.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>eco9 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">UID=</span><span class="fu">c</span>(<span class="dv">10000</span>,<span class="dv">10001</span>), <span class="at">ECO9=</span><span class="fu">c</span>(<span class="st">&#39;CPL&#39;</span>,<span class="st">&#39;WMT&#39;</span>),<span class="at">stringsAsFactors=</span>F)</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>fishEx<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="fu">merge</span>(fishEx, eco9, <span class="at">by=</span><span class="st">&#39;UID&#39;</span>)</span></code></pre></div>
+<div id="calculate-fish-mmi-metrics" class="section level2">
+<h2>3.1 Calculate fish MMI metrics</h2>
+<p>This function calculates metrics for only the MMI for the ecoregion
+of each site.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>outMets <span class="ot">&lt;-</span> <span class="fu">calcNRSA_FishMMImets</span>(fishEx<span class="fl">.1</span>,fishTaxa, <span class="st">&quot;UID&quot;</span>, <span class="at">ecoreg=</span><span class="st">&#39;ECO9&#39;</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>                                 ,<span class="at">dist=</span><span class="st">&quot;IS_DISTINCT&quot;</span>,<span class="at">ct=</span><span class="st">&quot;FINAL_CT&quot;</span></span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>                                 ,<span class="at">taxa_id=</span><span class="st">&#39;TAXA_ID&#39;</span>,<span class="at">tol=</span><span class="st">&#39;TOLERANCE_NRSA&#39;</span></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>                                 ,<span class="at">vel=</span><span class="st">&#39;VEL_NRSA&#39;</span>, <span class="at">habitat=</span><span class="st">&#39;HABITAT_NRSA&#39;</span></span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>                                 ,<span class="at">trophic=</span><span class="st">&#39;TROPHIC_NRSA&#39;</span>, <span class="at">migr=</span><span class="st">&#39;MIGR_NRSA&#39;</span>, <span class="at">nonnat=</span><span class="st">&#39;NON_NATIVE&#39;</span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>                                 ,<span class="at">reprod=</span><span class="st">&#39;REPROD_NRSA&#39;</span>, <span class="at">family=</span><span class="st">&#39;FAMILY&#39;</span>, <span class="at">genus=</span><span class="st">&#39;GENUS&#39;</span></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>                                 ,<span class="at">comname=</span><span class="st">&#39;FINAL_NAME&#39;</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a><span class="fu">head</span>(outMets)</span></code></pre></div>
+<pre><code>##   ECO9   UID ALIENPIND INTLMIGRPTAX INVPTAX LITHPIND LOTPIND NAT_TOTLNTAX
+## 1  CPL 10000      0.61            0   18.18    37.88   96.36            9
+## 2  WMT 10001        NA           NA      NA       NA      NA           11
+##   RBCATONTAX TOLRNTAX INTLLOTPTAX LITHPTAX NAT_CATOPIND NAT_HERBPTAX
+## 1          0        7          NA       NA           NA           NA
+## 2         NA        5        9.09    27.27            0         9.09
+##   NAT_MIGRPTAX NAT_PIND TOTLNIND
+## 1           NA       NA      330
+## 2            0      100      228</code></pre>
+<p>Note that there are missing values for metrics that are not included
+in the MMI for a given ecoregion. Any given UID should only have values
+for 8 metrics, which is the case in our example.</p>
+</div>
+<div id="calculate-nrsa-fish-mmi" class="section level2">
+<h2>3.2 Calculate NRSA fish MMI</h2>
+<p>Now use the output of the function above to calculate the fish MMI.
+To calculate the fish MMI, we have to supply the log10 of watershed area
+because some metrics in each MMI are adjusted for watershed size. Using
+the approach above, we create a data frame with this information and
+merge it with the <code>outMets</code> data frame.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>wsarea <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">UID=</span><span class="fu">c</span>(<span class="dv">10000</span>,<span class="dv">10001</span>), <span class="at">LWSAREA=</span><span class="fu">c</span>(<span class="fl">2.1</span>, <span class="fl">3.5</span>), <span class="at">stringsAsFactors=</span>F)</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>outMets<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="fu">merge</span>(outMets, wsarea, <span class="at">by=</span><span class="st">&#39;UID&#39;</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>outMMI <span class="ot">&lt;-</span> <span class="fu">calcFishMMI</span>(outMets<span class="fl">.1</span>, <span class="at">sampID=</span><span class="st">&#39;UID&#39;</span>, <span class="at">ecoreg=</span><span class="st">&#39;ECO9&#39;</span>, <span class="at">lwsarea=</span><span class="st">&#39;LWSAREA&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;Metric scores calculated.&quot;
+## [1] &quot;Done calculating MMI score.&quot;</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">head</span>(outMMI)</span></code></pre></div>
+<pre><code>##     UID ECO9 MMI_FISH ALIENPIND_WS_PT INTLLOTPTAX_WS_PT INTLMIGRPTAX_PT
+## 1 10000  CPL    43.55            9.36                NA               0
+## 2 10001  WMT    56.69              NA              4.56              NA
+##   INVPTAX_PT LITHPIND_WS_PT LITHPTAX_PT LOTPIND_WS_PT NAT_CATOPIND_PT
+## 1       1.52           6.36          NA          9.41              NA
+## 2         NA             NA         0.3            NA              10
+##   NAT_HERBPTAX_PT NAT_MIGRPTAX_WS_PT NAT_PIND_PT NAT_TOTLNTAX_WS_PT
+## 1              NA                 NA          NA               3.31
+## 2            7.27               3.22          10              10.00
+##   RBCATONTAX_PT TOLRNTAX_PT TOLRNTAX_WS_PT ALIENPIND_WS INTLLOTPTAX_WS
+## 1             0          NA           4.88        0.455             NA
+## 2            NA           0             NA           NA         -26.48
+##   LITHPIND_WS LOTPIND_WS NAT_MIGRPTAX_WS NAT_TOTLNTAX_WS TOLRNTAX_WS
+## 1       -8.07     24.533              NA          -7.965       1.894
+## 2          NA         NA         -37.377           6.387          NA</code></pre>
+<p>Again, note that there are missing values for the metrics and metric
+scores not included in the MMI for a given site. If there is a mix of
+ecoregions in the input dataset, there will be these missing values for
+some metrics and metric scores.</p>
+</div>
+</div>
+<div id="assign-nrsa-fish-condition" class="section level1">
+<h1>4 Assign NRSA fish condition</h1>
+<p>Using the output from , we can now assign fish assemblage condition
+to these sites using the function. Additional variables, including
+watershed area (km2) and total number of individuals collected would be
+required to assign condition only if we had missing MMI values. Since we
+do not, we do not need to add these variables. See the example for to
+see examples for that scenario.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>outCond <span class="ot">&lt;-</span> <span class="fu">assignFishCondition</span>(outMMI, <span class="at">sampID=</span><span class="st">&#39;UID&#39;</span>, <span class="at">ecoreg=</span><span class="st">&#39;ECO9&#39;</span>, <span class="at">mmi=</span><span class="st">&#39;MMI_FISH&#39;</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>outCond</span></code></pre></div>
+<pre><code>##     UID FISH_MMI_COND ECO9 MMI_FISH ALIENPIND_WS_PT INTLLOTPTAX_WS_PT
+## 1 10000          Poor  CPL    43.55            9.36                NA
+## 2 10001          Poor  WMT    56.69              NA              4.56
+##   INTLMIGRPTAX_PT INVPTAX_PT LITHPIND_WS_PT LITHPTAX_PT LOTPIND_WS_PT
+## 1               0       1.52           6.36          NA          9.41
+## 2              NA         NA             NA         0.3            NA
+##   NAT_CATOPIND_PT NAT_HERBPTAX_PT NAT_MIGRPTAX_WS_PT NAT_PIND_PT
+## 1              NA              NA                 NA          NA
+## 2              10            7.27               3.22          10
+##   NAT_TOTLNTAX_WS_PT RBCATONTAX_PT TOLRNTAX_PT TOLRNTAX_WS_PT ALIENPIND_WS
+## 1               3.31             0          NA           4.88        0.455
+## 2              10.00            NA           0             NA           NA
+##   INTLLOTPTAX_WS LITHPIND_WS LOTPIND_WS NAT_MIGRPTAX_WS NAT_TOTLNTAX_WS
+## 1             NA       -8.07     24.533              NA          -7.965
+## 2         -26.48          NA         NA         -37.377           6.387
+##   TOLRNTAX_WS
+## 1       1.894
+## 2          NA</code></pre>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
