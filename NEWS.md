@@ -1,3 +1,7 @@
+# aquametBio 2.2.2
+
+3/22/2024 Corrected zooplankton MMI thresholds back to original values.
+
 # aquametBio 2.2.1
 
 3/1/2024 Updated zooplankton MMI thresholds.

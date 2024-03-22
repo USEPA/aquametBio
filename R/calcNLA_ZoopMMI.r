@@ -153,8 +153,8 @@ calcNLA_ZoopMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', totlnind = 'T
   ## Set condition class for each sample, which is based on ECO_BIO region
   # First create a table of thresholds by ECO_BIO
   condTholds <- data.frame(ECO_BIO = c('EHIGH', 'CPL', 'WMTNS', 'PLAINS', 'UMW'),
-                           fp = c(60.6, 48.3, 55.3, 32.6, 56.2),
-                           gf = c(70.3, 58, 65, 42.3, 65.9))
+                           fp = c(60.03, 53.77, 51.32, 28.17, 52.03),
+                           gf = c(73.595, 59.42, 60.78, 36.72, 63.68))
 
   ## Merge MMI scores with thresholds by ECO9 region
   cond.mmi <- merge(mmi.scores,condTholds, by='ECO_BIO')
