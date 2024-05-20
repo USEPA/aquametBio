@@ -179,7 +179,7 @@ zonwIn.nn <- merge(zpCts.zonw.all, states, by = 'UID')
 zonwIn.nn$NON_NATIVE_TAXON <- with(zonwIn.nn, 
                                           ifelse(is.na(NON_NATIVE), 0,
                                             ifelse(NON_NATIVE=='ALL', 1,
-                                              ifelse(grep(STATE, NON_NATIVE), 1, 0)))) 
+                                              ifelse(grepl(STATE, NON_NATIVE), 1, 0)))) 
 
 zonwIn.nn <- zonwIn.nn[, c('UID', 'SAMPLE_TYPE', 'TAXA_ID', 
                                            'COUNT', 'BIOMASS', 'DENSITY',
