@@ -94,10 +94,6 @@ test_that("MMI scores and condition correct",
                                              varying = varLong.1, times = varLong.1, timevar = 'PARAMETER',
                                              v.names = 'RESULT')
             zoopMMI_test.long <- subset(zoopMMI_test.long, !is.na(RESULT))
-            print(unique(zoopMMI_test.long$PARAMETER))
-            print(nrow(zoopMMI_test.long))
-            print(unique(testOut.long$PARAMETER))
-            print(nrow(testOut.long))
             compOut <- merge(zoopMMI_test.long, testOut.long, by=c('UID','PARAMETER'))
             compOut.cond <- subset(compOut, PARAMETER=='ZOOP_MMI_COND')
             expect_equal(compOut.cond$RESULT.x,compOut.cond$RESULT.y)
