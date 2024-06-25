@@ -90,6 +90,7 @@ test_that("MMI scores and condition correct",
             testOut.long <- subset(testOut.long, !is.na(RESULT))
 
             varLong.1 <- names(zoopMMI_test)[names(zoopMMI_test) %nin% c('UID','ECO_BIO')]
+
             zoopMMI_test.long <- reshape(zoopMMI_test, idvar = 'UID', direction = 'long',
                                              varying = varLong.1, times = varLong.1, timevar = 'PARAMETER',
                                              v.names = 'RESULT')

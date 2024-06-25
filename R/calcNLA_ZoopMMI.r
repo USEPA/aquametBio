@@ -164,7 +164,6 @@ calcNLA_ZoopMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', totlnind = 'T
   cond.mmi$RESULT <- with(cond.mmi, ifelse(is.na(MMI_ZOOP), 'Not Assessed',
                                            ifelse(MMI_ZOOP>=gf, 'Good',
                                                   ifelse(MMI_ZOOP<fp, 'Poor', 'Fair'))))
-
   ww <- rbind(subset(scored.mets, select=c('SAMPID', 'ECO_BIO', 'PARAMETER', 'RESULT'))
               ,subset(mmi.scores, select=c('SAMPID', 'ECO_BIO', 'PARAMETER', 'RESULT'))
               ,subset(cond.mmi, select=c('SAMPID', 'ECO_BIO', 'PARAMETER', 'RESULT')))
