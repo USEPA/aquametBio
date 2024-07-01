@@ -19,29 +19,36 @@
 #' @return A data frame with \emph{sampID} variables and the metric containing
 #' the % individuals in the
 #' dominant (topN) taxa
-zoopDominance <- function(df, sampID = 'UID', topN = 1, varIn, taxa_id){
+zoopDominance <- function(df, sampID = "UID", topN = 1, varIn, taxa_id) {
+  df.long <- reshape(df,
+    idvar = c(sampID, taxa_id), direction = "long",
+    varying = varIn, timevar = "variable",
+    v.names = "value", times = varIn
+  ) |>
+    subset(select = c(sampID, taxa_id, "variable", "value"))
 
-  df.long <- reshape(df, idvar = c(sampID, taxa_id), direction = 'long',
-                     varying = varIn, timevar = 'variable',
-                     v.names = 'value', times = varIn) |>
-    subset(select = c(sampID, taxa_id, 'variable', 'value'))
-
-  rr <- aggregate(x = list(TOTSUM = df.long[, 'value']),
-                  by = df.long[sampID],
-                  FUN = function(x){sum(x, na.rm=TRUE)})
+  rr <- aggregate(
+    x = list(TOTSUM = df.long[, "value"]),
+    by = df.long[sampID],
+    FUN = function(x) {
+      sum(x, na.rm = TRUE)
+    }
+  )
 
   ss <- merge(df.long, rr, by = sampID)
 
-  tt <- aggregate(x = list(domN = ss[, 'value']),
-                  by = ss[sampID],
-                  function(x){
-                    sum(x[order(x, decreasing=TRUE)[1:topN]],
-                        na.rm=T)
-                  }
+  tt <- aggregate(
+    x = list(domN = ss[, "value"]),
+    by = ss[sampID],
+    function(x) {
+      sum(x[order(x, decreasing = TRUE)[1:topN]],
+        na.rm = T
+      )
+    }
   )
-  uu <- merge(tt, unique(ss[, c(sampID,'TOTSUM')]), by = sampID)
-  uu$dompind <- with(uu, round(domN/TOTSUM*100, 1))
-  uu <- subset(uu, select=c(sampID, 'dompind'))
+  uu <- merge(tt, unique(ss[, c(sampID, "TOTSUM")]), by = sampID)
+  uu$dompind <- with(uu, round(domN / TOTSUM * 100, 1))
+  uu <- subset(uu, select = c(sampID, "dompind"))
 
   return(uu)
 }

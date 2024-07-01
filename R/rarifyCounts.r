@@ -31,18 +31,18 @@
 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
-rarifyCounts <- function(inCts, sampID='UID', abund='COUNT',
+rarifyCounts <- function(inCts, sampID = "UID", abund = "COUNT",
                          subsize = NULL,
-                         seed = NULL){
-  start.time=proc.time()
-  inCts <- subset(inCts, !is.na(eval(as.name(abund))) & as.numeric(eval(as.name(abund)))>0)
+                         seed = NULL) {
+  start.time <- proc.time()
+  inCts <- subset(inCts, !is.na(eval(as.name(abund))) & as.numeric(eval(as.name(abund))) > 0)
   inCts[, abund] <- as.numeric(inCts[, abund])
 
-  for(i in 1:length(sampID)){
-    if(i==1){
+  for (i in 1:length(sampID)) {
+    if (i == 1) {
       inCts$sampid <- inCts[, sampID[i]]
-    }else{
-      inCts$sampid <- paste(inCts[, 'sampid'], inCts[, sampID[i]], sep='.')
+    } else {
+      inCts$sampid <- paste(inCts[, "sampid"], inCts[, sampID[i]], sep = ".")
     }
   }
 
@@ -54,19 +54,19 @@ rarifyCounts <- function(inCts, sampID='UID', abund='COUNT',
   outCts[, abund] <- 0
   # loop over samples, rarify each one in turn
 
-  for(i in 1:nsamp) {
+  for (i in 1:nsamp) {
     # extract current sample
     isamp <- samps[i]
     flush.console()
     print(as.character(isamp))
-    onesamp <- inCts[inCts$sampid==isamp,]
+    onesamp <- inCts[inCts$sampid == isamp, ]
     onesamp <- data.frame(onesamp, row.id = seq(1, dim(onesamp)[[1]])) # add sequence numbers as a new column
     # expand the sample into a vector of individuals
-    samp.expand <- rep(x=onesamp$row.id, times=onesamp[, abund])
+    samp.expand <- rep(x = onesamp$row.id, times = onesamp[, abund])
     nbug <- length(samp.expand) # number of bugs in sample
 
     # If seed supplied, set random seed
-    if(!is.null(seed)){
+    if (!is.null(seed)) {
       set.seed(seed)
     }
     # vector of uniform random numbers
@@ -75,23 +75,23 @@ rarifyCounts <- function(inCts, sampID='UID', abund='COUNT',
     samp.ex2 <- samp.expand[order(ranvec)]
     # keep only the first piece of ranvec, of the desired fixed count size
     # if there are fewer bugs than the fixed count size, keep them all
-    if(nbug > subsize){
+    if (nbug > subsize) {
       subsamp <- samp.ex2[1:subsize]
-    }else{
+    } else {
       subsamp <- samp.ex2
-      }
+    }
     # tabulate bugs in subsample
     subcnt <- table(subsamp)
     # define new subsample frame and fill it with new reduced counts
     newsamp <- onesamp
     newsamp[, abund] <- 0
-    newsamp[match(newsamp$row.id, names(subcnt), nomatch = 0)>0, abund] <- as.vector(subcnt)
-    outCts[outCts$sampid==isamp, abund] <- newsamp[, abund]
-  }; # end of sample loop
+    newsamp[match(newsamp$row.id, names(subcnt), nomatch = 0) > 0, abund] <- as.vector(subcnt)
+    outCts[outCts$sampid == isamp, abund] <- newsamp[, abund]
+  } # end of sample loop
 
   elaps <- proc.time() - start.time
-  print(c("Rarefaction complete. Number of samples = ", nsamp), quote=F)
-  print(c("Execution time (sec)= ", elaps[1]), quote=F)
+  print(c("Rarefaction complete. Number of samples = ", nsamp), quote = F)
+  print(c("Execution time (sec)= ", elaps[1]), quote = F)
 
   outCts$sampid <- NULL
   return(outCts)

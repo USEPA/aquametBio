@@ -17,55 +17,58 @@
 #' @return A data frame with \emph{sampID} variables and the metric
 #' containing the copepod ratio metrics
 calcZoopCopeMetrics <- function(indata, sampID,
-                                calaIn, cyclIn, cladIn){
-
+                                calaIn, cyclIn, cladIn) {
   indata <- as.data.frame(indata)
 
-  if(length(calaIn) != length(cyclIn)|
-     length(calaIn) != length(cladIn)){
+  if (length(calaIn) != length(cyclIn) |
+    length(calaIn) != length(cladIn)) {
     print("calaIn, cyclIn, and cladIn must all contain the same
           number of variables.")
     return(NULL)
   }
 
   necVars <- c(sampID, calaIn, cyclIn, cladIn)
-  if(any(necVars %nin% names(indata))){
+  if (any(necVars %nin% names(indata))) {
     msgTraits <- which(necVars %nin% names(indata))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
-  }else{
+  } else {
     indata[, c(calaIn, cyclIn, cladIn)] <- lapply(indata[, c(calaIn, cyclIn, cladIn)], as.numeric)
   }
   # Fill in zeros where missing values exist - this follows
   # what was done in NLA 2017
   indata[, c(calaIn, cyclIn, cladIn)] <- lapply(indata[, c(calaIn, cyclIn, cladIn)],
-                                                FUN = function(x){ifelse(is.na(x), 0, x)})
+    FUN = function(x) {
+      ifelse(is.na(x), 0, x)
+    }
+  )
 
   samps <- unique(indata[, sampID])
 
-  column_names <- c(sampID, 'PARAMETER', 'RESULT')
+  column_names <- c(sampID, "PARAMETER", "RESULT")
 
   metsOut <- data.frame(matrix(nrow = 0, ncol = length(column_names)))
   colnames(metsOut) <- column_names
 
-  for(i in 1:length(calaIn)){
-
+  for (i in 1:length(calaIn)) {
     temp <- indata
-    temp$RESULT <- temp[, calaIn[i]]/(temp[, cyclIn[i]] + temp[, cladIn[i]])
-    temp$RESULT <- ifelse(is.na(temp$RESULT)|is.infinite(temp$RESULT), 0, temp$RESULT)
+    temp$RESULT <- temp[, calaIn[i]] / (temp[, cyclIn[i]] + temp[, cladIn[i]])
+    temp$RESULT <- ifelse(is.na(temp$RESULT) | is.infinite(temp$RESULT), 0, temp$RESULT)
     # to rename each one by the suffix on the input variables,
     # first search for _ in the input names
     match_ <- unlist(gregexpr("\\_", calaIn[i]))
     matchNum <- unlist(gregexpr("[[:digit:]]", calaIn[i]))
 
-    if(matchNum[1]>0){
-      temp$PARAMETER <- paste("COPE_RATIO", substring(calaIn[i], matchNum[1], nchar(calaIn[i])), sep='_')
-    }else{
+    if (matchNum[1] > 0) {
+      temp$PARAMETER <- paste("COPE_RATIO", substring(calaIn[i], matchNum[1], nchar(calaIn[i])), sep = "_")
+    } else {
       temp$PARAMETER <- paste0("COPE_RATIO", substring(calaIn[i], max(match_), nchar(calaIn[i])))
     }
 
-    temp <- temp[, c(sampID, 'PARAMETER', 'RESULT')]
+    temp <- temp[, c(sampID, "PARAMETER", "RESULT")]
     metsOut <- rbind(metsOut, temp)
   }
 

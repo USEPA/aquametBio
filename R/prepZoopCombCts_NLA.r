@@ -48,38 +48,41 @@
 #' variations on the count, biomass, and density variables.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
-prepZoopCombCts_NLA <- function(inCts, sampID='UID',
-                            sampType = 'SAMPLE_TYPE',
-                            typeFine = 'ZOFN', typeCoarse='ZOCN',
-                            ct='COUNT', biomass = 'BIOMASS',
-                            density = NULL, taxa_id='TAXA_ID',
-                            lr_taxon = NULL){
-
+prepZoopCombCts_NLA <- function(inCts, sampID = "UID",
+                                sampType = "SAMPLE_TYPE",
+                                typeFine = "ZOFN", typeCoarse = "ZOCN",
+                                ct = "COUNT", biomass = "BIOMASS",
+                                density = NULL, taxa_id = "TAXA_ID",
+                                lr_taxon = NULL) {
   inCts <- as.data.frame(inCts)
 
   necVars <- c(sampID, ct, biomass, sampType, taxa_id)
-  if(any(necVars %nin% names(inCts))){
+  if (any(necVars %nin% names(inCts))) {
     msgTraits <- which(necVars %nin% names(inCts))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
   }
 
-  if(!is.null(density)){
-    if(density %nin% names(inCts)){
+  if (!is.null(density)) {
+    if (density %nin% names(inCts)) {
       print("Missing density variable in input data frame.")
     }
   }
 
   necTypes <- c(typeCoarse, typeFine)
-  if(any(necTypes %nin% inCts[, sampType])){
+  if (any(necTypes %nin% inCts[, sampType])) {
     msgType <- which(necTypes %nin% inCts[, sampType])
-    print(paste("Missing sample type(s) in input data frame:",
-                paste(necTypes[msgType], collapse=', ')))
+    print(paste(
+      "Missing sample type(s) in input data frame:",
+      paste(necTypes[msgType], collapse = ", ")
+    ))
   }
 
-  if(!is.null(lr_taxon)){
-    if(lr_taxon %nin% names(inCts)){
+  if (!is.null(lr_taxon)) {
+    if (lr_taxon %nin% names(inCts)) {
       print("Missing variable named in lr_taxon argument - either
           change argument or add variable to input data.")
 
@@ -87,50 +90,65 @@ prepZoopCombCts_NLA <- function(inCts, sampID='UID',
     }
   }
 
-  inCts <- subset(inCts, select=names(inCts) %in% c(sampID, sampType, ct,
-                                                    biomass, density, taxa_id,
-                                                    lr_taxon))
+  inCts <- subset(inCts, select = names(inCts) %in% c(
+    sampID, sampType, ct,
+    biomass, density, taxa_id,
+    lr_taxon
+  ))
 
-  if(!is.null(density)){
+  if (!is.null(density)) {
     inCts[, c(biomass, density, ct)] <- lapply(inCts[, c(biomass, density, ct)], as.numeric)
     inCts.nonzero <- subset(inCts, !is.na(eval(as.name(ct))))
 
-    outCts <- aggregate(x = list(COUNT = inCts.nonzero[, ct],
-                                 BIOMASS = inCts.nonzero[, biomass],
-                                 DENSITY = inCts.nonzero[, density]),
-                        by = inCts.nonzero[, c(sampID, taxa_id)],
-                        FUN = function(x){sum(x, na.rm=TRUE)})
-    names(outCts)[names(outCts)=='COUNT'] <- ct
-    names(outCts)[names(outCts)=='BIOMASS'] <- biomass
-    names(outCts)[names(outCts)=='DENSITY'] <- density
-
-  }else{
+    outCts <- aggregate(
+      x = list(
+        COUNT = inCts.nonzero[, ct],
+        BIOMASS = inCts.nonzero[, biomass],
+        DENSITY = inCts.nonzero[, density]
+      ),
+      by = inCts.nonzero[, c(sampID, taxa_id)],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
+    names(outCts)[names(outCts) == "COUNT"] <- ct
+    names(outCts)[names(outCts) == "BIOMASS"] <- biomass
+    names(outCts)[names(outCts) == "DENSITY"] <- density
+  } else {
     inCts[, c(biomass, ct)] <- lapply(inCts[, c(biomass, ct)], as.numeric)
     inCts.nonzero <- subset(inCts, !is.na(eval(as.name(ct))))
 
-    outCts <- aggregate(x = list(COUNT = inCts.nonzero[, ct],
-                                 BIOMASS = inCts.nonzero[, biomass]),
-                        by = inCts.nonzero[, c(sampID, taxa_id)],
-                        FUN = function(x){sum(x, na.rm=TRUE)})
-    names(outCts)[names(outCts)=='COUNT'] <- ct
-    names(outCts)[names(outCts)=='BIOMASS'] <- biomass
+    outCts <- aggregate(
+      x = list(
+        COUNT = inCts.nonzero[, ct],
+        BIOMASS = inCts.nonzero[, biomass]
+      ),
+      by = inCts.nonzero[, c(sampID, taxa_id)],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
+    names(outCts)[names(outCts) == "COUNT"] <- ct
+    names(outCts)[names(outCts) == "BIOMASS"] <- biomass
   }
 
-  if(!is.null(lr_taxon)){
-
+  if (!is.null(lr_taxon)) {
     inCts.lr <- subset(inCts, !is.na(eval(as.name(lr_taxon))),
-                       select = names(inCts) %in% c(sampID, taxa_id, lr_taxon))
+      select = names(inCts) %in% c(sampID, taxa_id, lr_taxon)
+    )
 
-    outCts.lr <- aggregate(x = list(LARGE_RARE_TAXA = inCts.lr[, lr_taxon]),
-                       by = inCts.lr[, c(sampID, taxa_id)],
-                       FUN = function(x){max(x, na.rm=TRUE)})
+    outCts.lr <- aggregate(
+      x = list(LARGE_RARE_TAXA = inCts.lr[, lr_taxon]),
+      by = inCts.lr[, c(sampID, taxa_id)],
+      FUN = function(x) {
+        max(x, na.rm = TRUE)
+      }
+    )
 
-    outCts <- merge(outCts, outCts.lr, by = c(sampID, taxa_id), all=TRUE)
-
+    outCts <- merge(outCts, outCts.lr, by = c(sampID, taxa_id), all = TRUE)
   }
 
-  outCts[, sampType] <- 'ZONW'
+  outCts[, sampType] <- "ZONW"
 
   return(outCts)
-
 }

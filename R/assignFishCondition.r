@@ -59,74 +59,83 @@
 #'  fishCond
 #' }
 #'
-assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_FISH',
-                                wsarea='WSAREA', totlnind='TOTLNIND'){
-
+assignFishCondition <- function(inMMI, sampID = "UID", ecoreg = "ECOREG", mmi = "MMI_FISH",
+                                wsarea = "WSAREA", totlnind = "TOTLNIND") {
   inMMI.1 <- inMMI
 
   # Separate necessary traits by whether or not there are missing mmi values
   # If any missing values, we need totlnind and wsarea as well
-  if(any(is.na(inMMI.1[,mmi]))){
-    necTraits <- c(sampID,ecoreg,wsarea,totlnind,mmi)
-
-  }else{
-    necTraits <- c(sampID,ecoreg,mmi)
+  if (any(is.na(inMMI.1[, mmi]))) {
+    necTraits <- c(sampID, ecoreg, wsarea, totlnind, mmi)
+  } else {
+    necTraits <- c(sampID, ecoreg, mmi)
   }
 
-  if(any(necTraits %nin% names(inMMI.1))){
+  if (any(necTraits %nin% names(inMMI.1))) {
     msgTraits <- which(necTraits %nin% names(inMMI.1))
-    print(paste("Some of the traits are missing from the input data frame. The following are required for metric calculations to run:"
-                , necTraits[msgTraits]))
+    print(paste(
+      "Some of the traits are missing from the input data frame. The following are required for metric calculations to run:",
+      necTraits[msgTraits]
+    ))
     return(NULL)
   }
 
   # Make sure variables are numeric and rename area and total individuals
-  if(any(is.na(inMMI.1[,mmi]))){
-
-     names(inMMI.1)[names(inMMI.1)==wsarea] <- 'WSAREA'
-     names(inMMI.1)[names(inMMI.1)==totlnind] <- 'TOTLNIND'
+  if (any(is.na(inMMI.1[, mmi]))) {
+    names(inMMI.1)[names(inMMI.1) == wsarea] <- "WSAREA"
+    names(inMMI.1)[names(inMMI.1) == totlnind] <- "TOTLNIND"
 
     inMMI.1$WSAREA <- as.numeric(inMMI.1$WSAREA)
     inMMI.1$TOTLNIND <- as.numeric(inMMI.1$TOTLNIND)
   }
 
-  names(inMMI.1)[names(inMMI.1)==mmi] <- 'MMI_FISH'
+  names(inMMI.1)[names(inMMI.1) == mmi] <- "MMI_FISH"
 
   inMMI.1$MMI_FISH <- as.numeric(inMMI.1$MMI_FISH)
 
   # Check to make sure ecoregion variable is included in the input data frame
-  ecoCk <- unique(inMMI.1[,ecoreg])
-  ecos <- c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER')
-  if(any(ecoCk %nin% ecos)){
+  ecoCk <- unique(inMMI.1[, ecoreg])
+  ecos <- c("CPL", "NAP", "NPL", "SAP", "SPL", "TPL", "UMW", "WMT", "XER")
+  if (any(ecoCk %nin% ecos)) {
     msgEco <- which(ecoCk %nin% ecos)
-    print(paste("These ecoregions are not valid: "
-                ,paste(ecoCk[msgEco],collapse=',')))
+    print(paste(
+      "These ecoregions are not valid: ",
+      paste(ecoCk[msgEco], collapse = ",")
+    ))
     return(NULL)
   }
 
   ## Now we need to set condition class for each sample, which is based on ECO9
   # First create a table of thresholds by ECO9
-  cond.tholds <- data.frame(ECO9=c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER')
-                            ,gf=c(57.3,57.6,46.3,60.3,50.2,58.0,39.8,75.9,76.8)
-                            ,fp=c(46.8,47.1,35.8,49.8,39.7,47.5,29.3,65.4,66.2),stringsAsFactors=FALSE)
+  cond.tholds <- data.frame(
+    ECO9 = c("CPL", "NAP", "NPL", "SAP", "SPL", "TPL", "UMW", "WMT", "XER"),
+    gf = c(57.3, 57.6, 46.3, 60.3, 50.2, 58.0, 39.8, 75.9, 76.8),
+    fp = c(46.8, 47.1, 35.8, 49.8, 39.7, 47.5, 29.3, 65.4, 66.2), stringsAsFactors = FALSE
+  )
 
   # Need to account for cases where no missing MMI_FISH
-  cond.mmi.1 <- merge(inMMI.1, cond.tholds, by.x=ecoreg, by.y='ECO9')
-  cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1,
-                                   ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good',
-                                       ifelse(MMI_FISH < fp, 'Poor',
-                                         ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA))))
+  cond.mmi.1 <- merge(inMMI.1, cond.tholds, by.x = ecoreg, by.y = "ECO9")
+  cond.mmi.1$FISH_MMI_COND <- with(
+    cond.mmi.1,
+    ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, "Good",
+      ifelse(MMI_FISH < fp, "Poor",
+        ifelse(MMI_FISH < gf & MMI_FISH >= fp, "Fair", NA)
+      )
+    )
+  )
 
-  cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1, ifelse(!is.na(FISH_MMI_COND) & MMI_FISH!=0, FISH_MMI_COND,
-                                                  ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), 'Not Assessed',
-                                                      ifelse((is.na(MMI_FISH)|MMI_FISH==0) & TOTLNIND==0 & WSAREA > 2, 'Poor',
-                                                         'Not Assessed'))))
-  cond.mmi.1 <- subset(cond.mmi.1, select=c(-gf, -fp))
+  cond.mmi.1$FISH_MMI_COND <- with(cond.mmi.1, ifelse(!is.na(FISH_MMI_COND) & MMI_FISH != 0, FISH_MMI_COND,
+    ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), "Not Assessed",
+      ifelse((is.na(MMI_FISH) | MMI_FISH == 0) & TOTLNIND == 0 & WSAREA > 2, "Poor",
+        "Not Assessed"
+      )
+    )
+  ))
+  cond.mmi.1 <- subset(cond.mmi.1, select = c(-gf, -fp))
 
 
-  condOut <- subset(cond.mmi.1, select = c(sampID, 'FISH_MMI_COND'))
+  condOut <- subset(cond.mmi.1, select = c(sampID, "FISH_MMI_COND"))
   condOut <- merge(condOut, inMMI, by = c(sampID))
 
   return(condOut)
-
 }

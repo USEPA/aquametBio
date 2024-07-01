@@ -78,98 +78,121 @@
 #' in this package, which contains metric descriptions.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @examples
-#'   \dontrun{
-#'   data(fishEx)
-#'   head(fishEx)
-#'   head(fishTaxa)
-#'   # Calculate metrics for bentIn, using the taxonomy in the count file as is
-#'   fishMetrics <- calcAllFishMets(indf=fishEx, inTaxa=fishTaxa,
-#'                      sampID='UID',dist='IS_DISTINCT',
-#'                      ct='FINAL_CT',anomct='ANOM_CT',taxa_id='TAXA_ID',
-#'                      tol='TOLERANCE_NRSA',tolval='TOL_VAL_EMAPW',vel='VEL_NRSA',
-#'                      habitat='HABITAT_NRSA',trophic='TROPHIC_NRSA',
-#'                      migr='MIGR_NRSA',nonnat='NON_NATIVE',reprod='REPROD_NRSA',
-#'                      temp='TEMP_NRSA',family='FAMILY',genus='GENUS',
-#'                      comname='FINAL_NAME')
-#'                      head(fishMetrics)}
-#' @keywords survey
-calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
-                            ct="TOTAL",anomct='ANOM_CT',taxa_id='TAXA_ID',tol='TOLERANCE'
-                            , tolval='TOL_VAL', vel='VELOCITY', habitat='HABITAT'
-                            , trophic='TROPHIC', migr='MIGRATORY', nonnat='NONNATIVE'
-                            , reprod='REPROD', temp='TEMP', family='FAMILY', genus='GENUS'
-                            , comname='NAME'){
-# Convert incoming data to data frames just in case they are tibbles or data.tables
+#' data(fishEx)
+#' head(fishEx)
+#' head(fishTaxa)
+#' # Calculate metrics for bentIn, using the taxonomy in the count file as is
+#' fishMetrics <- calcAllFishMets(
+#'   indf = fishEx, inTaxa = fishTaxa,
+#'   sampID = "UID", dist = "IS_DISTINCT",
+#'   ct = "FINAL_CT", anomct = "ANOM_CT", taxa_id = "TAXA_ID",
+#'   tol = "TOLERANCE_NRSA", tolval = "TOL_VAL_EMAPW", vel = "VEL_NRSA",
+#'   habitat = "HABITAT_NRSA", trophic = "TROPHIC_NRSA",
+#'   migr = "MIGR_NRSA", nonnat = "NON_NATIVE", reprod = "REPROD_NRSA",
+#'   temp = "TEMP_NRSA", family = "FAMILY", genus = "GENUS",
+#'   comname = "FINAL_NAME"
+#' )
+#' head(fishMetrics)
+calcAllFishMets <- function(indf, inTaxa = NULL, sampID = "UID", dist = "IS_DISTINCT",
+                            ct = "TOTAL", anomct = "ANOM_CT", taxa_id = "TAXA_ID",
+                            tol = "TOLERANCE", tolval = "TOL_VAL", vel = "VELOCITY",
+                            habitat = "HABITAT", trophic = "TROPHIC",
+                            migr = "MIGRATORY", nonnat = "NONNATIVE",
+                            reprod = "REPROD", temp = "TEMP", family = "FAMILY",
+                            genus = "GENUS", comname = "NAME") {
+  # Convert incoming data to data frames just in case they are tibbles or data.tables
   indf <- as.data.frame(indf)
 
-  if(is.null(inTaxa)) {
+  if (is.null(inTaxa)) {
     inTaxa <- as.data.frame(fishTaxa)
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
   }
 
   ctVars <- c(sampID, dist, ct, taxa_id, anomct, nonnat)
-  if(any(ctVars %nin% names(indf))){
+  if (any(ctVars %nin% names(indf))) {
     msgTraits <- which(ctVars %nin% names(indf))
-    print(paste("Missing variables in input count data frame:",paste(ctVars[msgTraits],collapse=',')))
+    print(paste("Missing variables in input count data frame:", paste(ctVars[msgTraits], collapse = ",")))
     return(NULL)
   }
 
   # Taxonomy and traits checks
-  necTraits <- c(taxa_id,tol, tolval, vel, habitat, trophic, migr,
-                 reprod, temp, family, genus, comname)
-  if(any(necTraits %nin% names(inTaxa))){
+  necTraits <- c(
+    taxa_id, tol, tolval, vel, habitat, trophic, migr,
+    reprod, temp, family, genus, comname
+  )
+  if (any(necTraits %nin% names(inTaxa))) {
     msgTraits <- which(necTraits %nin% names(inTaxa))
     print(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:", necTraits[msgTraits]))
     return(NULL)
   }
 
-  inTaxa <- subset(inTaxa,select=names(inTaxa) %in% necTraits)
+  inTaxa <- subset(inTaxa, select = names(inTaxa) %in% necTraits)
 
-  taxMet <- calcFishTaxMets(indf,inTaxa,sampID,dist,ct,taxa_id,nonnat,family,genus,comname)
+  taxMet <- calcFishTaxMets(indf, inTaxa, sampID, dist, ct, taxa_id, nonnat, family, genus, comname)
   varLong <- names(taxMet)[names(taxMet) %nin% c(sampID)]
-  tax.1 <- reshape(taxMet, idvar = sampID, direction = 'long', varying = varLong,
-                   v.names = 'value', timevar = 'variable', times = varLong)
+  tax.1 <- reshape(taxMet,
+    idvar = sampID, direction = "long", varying = varLong,
+    v.names = "value", timevar = "variable", times = varLong
+  )
   print("Done calculating taxonomic metrics.")
 
-  tolMet <- calcFishTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,tol,tolval,
-                            vel,habitat,trophic,migr,nonnat)
+  tolMet <- calcFishTolMets(
+    indf, inTaxa, sampID, dist, ct, taxa_id, tol, tolval,
+    vel, habitat, trophic, migr, nonnat
+  )
   varLong <- names(tolMet)[names(tolMet) %nin% c(sampID)]
-  tol.1 <- reshape(tolMet, idvar = sampID, direction = 'long', varying = varLong,
-                   v.names = 'value', timevar = 'variable', times = varLong)
+  tol.1 <- reshape(tolMet,
+    idvar = sampID, direction = "long", varying = varLong,
+    v.names = "value", timevar = "variable", times = varLong
+  )
   print("Done calculating tolerance metrics.")
 
-  tropMet <- calcFishTrophicMets(indf,inTaxa,sampID,dist,ct,taxa_id,habitat
-                                 ,trophic,nonnat)
+  tropMet <- calcFishTrophicMets(
+    indf, inTaxa, sampID, dist, ct, taxa_id, habitat,
+    trophic, nonnat
+  )
   varLong <- names(tropMet)[names(tropMet) %nin% c(sampID)]
-  trop.1 <- reshape(tropMet, idvar = sampID, direction = 'long', varying = varLong,
-                   v.names = 'value', timevar = 'variable', times = varLong)
+  trop.1 <- reshape(tropMet,
+    idvar = sampID, direction = "long", varying = varLong,
+    v.names = "value", timevar = "variable", times = varLong
+  )
   print("Done calculating trophic metrics.")
 
-  othMet <- calcFishOtherMets(indf,inTaxa,sampID,dist,ct,taxa_id,vel,migr
-                              ,reprod,temp,nonnat)
+  othMet <- calcFishOtherMets(
+    indf, inTaxa, sampID, dist, ct, taxa_id, vel, migr,
+    reprod, temp, nonnat
+  )
 
   varLong <- names(othMet)[names(othMet) %nin% c(sampID)]
-  oth.1 <- reshape(othMet, idvar = sampID, direction = 'long', varying = varLong,
-                   v.names = 'value', timevar = 'variable', times = varLong)
+  oth.1 <- reshape(othMet,
+    idvar = sampID, direction = "long", varying = varLong,
+    v.names = "value", timevar = "variable", times = varLong
+  )
   print("Done calculating other metrics.")
 
-  natMet <- calcFishNativeMets(indf,sampID,dist,ct,taxa_id,nonnat)
+  natMet <- calcFishNativeMets(indf, sampID, dist, ct, taxa_id, nonnat)
   varLong <- names(natMet)[names(natMet) %nin% c(sampID)]
-  nat.1 <- reshape(natMet, idvar = sampID, direction = 'long', varying = varLong,
-                   v.names = 'value', timevar = 'variable', times = varLong)
+  nat.1 <- reshape(natMet,
+    idvar = sampID, direction = "long", varying = varLong,
+    v.names = "value", timevar = "variable", times = varLong
+  )
   print("Done calculating native metrics.")
 
-  anomMet <- calcFishAnomMets(indf,sampID,ct,anomct)
+  anomMet <- calcFishAnomMets(indf, sampID, ct, anomct)
   varLong <- names(anomMet)[names(anomMet) %nin% c(sampID)]
-  anom.1 <- reshape(anomMet, idvar = sampID, direction = 'long', varying = varLong,
-                   v.names = 'value', timevar = 'variable', times = varLong)
+  anom.1 <- reshape(anomMet,
+    idvar = sampID, direction = "long", varying = varLong,
+    v.names = "value", timevar = "variable", times = varLong
+  )
   print("Done calculating anomaly metrics.")
 
   mets <- rbind(tax.1, tol.1, trop.1, oth.1, nat.1, anom.1)
   mets <- unique(mets)
   # Finally, we can recast the metrics df into wide format for output
-  metOut <- reshape(mets, idvar = c(sampID), direction = 'wide',
-                    v.names = 'value', timevar = 'variable')
+  metOut <- reshape(mets,
+    idvar = c(sampID), direction = "wide",
+    v.names = "value", timevar = "variable"
+  )
   names(metOut) <- gsub("value\\.", "", names(metOut))
 
   return(metOut)

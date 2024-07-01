@@ -26,32 +26,36 @@
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @examples
 #' \dontrun{
-#'   data(distEx)
-#'   head(distEx)
-#'   # Assign distinctness to each taxon within samples
-#'   distEx.1 <- assignDistinct(distEx,sampleID=c('UID','SAMPLE_TYPE'),
-#'   taxlevels=c('PHYLUM','CLASS','ORDER','FAMILY','GENUS'),
-#'   final.name='TARGET_TAXON',
-#'   special.taxa=c('THIENEMANNIMYIA GENUS GR.', 'CERATOPOGONINAE', 'CRICOTOPUS/ORTHOCLADIUS'))
+#' data(distEx)
+#' head(distEx)
+#' # Assign distinctness to each taxon within samples
+#' distEx.1 <- assignDistinct(distEx,
+#'   sampleID = c("UID", "SAMPLE_TYPE"),
+#'   taxlevels = c("PHYLUM", "CLASS", "ORDER", "FAMILY", "GENUS"),
+#'   final.name = "TARGET_TAXON",
+#'   special.taxa = c("THIENEMANNIMYIA GENUS GR.", "CERATOPOGONINAE", "CRICOTOPUS/ORTHOCLADIUS")
+#' )
 #'
-#'   head(distEx.1)
-#'   }
+#' head(distEx.1)
+#' }
 #' @keywords survey
 
-assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.taxa=NULL) {
-
-  for(i in 1:length(sampleID)){
-    if(i==1) cc$SAMP_ID <- cc[,sampleID[i]]
-    else cc$SAMP_ID <- paste(cc$SAMP_ID,cc[,sampleID[i]],sep='.')
+assignDistinct <- function(cc, sampleID = "UID", taxlevels, final.name = NULL, special.taxa = NULL) {
+  for (i in 1:length(sampleID)) {
+    if (i == 1) {
+      cc$SAMP_ID <- cc[, sampleID[i]]
+    } else {
+      cc$SAMP_ID <- paste(cc$SAMP_ID, cc[, sampleID[i]], sep = ".")
+    }
   }
 
   # Set all variable names in dataset and arguments to uppercase
   names(cc) <- toupper(names(cc))
   taxlevels <- toupper(taxlevels)
-  if(!is.null(final.name)){
+  if (!is.null(final.name)) {
     final.name <- toupper(final.name)
   }
-  if(!is.null(special.taxa)){
+  if (!is.null(special.taxa)) {
     special.taxa <- toupper(special.taxa)
   }
   # Create new data frame from original input and add empty IS_DISTINCT variable
@@ -59,45 +63,48 @@ assignDistinct <- function(cc, sampleID='UID',taxlevels,final.name=NULL,special.
   cc.1$IS_DISTINCT <- NA
 
   # Set all names to uppercase
-  for(f in 1:length(taxlevels)){
-    cc.1[,taxlevels[f]] <- toupper(cc.1[,taxlevels[f]])
+  for (f in 1:length(taxlevels)) {
+    cc.1[, taxlevels[f]] <- toupper(cc.1[, taxlevels[f]])
   }
-  cc.1[,taxlevels] <- lapply(cc.1[,taxlevels], function(x){ifelse(is.na(x),'',x)})
+  cc.1[, taxlevels] <- lapply(cc.1[, taxlevels], function(x) {
+    ifelse(is.na(x), "", x)
+  })
 
   # First count number of taxa at each taxonomic level in taxlevels argument
-  for(i in 1:length(taxlevels)){
+  for (i in 1:length(taxlevels)) {
     print(taxlevels[i])
 
-    freqLevel <- aggregate(x=list(n = cc.1$SAMP_ID), by = cc.1[c('SAMP_ID',taxlevels[1:i])], FUN
-                           =length)
+    freqLevel <- aggregate(
+      x = list(n = cc.1$SAMP_ID), by = cc.1[c("SAMP_ID", taxlevels[1:i])],
+      FUN = length
+    )
 
-    names(freqLevel)[names(freqLevel)=='n'] <- paste('n',taxlevels[i],sep='')
+    names(freqLevel)[names(freqLevel) == "n"] <- paste("n", taxlevels[i], sep = "")
 
 
-    cc.1 <- merge(cc.1,freqLevel,by=c('SAMP_ID',taxlevels[1:i]),all.x=T)
-
+    cc.1 <- merge(cc.1, freqLevel, by = c("SAMP_ID", taxlevels[1:i]), all.x = T)
   }
 
   # Now run through each taxon level to assign IS_DISTINCT
 
   # First account for cases where the final.name is in the list of taxa in special.taxa (if not null)
-  if(!is.null(special.taxa)){
-    whichSpec <- with(cc.1,which(eval(as.name(final.name)) %in% special.taxa))
+  if (!is.null(special.taxa)) {
+    whichSpec <- with(cc.1, which(eval(as.name(final.name)) %in% special.taxa))
     cc.1$IS_DISTINCT[whichSpec] <- 1
   }
 
 
-  for(j in length(taxlevels):1){
+  for (j in length(taxlevels):1) {
     print(taxlevels[j])
-    nTax <- paste('n',taxlevels[j],sep='')
-    whichVal <- which(!is.na(cc.1[,taxlevels[j]]) & cc.1[,taxlevels[j]]!='' & is.na(cc.1$IS_DISTINCT) & cc.1[,nTax]==1)
+    nTax <- paste("n", taxlevels[j], sep = "")
+    whichVal <- which(!is.na(cc.1[, taxlevels[j]]) & cc.1[, taxlevels[j]] != "" & is.na(cc.1$IS_DISTINCT) & cc.1[, nTax] == 1)
     cc.1$IS_DISTINCT[whichVal] <- 1
 
-    whichVal.1 <- which(!is.na(cc.1[,taxlevels[j]]) & cc.1[,taxlevels[j]]!='' & is.na(cc.1$IS_DISTINCT) & cc.1[,nTax]>1)
+    whichVal.1 <- which(!is.na(cc.1[, taxlevels[j]]) & cc.1[, taxlevels[j]] != "" & is.na(cc.1$IS_DISTINCT) & cc.1[, nTax] > 1)
     cc.1$IS_DISTINCT[whichVal.1] <- 0
   }
 
-  outdata <- subset(cc.1,select=c(names(cc),'IS_DISTINCT'))
+  outdata <- subset(cc.1, select = c(names(cc), "IS_DISTINCT"))
   outdata$SAMP_ID <- NULL
 
   return(outdata)

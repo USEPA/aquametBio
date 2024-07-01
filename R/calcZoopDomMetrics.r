@@ -22,52 +22,56 @@
 #' dominant (topN) taxa
 calcZoopDomMetrics <- function(indata, sampID, is_distinct,
                                valsIn, valsOut, taxa_id,
-                               subgrp = NULL){
+                               subgrp = NULL) {
   # convert input data to data frame
   indata <- as.data.frame(indata)
   # Check for necessary variables in dataset, if all there, convert
   # valsIn and is_distinct variables to numeric
   necVars <- c(sampID, is_distinct, valsIn, subgrp)
 
-  if(any(necVars %nin% names(indata))){
+  if (any(necVars %nin% names(indata))) {
     msgTraits <- which(necVars %nin% names(indata))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
-  }else{
+  } else {
     indata[, c(valsIn, is_distinct)] <- lapply(indata[, c(valsIn, is_distinct)], as.numeric)
   }
   # Create empty data frame
-  column_names <- c(sampID, 'PARAMETER', 'RESULT')
+  column_names <- c(sampID, "PARAMETER", "RESULT")
 
   outDom <- data.frame(matrix(nrow = 0, ncol = length(column_names)))
   colnames(outDom) <- column_names
 
   # Subset data to subgroup if needed and to only distinct values
-  for(i in 1:length(valsIn)){
-    if(!is.null(subgrp)){
-      indata.1 <- subset(indata, eval(as.name(subgrp))==1 &
-                         !is.na(eval(as.name(valsIn[i]))) &
-                           eval(as.name(valsIn[i]))>0 &
-                         eval(as.name(is_distinct))==1)
-    }else{
-      indata.1 <- subset(indata,!is.na(eval(as.name(valsIn[i]))) &
-                            eval(as.name(valsIn[i]))>0 &
-                            eval(as.name(is_distinct))==1)
+  for (i in 1:length(valsIn)) {
+    if (!is.null(subgrp)) {
+      indata.1 <- subset(indata, eval(as.name(subgrp)) == 1 &
+        !is.na(eval(as.name(valsIn[i]))) &
+        eval(as.name(valsIn[i])) > 0 &
+        eval(as.name(is_distinct)) == 1)
+    } else {
+      indata.1 <- subset(indata, !is.na(eval(as.name(valsIn[i]))) &
+        eval(as.name(valsIn[i])) > 0 &
+        eval(as.name(is_distinct)) == 1)
     }
-  # Call the zoopDominance function
-    for(j in seq(from=1, to=5, by=2)){
-      dd <- zoopDominance(indata.1, sampID, topN=j, varIn=valsIn[i], taxa_id)
+    # Call the zoopDominance function
+    for (j in seq(from = 1, to = 5, by = 2)) {
+      dd <- zoopDominance(indata.1, sampID, topN = j, varIn = valsIn[i], taxa_id)
       domtype <- valsOut[i]
 
-      ee <- reshape(dd, idvar = sampID, direction = 'long',
-                    varying = 'dompind', timevar = 'PARAMETER',
-                    v.names = 'RESULT', times = 'dompind')
+      ee <- reshape(dd,
+        idvar = sampID, direction = "long",
+        varying = "dompind", timevar = "PARAMETER",
+        v.names = "RESULT", times = "dompind"
+      )
 
-      if(is.null(subgrp)){
-        ee$PARAMETER <- paste0('DOM', j, '_', domtype)
-      }else{
-        ee$PARAMETER <- paste0('DOM', j, '_', subgrp, '_', domtype)
+      if (is.null(subgrp)) {
+        ee$PARAMETER <- paste0("DOM", j, "_", domtype)
+      } else {
+        ee$PARAMETER <- paste0("DOM", j, "_", subgrp, "_", domtype)
       }
 
       outDom <- rbind(outDom, ee)

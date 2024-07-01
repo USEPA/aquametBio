@@ -93,114 +93,127 @@
 #'
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
-calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT'
-                            , ct='TOTAL', taxa_id='TAXA_ID', tol='TOLERANCE'
-                            , tolval='TOL_VAL', vel='VELOCITY', habitat='HABITAT'
-                            , trophic='TROPHIC', migr='MIGRATORY', nonnat='NONNATIVE'){
-
+calcFishTolMets <- function(
+    indata, inTaxa = NULL, sampID = "UID", dist = "IS_DISTINCT",
+    ct = "TOTAL", taxa_id = "TAXA_ID", tol = "TOLERANCE",
+    tolval = "TOL_VAL", vel = "VELOCITY", habitat = "HABITAT",
+    trophic = "TROPHIC", migr = "MIGRATORY", nonnat = "NONNATIVE") {
   # Convert data into data frames just in case
   indata <- as.data.frame(indata)
 
-  ctVars <- c(sampID,dist,ct,taxa_id)
-  if(any(ctVars %nin% names(indata))){
+  ctVars <- c(sampID, dist, ct, taxa_id)
+  if (any(ctVars %nin% names(indata))) {
     msgTraits <- which(ctVars %nin% names(indata))
-    print(paste("Missing variables in input data frame:",paste(ctVars[msgTraits],collapse=',')))
+    print(paste("Missing variables in input data frame:", paste(ctVars[msgTraits], collapse = ",")))
     return(NULL)
   }
 
-  if(nonnat %nin% names(indata)){
+  if (nonnat %nin% names(indata)) {
     print(paste("Cannot calculate native status-based metrics without a non-native status variable. Will calculate other metrics."))
   }
 
   # Combine all values in sampID into one sampID in df
-  for(i in 1:length(sampID)){
-    if(i==1) indata$SAMPID <- indata[,sampID[i]]
-    else indata$SAMPID <- paste(indata$SAMPID,indata[,sampID[i]],sep='.')
+  for (i in 1:length(sampID)) {
+    if (i == 1) {
+      indata$SAMPID <- indata[, sampID[i]]
+    } else {
+      indata$SAMPID <- paste(indata$SAMPID, indata[, sampID[i]], sep = ".")
+    }
   }
   # Keep data frame with crosswalk info between sampID and SAMPID
-  samples <- unique(subset(indata,select=c(sampID,'SAMPID')))
+  samples <- unique(subset(indata, select = c(sampID, "SAMPID")))
 
   # If inTaxa is not specified, the default is the included fishTaxa dataset
-  if(is.null(inTaxa)) {
+  if (is.null(inTaxa)) {
     inTaxa <- fishTaxa
-  }else{
+  } else {
     inTaxa <- as.data.frame(inTaxa)
   }
 
   # Taxonomy and traits checks
-  necTraits <- c(tol,tolval)
-  if(any(necTraits %nin% names(inTaxa))){
+  necTraits <- c(tol, tolval)
+  if (any(necTraits %nin% names(inTaxa))) {
     msgTraits <- which(necTraits %nin% names(inTaxa))
     return(paste("Some of the traits are missing from the taxa list. The following are required for metric calculations to run:", necTraits[msgTraits]))
   }
-  optTraits <- c(habitat,trophic,migr,vel)
-  if(any(optTraits %nin% names(inTaxa))){
+  optTraits <- c(habitat, trophic, migr, vel)
+  if (any(optTraits %nin% names(inTaxa))) {
     msgTraits <- which(optTraits %nin% names(inTaxa))
-    print(paste("Optional traits are missing from the taxa list. Any tolerance metrics also using these traits will not be calculated:",
-                 paste(optTraits[msgTraits],collapse=',')))
+    print(paste(
+      "Optional traits are missing from the taxa list. Any tolerance metrics also using these traits will not be calculated:",
+      paste(optTraits[msgTraits], collapse = ",")
+    ))
   }
 
 
-  inTaxa <- subset(inTaxa,select=names(inTaxa) %in% c(taxa_id,tol,tolval,vel,habitat,trophic,migr))
+  inTaxa <- subset(inTaxa, select = names(inTaxa) %in% c(taxa_id, tol, tolval, vel, habitat, trophic, migr))
 
   # Rename counts and distinct variables to TOTAL and IS_DISTINCT
-  names(indata)[names(indata)==ct] <- 'TOTAL'
-  names(indata)[names(indata)==dist] <- 'IS_DISTINCT'
-  names(indata)[names(indata)==taxa_id] <- 'TAXA_ID'
-  names(indata)[names(indata)==nonnat] <- 'NONNATIVE'
-  names(inTaxa)[names(inTaxa)==taxa_id] <- 'TAXA_ID'
+  names(indata)[names(indata) == ct] <- "TOTAL"
+  names(indata)[names(indata) == dist] <- "IS_DISTINCT"
+  names(indata)[names(indata) == taxa_id] <- "TAXA_ID"
+  names(indata)[names(indata) == nonnat] <- "NONNATIVE"
+  names(inTaxa)[names(inTaxa) == taxa_id] <- "TAXA_ID"
 
-  names(inTaxa)[names(inTaxa)==tol] <- 'TOLERANCE'
-  names(inTaxa)[names(inTaxa)==tolval] <- 'TOL_VAL'
+  names(inTaxa)[names(inTaxa) == tol] <- "TOLERANCE"
+  names(inTaxa)[names(inTaxa) == tolval] <- "TOL_VAL"
 
-  if(vel %in% names(inTaxa)){
-    names(inTaxa)[names(inTaxa)==vel] <- 'VELOCITY'
+  if (vel %in% names(inTaxa)) {
+    names(inTaxa)[names(inTaxa) == vel] <- "VELOCITY"
   }
 
-  if(habitat %in% names(inTaxa)){
-    names(inTaxa)[names(inTaxa)==habitat] <- 'HABITAT'
+  if (habitat %in% names(inTaxa)) {
+    names(inTaxa)[names(inTaxa) == habitat] <- "HABITAT"
   }
 
-  if(trophic %in% names(inTaxa)){
-    names(inTaxa)[names(inTaxa)==trophic] <- 'TROPHIC'
+  if (trophic %in% names(inTaxa)) {
+    names(inTaxa)[names(inTaxa) == trophic] <- "TROPHIC"
   }
 
-  if(migr %in% names(inTaxa)){
-    names(inTaxa)[names(inTaxa)==migr] <- 'MIGRATORY'
+  if (migr %in% names(inTaxa)) {
+    names(inTaxa)[names(inTaxa) == migr] <- "MIGRATORY"
   }
 
-  indata[,c('TOTAL','IS_DISTINCT')] <- lapply(indata[,c('TOTAL','IS_DISTINCT')],as.numeric)
+  indata[, c("TOTAL", "IS_DISTINCT")] <- lapply(indata[, c("TOTAL", "IS_DISTINCT")], as.numeric)
   indata$TAXA_ID <- as.character(indata$TAXA_ID)
   inTaxa$TAXA_ID <- as.character(inTaxa$TAXA_ID)
   inTaxa$TOL_VAL <- as.numeric(inTaxa$TOL_VAL)
 
   ## for inCts1, keep only observations without missing or zero TOTAL values or TAXA_ID and TAXA_ID!=99999
-  indata.1 <- subset(indata,!is.na(TAXA_ID) & !is.na(TOTAL) & TOTAL!=0)
+  indata.1 <- subset(indata, !is.na(TAXA_ID) & !is.na(TOTAL) & TOTAL != 0)
 
   ## Now sum by TAXA_ID for ANOM_CT and for TOTAL for each sample
   # Two approaches depending on whether or not NON_NATIVE occurs in the counts data frame
-  if('NONNATIVE' %in% names(indata.1)){
-    maxDist <- aggregate(x = list(IS_DISTINCT = indata.1$IS_DISTINCT), by = indata.1[c('SAMPID','TAXA_ID','NONNATIVE')],
-                         FUN = function(x){max(as.integer(x))})
-    sumTot <- aggregate(x = list(TOTAL = indata.1$TOTAL), by = indata.1[c('SAMPID','TAXA_ID','NONNATIVE')], FUN = sum)
+  if ("NONNATIVE" %in% names(indata.1)) {
+    maxDist <- aggregate(
+      x = list(IS_DISTINCT = indata.1$IS_DISTINCT), by = indata.1[c("SAMPID", "TAXA_ID", "NONNATIVE")],
+      FUN = function(x) {
+        max(as.integer(x))
+      }
+    )
+    sumTot <- aggregate(x = list(TOTAL = indata.1$TOTAL), by = indata.1[c("SAMPID", "TAXA_ID", "NONNATIVE")], FUN = sum)
 
-    indata.2 <- merge(maxDist, sumTot, by = c('SAMPID','TAXA_ID','NONNATIVE'))
+    indata.2 <- merge(maxDist, sumTot, by = c("SAMPID", "TAXA_ID", "NONNATIVE"))
 
-    CALCNAT <- 'Y'
-  }else{
-    maxDist <- aggregate(x = list(IS_DISTINCT = indata.1$IS_DISTINCT), by = indata.1[c('SAMPID','TAXA_ID')],
-                         FUN = function(x){max(as.integer(x))})
-    sumTot <- aggregate(x = list(TOTAL = indata.1$TOTAL), by = indata.1[c('SAMPID','TAXA_ID')], FUN = sum)
+    CALCNAT <- "Y"
+  } else {
+    maxDist <- aggregate(
+      x = list(IS_DISTINCT = indata.1$IS_DISTINCT), by = indata.1[c("SAMPID", "TAXA_ID")],
+      FUN = function(x) {
+        max(as.integer(x))
+      }
+    )
+    sumTot <- aggregate(x = list(TOTAL = indata.1$TOTAL), by = indata.1[c("SAMPID", "TAXA_ID")], FUN = sum)
 
-    indata.2 <- merge(maxDist, sumTot, by = c('SAMPID','TAXA_ID'))
+    indata.2 <- merge(maxDist, sumTot, by = c("SAMPID", "TAXA_ID"))
 
-    CALCNAT <- 'N'
+    CALCNAT <- "N"
   }
   # Find all samples with a missing TAXA_ID, which means there are no counts for the site, and output the rows so the user can
   ## verify no sample was collected
-  if(nrow(subset(indata.2,is.na(TAXA_ID)))>0) {
+  if (nrow(subset(indata.2, is.na(TAXA_ID))) > 0) {
     print("Make sure these missing TAXA_ID values are valid.")
-    print(subset(indata,is.na(TAXA_ID)))
+    print(subset(indata, is.na(TAXA_ID)))
   }
 
   # Make sure all necessary columns in inCts are numeric
@@ -208,238 +221,273 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   inCts$TOTAL <- with(inCts, as.numeric(TOTAL))
   inCts$IS_DISTINCT <- with(inCts, as.integer(IS_DISTINCT))
 
-  inCts.1 <- inCts[inCts$TAXA_ID %in% inTaxa$TAXA_ID,]
+  inCts.1 <- inCts[inCts$TAXA_ID %in% inTaxa$TAXA_ID, ]
 
-  if(CALCNAT=='Y'){
-    inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL>0,c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT','NONNATIVE')]
-  }else{
-    inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL>0,c('SAMPID','TAXA_ID','TOTAL','IS_DISTINCT')]
+  if (CALCNAT == "Y") {
+    inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL > 0, c("SAMPID", "TAXA_ID", "TOTAL", "IS_DISTINCT", "NONNATIVE")]
+  } else {
+    inCts.1 <- inCts.1[!is.na(inCts.1$TOTAL) & inCts.1$TOTAL > 0, c("SAMPID", "TAXA_ID", "TOTAL", "IS_DISTINCT")]
   }
   # Now create indicator variables
   inTaxa.1 <- inTaxa
-  inTaxa.1$NTOL <- with(inTaxa.1, ifelse(TOLERANCE %in% c('S','I'),1,NA))
-  inTaxa.1$INTL <- with(inTaxa.1, ifelse(TOLERANCE=='S',1,NA))
-  inTaxa.1$MTOL <- with(inTaxa.1, ifelse(TOLERANCE=='I',1,NA))
-  inTaxa.1$TOLR <- with(inTaxa.1, ifelse(TOLERANCE=='T',1,NA))
+  inTaxa.1$NTOL <- with(inTaxa.1, ifelse(TOLERANCE %in% c("S", "I"), 1, NA))
+  inTaxa.1$INTL <- with(inTaxa.1, ifelse(TOLERANCE == "S", 1, NA))
+  inTaxa.1$MTOL <- with(inTaxa.1, ifelse(TOLERANCE == "I", 1, NA))
+  inTaxa.1$TOLR <- with(inTaxa.1, ifelse(TOLERANCE == "T", 1, NA))
 
   # Create empty data frames with all metric names in it
-  empty_base <- data.frame(t(rep(NA,13)),stringsAsFactors=F)
-  names(empty_base) <- c('INTLNTAX','INTLPIND','INTLPTAX',
-                         'MTOLNTAX','MTOLPIND','MTOLPTAX','NTOLNTAX','NTOLPIND',
-                         'NTOLPTAX','TOLRNTAX','TOLRPIND','TOLRPTAX','WTD_TV')
+  empty_base <- data.frame(t(rep(NA, 13)), stringsAsFactors = F)
+  names(empty_base) <- c(
+    "INTLNTAX", "INTLPIND", "INTLPTAX",
+    "MTOLNTAX", "MTOLPIND", "MTOLPTAX", "NTOLNTAX", "NTOLPIND",
+    "NTOLPTAX", "TOLRNTAX", "TOLRPIND", "TOLRPTAX", "WTD_TV"
+  )
 
   # Add native metrics if CALCNAT='Y'
-  if(CALCNAT=='Y'){
-    empty_base.nat <- data.frame(t(rep(NA,17)),stringsAsFactors=F)
-    names(empty_base.nat) <- c('NAT_INTLNTAX','NAT_INTLPIND','NAT_INTLPTAX',
-                               'NAT_MTOLNTAX','NAT_MTOLPIND','NAT_MTOLPTAX','NAT_NTOLNTAX',
-                               'NAT_NTOLPIND','NAT_NTOLPTAX','NAT_TOLRNTAX','NAT_TOLRPIND',
-                               'NAT_TOLRPTAX','NAT_WTD_TV','NAT_PIND','NAT_PTAX','NAT_TOTLNIND','NAT_TOTLNTAX')
-    empty_base <- cbind(empty_base,empty_base.nat)
+  if (CALCNAT == "Y") {
+    empty_base.nat <- data.frame(t(rep(NA, 17)), stringsAsFactors = F)
+    names(empty_base.nat) <- c(
+      "NAT_INTLNTAX", "NAT_INTLPIND", "NAT_INTLPTAX",
+      "NAT_MTOLNTAX", "NAT_MTOLPIND", "NAT_MTOLPTAX", "NAT_NTOLNTAX",
+      "NAT_NTOLPIND", "NAT_NTOLPTAX", "NAT_TOLRNTAX", "NAT_TOLRPIND",
+      "NAT_TOLRPTAX", "NAT_WTD_TV", "NAT_PIND", "NAT_PTAX", "NAT_TOTLNIND", "NAT_TOTLNTAX"
+    )
+    empty_base <- cbind(empty_base, empty_base.nat)
   }
 
 
-  if('VELOCITY' %in% names(inTaxa.1)){
-    inTaxa.1$INTLRHEO <- with(inTaxa.1, ifelse(INTL==1 & VELOCITY=='R',1,NA))
-    inTaxa.1$INTLLOT <- with(inTaxa.1, ifelse(INTL==1 & VELOCITY %in% c('R','O'),1,NA))
+  if ("VELOCITY" %in% names(inTaxa.1)) {
+    inTaxa.1$INTLRHEO <- with(inTaxa.1, ifelse(INTL == 1 & VELOCITY == "R", 1, NA))
+    inTaxa.1$INTLLOT <- with(inTaxa.1, ifelse(INTL == 1 & VELOCITY %in% c("R", "O"), 1, NA))
 
-    empty_vel <- data.frame(t(rep(NA,6)),stringsAsFactors=F)
-    names(empty_vel) <- c('INTLRHEONTAX','INTLRHEOPIND','INTLRHEOPTAX',
-                        'INTLLOTNTAX','INTLLOTPIND','INTLLOTPTAX')
-    empty_base <- cbind(empty_base,empty_vel)
+    empty_vel <- data.frame(t(rep(NA, 6)), stringsAsFactors = F)
+    names(empty_vel) <- c(
+      "INTLRHEONTAX", "INTLRHEOPIND", "INTLRHEOPTAX",
+      "INTLLOTNTAX", "INTLLOTPIND", "INTLLOTPTAX"
+    )
+    empty_base <- cbind(empty_base, empty_vel)
 
-    if(CALCNAT=='Y'){
+    if (CALCNAT == "Y") {
       empty_vel.nat <- empty_vel
-      names(empty_vel.nat) <- paste('NAT',names(empty_vel),sep='_')
-      empty_base <- cbind(empty_base,empty_vel.nat)
+      names(empty_vel.nat) <- paste("NAT", names(empty_vel), sep = "_")
+      empty_base <- cbind(empty_base, empty_vel.nat)
     }
   }
 
-  if('HABITAT' %in% names(inTaxa.1)){
-    inTaxa.1$NTOLBENT <- with(inTaxa.1, ifelse(NTOL==1 & HABITAT=='B',1,NA))
+  if ("HABITAT" %in% names(inTaxa.1)) {
+    inTaxa.1$NTOLBENT <- with(inTaxa.1, ifelse(NTOL == 1 & HABITAT == "B", 1, NA))
 
-    empty_hab <- data.frame(t(rep(NA,3)),stringsAsFactors=F)
-    names(empty_hab) <- c('NTOLBENTNTAX','NTOLBENTPIND','NTOLBENTPTAX')
-    empty_base <- cbind(empty_base,empty_hab)
+    empty_hab <- data.frame(t(rep(NA, 3)), stringsAsFactors = F)
+    names(empty_hab) <- c("NTOLBENTNTAX", "NTOLBENTPIND", "NTOLBENTPTAX")
+    empty_base <- cbind(empty_base, empty_hab)
 
-    if(CALCNAT=='Y'){
+    if (CALCNAT == "Y") {
       empty_hab.nat <- empty_hab
-      names(empty_hab.nat) <- paste('NAT',names(empty_hab),sep='_')
-      empty_base <- cbind(empty_base,empty_hab.nat)
+      names(empty_hab.nat) <- paste("NAT", names(empty_hab), sep = "_")
+      empty_base <- cbind(empty_base, empty_hab.nat)
     }
-
   }
 
-  if('TROPHIC' %in% names(inTaxa.1)){
-    inTaxa.1$NTOLCARN <- with(inTaxa.1, ifelse(NTOL==1 & TROPHIC=='C',1,NA))
-    inTaxa.1$INTLCARN <- with(inTaxa.1, ifelse(INTL==1 & TROPHIC=='C',1,NA))
-    inTaxa.1$INTLINV <- with(inTaxa.1, ifelse(INTL==1 & TROPHIC=='I',1,NA))
-    inTaxa.1$NTOLINV <- with(inTaxa.1, ifelse(NTOL==1 & TROPHIC=='I',1,NA))
+  if ("TROPHIC" %in% names(inTaxa.1)) {
+    inTaxa.1$NTOLCARN <- with(inTaxa.1, ifelse(NTOL == 1 & TROPHIC == "C", 1, NA))
+    inTaxa.1$INTLCARN <- with(inTaxa.1, ifelse(INTL == 1 & TROPHIC == "C", 1, NA))
+    inTaxa.1$INTLINV <- with(inTaxa.1, ifelse(INTL == 1 & TROPHIC == "I", 1, NA))
+    inTaxa.1$NTOLINV <- with(inTaxa.1, ifelse(NTOL == 1 & TROPHIC == "I", 1, NA))
 
-    empty_trop <- data.frame(t(rep(NA,12)),stringsAsFactors=F)
-    names(empty_trop) <- c('INTLINVNTAX','INTLINVPIND','INTLINVPTAX'
-                           ,'INTLCARNNTAX','INTLCARNPIND','INTLCARNPTAX'
-                           ,'NTOLCARNNTAX','NTOLCARNPIND','NTOLCARNPTAX'
-                           ,'NTOLINVNTAX','NTOLINVPIND','NTOLINVPTAX')
-    empty_base <- cbind(empty_base,empty_trop)
+    empty_trop <- data.frame(t(rep(NA, 12)), stringsAsFactors = F)
+    names(empty_trop) <- c(
+      "INTLINVNTAX", "INTLINVPIND", "INTLINVPTAX",
+      "INTLCARNNTAX", "INTLCARNPIND", "INTLCARNPTAX",
+      "NTOLCARNNTAX", "NTOLCARNPIND", "NTOLCARNPTAX",
+      "NTOLINVNTAX", "NTOLINVPIND", "NTOLINVPTAX"
+    )
+    empty_base <- cbind(empty_base, empty_trop)
 
-    if(CALCNAT=='Y'){
+    if (CALCNAT == "Y") {
       empty_trop.nat <- empty_trop
-      names(empty_trop.nat) <- paste('NAT',names(empty_trop),sep='_')
-      empty_base <- cbind(empty_base,empty_trop.nat)
+      names(empty_trop.nat) <- paste("NAT", names(empty_trop), sep = "_")
+      empty_base <- cbind(empty_base, empty_trop.nat)
     }
   }
 
-  if('MIGRATORY' %in% names(inTaxa.1)){
-    inTaxa.1$INTLMIGR <- with(inTaxa.1, ifelse(INTL==1 & MIGRATORY=='Y',1,NA))
+  if ("MIGRATORY" %in% names(inTaxa.1)) {
+    inTaxa.1$INTLMIGR <- with(inTaxa.1, ifelse(INTL == 1 & MIGRATORY == "Y", 1, NA))
 
-    empty_migr <- data.frame(t(rep(NA,3)),stringsAsFactors=F)
-    names(empty_migr) <- c('INTLMIGRNTAX','INTLMIGRPIND','INTLMIGRPTAX')
-    empty_base <- cbind(empty_base,empty_migr)
+    empty_migr <- data.frame(t(rep(NA, 3)), stringsAsFactors = F)
+    names(empty_migr) <- c("INTLMIGRNTAX", "INTLMIGRPIND", "INTLMIGRPTAX")
+    empty_base <- cbind(empty_base, empty_migr)
 
-    if(CALCNAT=='Y'){
+    if (CALCNAT == "Y") {
       empty_migr.nat <- empty_migr
-      names(empty_migr.nat) <- paste('NAT',names(empty_migr),sep='_')
-      empty_base <- cbind(empty_base,empty_migr.nat)
+      names(empty_migr.nat) <- paste("NAT", names(empty_migr), sep = "_")
+      empty_base <- cbind(empty_base, empty_migr.nat)
     }
   }
 
-  params<-c('INTL','NTOL','MTOL','TOLR','INTLRHEO','INTLLOT','NTOLBENT','NTOLCARN','INTLCARN'
-            ,'INTLINV','NTOLINV','INTLMIGR')
+  params <- c(
+    "INTL", "NTOL", "MTOL", "TOLR", "INTLRHEO", "INTLLOT", "NTOLBENT", "NTOLCARN", "INTLCARN",
+    "INTLINV", "NTOLINV", "INTLMIGR"
+  )
 
-  inTaxa.2 <- subset(inTaxa.1,select=names(inTaxa.1) %in% c('TAXA_ID',params))
+  inTaxa.2 <- subset(inTaxa.1, select = names(inTaxa.1) %in% c("TAXA_ID", params))
 
   params.use <- names(inTaxa.2)[names(inTaxa.2) %in% params]
 
-  taxalong <- reshape(inTaxa.2, idvar = c('TAXA_ID'), direction = 'long',
-                      varying = params.use, times = params.use, v.names = 'value', timevar = 'TRAIT')
+  taxalong <- reshape(inTaxa.2,
+    idvar = c("TAXA_ID"), direction = "long",
+    varying = params.use, times = params.use, v.names = "value", timevar = "TRAIT"
+  )
   taxalong <- subset(taxalong, !is.na(value))
 
-  totals <- aggregate(x = list(TOTLNIND = inCts.1$TOTAL, TOTLNTAX = inCts.1$IS_DISTINCT), by = inCts.1[c('SAMPID')],
-                      FUN = sum)
+  totals <- aggregate(
+    x = list(TOTLNIND = inCts.1$TOTAL, TOTLNTAX = inCts.1$IS_DISTINCT), by = inCts.1[c("SAMPID")],
+    FUN = sum
+  )
 
-  inCts.2 <- merge(inCts.1, totals, by = 'SAMPID')
-  inCts.2$CALCPIND <- with(inCts.2, TOTAL/TOTLNIND)
-  inCts.2$CALCPTAX <- with(inCts.2, IS_DISTINCT/TOTLNTAX)
+  inCts.2 <- merge(inCts.1, totals, by = "SAMPID")
+  inCts.2$CALCPIND <- with(inCts.2, TOTAL / TOTLNIND)
+  inCts.2$CALCPTAX <- with(inCts.2, IS_DISTINCT / TOTLNTAX)
 
-  if(CALCNAT=='Y'){
-    inCts.2 <- inCts.2[,c('SAMPID','TOTAL','IS_DISTINCT','TAXA_ID','TOTLNTAX','TOTLNIND','NONNATIVE','CALCPIND','CALCPTAX')]
-  }else{
-    inCts.2 <- inCts.2[,c('SAMPID','TOTAL','IS_DISTINCT','TAXA_ID','TOTLNTAX','TOTLNIND','CALCPIND','CALCPTAX')]
+  if (CALCNAT == "Y") {
+    inCts.2 <- inCts.2[, c("SAMPID", "TOTAL", "IS_DISTINCT", "TAXA_ID", "TOTLNTAX", "TOTLNIND", "NONNATIVE", "CALCPIND", "CALCPTAX")]
+  } else {
+    inCts.2 <- inCts.2[, c("SAMPID", "TOTAL", "IS_DISTINCT", "TAXA_ID", "TOTLNTAX", "TOTLNIND", "CALCPIND", "CALCPTAX")]
   }
 
   # Merge the count data with the taxalist containing only the traits of
   # interest
-  traitDF <- merge(inCts.2, taxalong, by='TAXA_ID')
+  traitDF <- merge(inCts.2, taxalong, by = "TAXA_ID")
 
   # Calculate no. individuals, % individuals, no. taxa, and % taxa for each
   # trait in taxalist
-  outMet.1 <- aggregate(x = list(NTAX = traitDF$IS_DISTINCT),
-                        by = traitDF[c('SAMPID','TRAIT')],
-                        FUN = sum)
+  outMet.1 <- aggregate(
+    x = list(NTAX = traitDF$IS_DISTINCT),
+    by = traitDF[c("SAMPID", "TRAIT")],
+    FUN = sum
+  )
 
-  outMet.2 <- aggregate(x = list(PIND = traitDF$CALCPIND, PTAX = traitDF$CALCPTAX),
-                        by = traitDF[c('SAMPID','TRAIT')],
-                        FUN = function(x){round(sum(x)*100, 2)})
+  outMet.2 <- aggregate(
+    x = list(PIND = traitDF$CALCPIND, PTAX = traitDF$CALCPTAX),
+    by = traitDF[c("SAMPID", "TRAIT")],
+    FUN = function(x) {
+      round(sum(x) * 100, 2)
+    }
+  )
 
-  outMet <- merge(outMet.1, outMet.2, by = c('SAMPID','TRAIT'))
+  outMet <- merge(outMet.1, outMet.2, by = c("SAMPID", "TRAIT"))
 
   # Melt df to create metric names, then recast into wide format with metric
   # names
-  outLong <- reshape(outMet, idvar = c('SAMPID','TRAIT'), direction = 'long',
-                     varying = c('NTAX','PIND','PTAX'), timevar = 'variable',
-                     v.names = 'value', times = c('NTAX','PIND','PTAX'))
+  outLong <- reshape(outMet,
+    idvar = c("SAMPID", "TRAIT"), direction = "long",
+    varying = c("NTAX", "PIND", "PTAX"), timevar = "variable",
+    v.names = "value", times = c("NTAX", "PIND", "PTAX")
+  )
 
-  outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='')
+  outLong$variable <- paste(outLong$TRAIT, outLong$variable, sep = "")
   outLong$TRAIT <- NULL
 
-  outWide <- reshape(outLong, idvar = 'SAMPID', direction = 'wide',
-                     v.names = 'value', timevar = 'variable')
+  outWide <- reshape(outLong,
+    idvar = "SAMPID", direction = "wide",
+    v.names = "value", timevar = "variable"
+  )
   names(outWide) <- gsub("value\\.", "", names(outWide))
 
-  outWide <- merge(outWide, totals, by = 'SAMPID', all.y=TRUE)
+  outWide <- merge(outWide, totals, by = "SAMPID", all.y = TRUE)
 
-  if(nrow(subset(inTaxa,!is.na(TOL_VAL)))>0){
-    TVI <- tolindexFish(inCts.2,inTaxa)
-    outWide <- merge(outWide,TVI,by="SAMPID",all.x=TRUE)
+  if (nrow(subset(inTaxa, !is.na(TOL_VAL))) > 0) {
+    TVI <- tolindexFish(inCts.2, inTaxa)
+    outWide <- merge(outWide, TVI, by = "SAMPID", all.x = TRUE)
   }
 
   # Now run native metrics if CALCNAT='Y'
   ## If the variable NON_NATIVE is included and populated in inCts1, create inNative data frame
-  if(CALCNAT=='Y'){
-    if(any(unique(inCts.2$NON_NATIVE) %nin% c('Y','N'))){
+  if (CALCNAT == "Y") {
+    if (any(unique(inCts.2$NON_NATIVE) %nin% c("Y", "N"))) {
       return(print("No native and alien datasets were created because NON_NATIVE must only be 'Y' or 'N' values"))
-    }else{
-      inNative <- subset(inCts.2,NONNATIVE=='N')
-      if(length(inNative)>0){
-        natTot <- aggregate(x = list(NAT_TOTLNIND = inNative$TOTAL, NAT_TOTLNTAX = inNative$IS_DISTINCT),
-                            by = inNative[c('SAMPID')], FUN = sum)
+    } else {
+      inNative <- subset(inCts.2, NONNATIVE == "N")
+      if (length(inNative) > 0) {
+        natTot <- aggregate(
+          x = list(NAT_TOTLNIND = inNative$TOTAL, NAT_TOTLNTAX = inNative$IS_DISTINCT),
+          by = inNative[c("SAMPID")], FUN = sum
+        )
 
-        inNative.tot <- merge(inNative, natTot, by = 'SAMPID')
+        inNative.tot <- merge(inNative, natTot, by = "SAMPID")
 
-        natMets <- merge(inNative.tot, taxalong, by = 'TAXA_ID')
-        natMets$CALCPIND <- with(natMets, TOTAL/NAT_TOTLNIND)
-        natMets$CALCPTAX <- with(natMets, IS_DISTINCT/NAT_TOTLNTAX)
+        natMets <- merge(inNative.tot, taxalong, by = "TAXA_ID")
+        natMets$CALCPIND <- with(natMets, TOTAL / NAT_TOTLNIND)
+        natMets$CALCPTAX <- with(natMets, IS_DISTINCT / NAT_TOTLNTAX)
 
-        natMets.1 <- aggregate(x = list(NTAX = natMets$IS_DISTINCT),
-                               by = natMets[c('SAMPID','TRAIT')],
-                               FUN = sum)
-        natMets.2 <- aggregate(x = list(PIND = natMets$CALCPIND, PTAX = natMets$CALCPTAX),
-                               by = natMets[c('SAMPID','TRAIT')],
-                               FUN = function(x){round(sum(x)*100, 2)})
+        natMets.1 <- aggregate(
+          x = list(NTAX = natMets$IS_DISTINCT),
+          by = natMets[c("SAMPID", "TRAIT")],
+          FUN = sum
+        )
+        natMets.2 <- aggregate(
+          x = list(PIND = natMets$CALCPIND, PTAX = natMets$CALCPTAX),
+          by = natMets[c("SAMPID", "TRAIT")],
+          FUN = function(x) {
+            round(sum(x) * 100, 2)
+          }
+        )
 
-        natMets.comb <- merge(natMets.1, natMets.2, by = c('SAMPID','TRAIT'))
+        natMets.comb <- merge(natMets.1, natMets.2, by = c("SAMPID", "TRAIT"))
 
-        natMets.long <- reshape(natMets.comb, idvar = c('SAMPID','TRAIT'), direction = 'long',
-                                varying = c('NTAX', 'PIND', 'PTAX'), timevar = 'variable', v.names = 'value',
-                                times = c('NTAX', 'PIND', 'PTAX'))
-        natMets.long$variable <- with(natMets.long, paste('NAT_',TRAIT,variable,sep=''))
+        natMets.long <- reshape(natMets.comb,
+          idvar = c("SAMPID", "TRAIT"), direction = "long",
+          varying = c("NTAX", "PIND", "PTAX"), timevar = "variable", v.names = "value",
+          times = c("NTAX", "PIND", "PTAX")
+        )
+        natMets.long$variable <- with(natMets.long, paste("NAT_", TRAIT, variable, sep = ""))
         natMets.long$TRAIT <- NULL
 
-        natMets.fin <- reshape(natMets.long, idvar = c('SAMPID'), direction = 'wide',
-                               v.names = 'value', timevar = 'variable')
+        natMets.fin <- reshape(natMets.long,
+          idvar = c("SAMPID"), direction = "wide",
+          v.names = "value", timevar = "variable"
+        )
         names(natMets.fin) <- gsub("value\\.", "", names(natMets.fin))
-        natMets.fin <- merge(natMets.fin, natTot, by = 'SAMPID', all.y=TRUE)
+        natMets.fin <- merge(natMets.fin, natTot, by = "SAMPID", all.y = TRUE)
 
         outWide.1 <- merge(outWide, natMets.fin, all = TRUE)
 
-        if(nrow(subset(inTaxa,!is.na(TOL_VAL)))>0){
-          TVI <- tolindexFish(inNative,inTaxa)
-          names(TVI)[names(TVI)=='WTD_TV'] <- 'NAT_WTD_TV'
-          outWide.1 <- merge(outWide.1,TVI,by="SAMPID",all.x=TRUE)
+        if (nrow(subset(inTaxa, !is.na(TOL_VAL))) > 0) {
+          TVI <- tolindexFish(inNative, inTaxa)
+          names(TVI)[names(TVI) == "WTD_TV"] <- "NAT_WTD_TV"
+          outWide.1 <- merge(outWide.1, TVI, by = "SAMPID", all.x = TRUE)
         }
 
-        outWide.1$NAT_PTAX <- with(outWide.1, round((NAT_TOTLNTAX/TOTLNTAX)*100,2))
-        outWide.1$NAT_PIND <- with(outWide.1, round((NAT_TOTLNIND/TOTLNIND)*100,2))
+        outWide.1$NAT_PTAX <- with(outWide.1, round((NAT_TOTLNTAX / TOTLNTAX) * 100, 2))
+        outWide.1$NAT_PIND <- with(outWide.1, round((NAT_TOTLNIND / TOTLNIND) * 100, 2))
         outWide.1$TOTLNTAX <- NULL
         outWide.1$TOTLNIND <- NULL
-
-      }else{
+      } else {
         outWide.1 <- outWide
         outWide.1$TOTLNTAX <- NULL
         outWide.1$TOTLNIND <- NULL
       }
     }
-    }else{
-      outWide.1 <- outWide
-      outWide.1$TOTLNTAX <- NULL
-      outWide.1$TOTLNIND <- NULL
-      }
+  } else {
+    outWide.1 <- outWide
+    outWide.1$TOTLNTAX <- NULL
+    outWide.1$TOTLNIND <- NULL
+  }
 
   outWide.all <- merge(outWide.1, subset(empty_base), all = TRUE)
-  outwide.all <- outWide.all[!is.na(outWide.all$SAMPID),]
-  outWide.all <- merge(outWide.all, samples, by = 'SAMPID', all.y = TRUE)
+  outwide.all <- outWide.all[!is.na(outWide.all$SAMPID), ]
+  outWide.all <- merge(outWide.all, samples, by = "SAMPID", all.y = TRUE)
 
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  updNames <- names(outWide.all)[names(outWide.all) %nin% c('WTD_TV','NAT_WTD_TV','SAMPID')]
-  outWide.all[,updNames] <- lapply(outWide.all[,updNames], function(x){ifelse(is.na(x), 0, x)})
+  updNames <- names(outWide.all)[names(outWide.all) %nin% c("WTD_TV", "NAT_WTD_TV", "SAMPID")]
+  outWide.all[, updNames] <- lapply(outWide.all[, updNames], function(x) {
+    ifelse(is.na(x), 0, x)
+  })
 
   # Merge metrics with the original indata so that those without metrics because
   # no sample was collected are still output with missing values
-  outAll <- merge(outWide.all, totals, by = 'SAMPID', all.x = TRUE)
+  outAll <- merge(outWide.all, totals, by = "SAMPID", all.x = TRUE)
   outAll$SAMPID <- NULL
 
   return(outAll)
-
 }

@@ -24,12 +24,14 @@
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
 calcZoopNativeMetrics <- function(indata, sampID,
-                                  inputNative, inputTotals){
+                                  inputNative, inputTotals) {
   necVars <- c(sampID, inputNative, inputTotals)
-  if(any(necVars %nin% names(indata))){
+  if (any(necVars %nin% names(indata))) {
     msgTraits <- which(necVars %nin% names(indata))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
   }
 
@@ -37,23 +39,23 @@ calcZoopNativeMetrics <- function(indata, sampID,
 
   outdata <- indata
 
-  column_names <- c(sampID, 'PARAMETER', 'RESULT')
+  column_names <- c(sampID, "PARAMETER", "RESULT")
 
   metsOut <- data.frame(matrix(nrow = 0, ncol = length(column_names)))
   colnames(metsOut) <- column_names
 
-  for(i in 1:length(inputNative)){
-     outdata$RESULT <- round(indata[,inputNative[i]]/indata[, inputTotals[i]]*100, 2)
-     outdata$PARAMETER <- inputNative[i]
+  for (i in 1:length(inputNative)) {
+    outdata$RESULT <- round(indata[, inputNative[i]] / indata[, inputTotals[i]] * 100, 2)
+    outdata$PARAMETER <- inputNative[i]
 
-     outdata.long <- subset(outdata, select = c(sampID, 'PARAMETER', 'RESULT'))
-     metsOut <- rbind(metsOut, outdata.long)
+    outdata.long <- subset(outdata, select = c(sampID, "PARAMETER", "RESULT"))
+    metsOut <- rbind(metsOut, outdata.long)
   }
 
-  metsOut$PARAMETER <- with(metsOut, gsub('NIND', 'PIND', PARAMETER))
-  metsOut$PARAMETER <- with(metsOut, gsub('NTAX', 'PTAX', PARAMETER))
-  metsOut$PARAMETER <- with(metsOut, gsub('BIO', 'PBIO', PARAMETER))
-  metsOut$PARAMETER <- with(metsOut, gsub('DEN', 'PDEN', PARAMETER))
+  metsOut$PARAMETER <- with(metsOut, gsub("NIND", "PIND", PARAMETER))
+  metsOut$PARAMETER <- with(metsOut, gsub("NTAX", "PTAX", PARAMETER))
+  metsOut$PARAMETER <- with(metsOut, gsub("BIO", "PBIO", PARAMETER))
+  metsOut$PARAMETER <- with(metsOut, gsub("DEN", "PDEN", PARAMETER))
 
   return(metsOut)
-  }
+}

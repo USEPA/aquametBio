@@ -39,28 +39,31 @@
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
 calcZoopRichnessMetrics <- function(indata, sampID, distVars,
-                           nonnative, inTaxa, taxa_id='TAXA_ID',
-                           genus, family, prefix = ''){
-
+                                    nonnative, inTaxa, taxa_id = "TAXA_ID",
+                                    genus, family, prefix = "") {
   necVars <- c(sampID, distVars, taxa_id, nonnative)
-  if(any(necVars %nin% names(indata))){
+  if (any(necVars %nin% names(indata))) {
     msgTraits <- which(necVars %nin% names(indata))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
-  }else{
+  } else {
     indata[, c(distVars, nonnative)] <- lapply(indata[, c(distVars, nonnative)], as.numeric)
   }
 
   necTaxVars <- c(taxa_id, genus, family)
-  if(any(necTaxVars %nin% names(inTaxa))){
+  if (any(necTaxVars %nin% names(inTaxa))) {
     msgTraits <- which(necTaxVars %nin% names(inTaxa))
-    print(paste("Missing variables in input taxalist:",
-                paste(necTaxVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input taxalist:",
+      paste(necTaxVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
   }
 
-  if(length(distVars) != length(prefix)){
+  if (length(distVars) != length(prefix)) {
     print("The number of values in distVars argument must be the same as in the prefix argument.")
     return(NULL)
   }
@@ -69,88 +72,116 @@ calcZoopRichnessMetrics <- function(indata, sampID, distVars,
 
   indata.taxa <- merge(indata, inTaxa.1, by = taxa_id)
 
-  if(length(sampID)==1){
+  if (length(sampID) == 1) {
     outdata <- data.frame(col1 = unique(indata[, sampID]))
     colnames(outdata) <- sampID
-  }else{
+  } else {
     outdata <- as.data.frame(unique(indata[, sampID]))
   }
 
-  for(i in 1:length(distVars)){
-    ntax.full <- aggregate(x = list(TOTL_NTAX = indata[, distVars[i]]),
-                      by = indata[sampID],
-                      FUN = function(x){sum(x, na.rm=TRUE)})
+  for (i in 1:length(distVars)) {
+    ntax.full <- aggregate(
+      x = list(TOTL_NTAX = indata[, distVars[i]]),
+      by = indata[sampID],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
 
     indata.nat <- subset(indata, eval(as.name(nonnative)) == 0)
 
-    ntax.full.nat <- aggregate(x = list(TOTL_NAT_NTAX = indata.nat[, distVars[i]]),
-                           by = indata.nat[sampID],
-                           FUN = function(x){sum(x, na.rm=TRUE)})
+    ntax.full.nat <- aggregate(
+      x = list(TOTL_NAT_NTAX = indata.nat[, distVars[i]]),
+      by = indata.nat[sampID],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
 
-    if(prefix[i] != ''){
-      names(ntax.full) <- gsub('TOTL_', paste0('TOTL', prefix[i], '_'), names(ntax.full))
-      names(ntax.full.nat) <- gsub('TOTL_', paste0('TOTL', prefix[i], '_'), names(ntax.full.nat))
+    if (prefix[i] != "") {
+      names(ntax.full) <- gsub("TOTL_", paste0("TOTL", prefix[i], "_"), names(ntax.full))
+      names(ntax.full.nat) <- gsub("TOTL_", paste0("TOTL", prefix[i], "_"), names(ntax.full.nat))
     }
     # Subset to only valid GENUS values and only unique values for genus for each sample
-    indata.gen <- unique(subset(indata.taxa, eval(as.name(genus))!='' & !is.na(eval(as.name(genus)))
-                                & eval(as.name(distVars[i]))==1,
-                         select = c(sampID, distVars[i], genus)))
+    indata.gen <- unique(subset(indata.taxa, eval(as.name(genus)) != "" & !is.na(eval(as.name(genus))) &
+      eval(as.name(distVars[i])) == 1,
+    select = c(sampID, distVars[i], genus)
+    ))
 
-    indata.gen.nat <- unique(subset(indata.taxa, eval(as.name(genus))!='' & !is.na(eval(as.name(genus))) &
-                                      eval(as.name(nonnative)) == 0 & eval(as.name(distVars[i]))==1,
-                             select = c(sampID, distVars[i], genus)))
+    indata.gen.nat <- unique(subset(indata.taxa, eval(as.name(genus)) != "" & !is.na(eval(as.name(genus))) &
+      eval(as.name(nonnative)) == 0 & eval(as.name(distVars[i])) == 1,
+    select = c(sampID, distVars[i], genus)
+    ))
 
-    ntax.gen <- aggregate(x = list(GEN_NTAX = indata.gen[, distVars[i]]),
-                          by = indata.gen[sampID],
-                          FUN = function(x){sum(x, na.rm=TRUE)})
+    ntax.gen <- aggregate(
+      x = list(GEN_NTAX = indata.gen[, distVars[i]]),
+      by = indata.gen[sampID],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
 
-    ntax.gen.nat <- aggregate(x = list(GEN_NAT_NTAX = indata.gen.nat[, distVars[i]]),
-                              by = indata.gen.nat[sampID],
-                              FUN = function(x){sum(x, na.rm=TRUE)})
+    ntax.gen.nat <- aggregate(
+      x = list(GEN_NAT_NTAX = indata.gen.nat[, distVars[i]]),
+      by = indata.gen.nat[sampID],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
 
-    if(prefix[i] != ''){
-      names(ntax.gen) <- gsub('GEN_', paste0('GEN', prefix[i], '_'), names(ntax.gen))
-      names(ntax.gen.nat) <- gsub('GEN_', paste0('GEN', prefix[i], '_'), names(ntax.gen.nat))
+    if (prefix[i] != "") {
+      names(ntax.gen) <- gsub("GEN_", paste0("GEN", prefix[i], "_"), names(ntax.gen))
+      names(ntax.gen.nat) <- gsub("GEN_", paste0("GEN", prefix[i], "_"), names(ntax.gen.nat))
     }
 
     # Subset to only valid FAMILY values and only unique values for family for each sample
-    indata.fam <- unique(subset(indata.taxa, eval(as.name(family))!='' & !is.na(eval(as.name(family)))
-                                & eval(as.name(distVars[i]))==1,
-                                select = c(sampID, distVars[i], family)))
+    indata.fam <- unique(subset(indata.taxa, eval(as.name(family)) != "" & !is.na(eval(as.name(family))) &
+      eval(as.name(distVars[i])) == 1,
+    select = c(sampID, distVars[i], family)
+    ))
 
-    indata.fam.nat <- unique(subset(indata.taxa, eval(as.name(family))!='' & !is.na(eval(as.name(family))) &
-                                      eval(as.name(nonnative)) == 0 & eval(as.name(distVars[i]))==1,
-                                    select = c(sampID, distVars[i], family)))
+    indata.fam.nat <- unique(subset(indata.taxa, eval(as.name(family)) != "" & !is.na(eval(as.name(family))) &
+      eval(as.name(nonnative)) == 0 & eval(as.name(distVars[i])) == 1,
+    select = c(sampID, distVars[i], family)
+    ))
 
-    ntax.fam <- aggregate(x = list(FAM_NTAX = indata.fam[, distVars[i]]),
-                          by = indata.fam[sampID],
-                          FUN = function(x){sum(x, na.rm=TRUE)})
+    ntax.fam <- aggregate(
+      x = list(FAM_NTAX = indata.fam[, distVars[i]]),
+      by = indata.fam[sampID],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
 
-    ntax.fam.nat <- aggregate(x = list(FAM_NAT_NTAX = indata.fam.nat[, distVars[i]]),
-                          by = indata.fam.nat[sampID],
-                          FUN = function(x){sum(x, na.rm=TRUE)})
+    ntax.fam.nat <- aggregate(
+      x = list(FAM_NAT_NTAX = indata.fam.nat[, distVars[i]]),
+      by = indata.fam.nat[sampID],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
 
-    if(prefix[i] != ''){
-      names(ntax.fam) <- gsub('FAM_', paste0('FAM', prefix[i], '_'), names(ntax.fam))
-      names(ntax.fam.nat) <- gsub('FAM_', paste0('FAM', prefix[i], '_'), names(ntax.fam.nat))
+    if (prefix[i] != "") {
+      names(ntax.fam) <- gsub("FAM_", paste0("FAM", prefix[i], "_"), names(ntax.fam))
+      names(ntax.fam.nat) <- gsub("FAM_", paste0("FAM", prefix[i], "_"), names(ntax.fam.nat))
     }
 
     outdata <- merge(outdata, ntax.full, by = sampID) |>
-      merge(ntax.gen, by = sampID, all.x=TRUE) |>
-      merge(ntax.fam, by = sampID, all.x=TRUE) |>
-      merge(ntax.gen.nat, by = sampID, all.x=TRUE) |>
-      merge(ntax.fam.nat, by = sampID, all.x=TRUE)
-
+      merge(ntax.gen, by = sampID, all.x = TRUE) |>
+      merge(ntax.fam, by = sampID, all.x = TRUE) |>
+      merge(ntax.gen.nat, by = sampID, all.x = TRUE) |>
+      merge(ntax.fam.nat, by = sampID, all.x = TRUE)
   }
 
   var.long <- names(outdata)[!(names(outdata) %in% c(sampID))]
 
-  outdata.long <- reshape(outdata, idvar = sampID, direction = 'long',
-                                varying = var.long, timevar = 'PARAMETER',
-                                v.names = 'RESULT', times = var.long)
+  outdata.long <- reshape(outdata,
+    idvar = sampID, direction = "long",
+    varying = var.long, timevar = "PARAMETER",
+    v.names = "RESULT", times = var.long
+  )
 
   outdata.long$RESULT <- ifelse(is.na(outdata.long$RESULT), 0, outdata.long$RESULT)
 
   return(outdata.long)
-
 }

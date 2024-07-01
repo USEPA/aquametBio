@@ -43,21 +43,25 @@
 #' BIOMASS, DENSITY, and COUNT fields.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
-                            tow_vol, vol_ctd, conc_vol, lr_taxon=NULL,
-                            taxa_id, subsample=FALSE){
+                               tow_vol, vol_ctd, conc_vol, lr_taxon = NULL,
+                               taxa_id, subsample = FALSE) {
   inCts <- as.data.frame(inCts)
 
-  necVars <- c(sampID, sampType, rawCt, biofactor, taxa_id,
-               tow_vol, vol_ctd, conc_vol)
-  if(any(necVars %nin% names(inCts))){
+  necVars <- c(
+    sampID, sampType, rawCt, biofactor, taxa_id,
+    tow_vol, vol_ctd, conc_vol
+  )
+  if (any(necVars %nin% names(inCts))) {
     msgTraits <- which(necVars %nin% names(inCts))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
   }
 
-  if(!is.null(lr_taxon)){
-    if(lr_taxon %nin% names(inCts)){
+  if (!is.null(lr_taxon)) {
+    if (lr_taxon %nin% names(inCts)) {
       print("Missing variable named in lr_taxon argument - either
           change argument or add variable to input data.")
 
@@ -65,7 +69,7 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
     }
   }
 
-  if(!is.null(lr_taxon) & subsample==TRUE){
+  if (!is.null(lr_taxon) & subsample == TRUE) {
     print("Large/rare taxa should not be included when creating
           random subsamples from the data.")
     return(NULL)
@@ -80,44 +84,57 @@ convertZoopCts_NLA <- function(inCts, sampID, sampType, rawCt, biofactor,
   inCts.1 <- subset(inCts.1, !is.na(eval(as.name(rawCt))))
   # |!is.na(eval(as.name(vol_ctd)))|!is.na(eval(as.name(conc_vol)))) # This does not remove those with missing biofactor or missing abundance
 
-  inCts.1$CORR_FACTOR <- (inCts.1[, conc_vol]/inCts.1[, vol_ctd])/inCts.1[, tow_vol]
+  inCts.1$CORR_FACTOR <- (inCts.1[, conc_vol] / inCts.1[, vol_ctd]) / inCts.1[, tow_vol]
 
   outCts <- inCts.1
   outCts$BIOMASS <- outCts[, rawCt] * outCts[, biofactor] * outCts$CORR_FACTOR
 
-  outCts[which(outCts[, rawCt] == 0), 'BIOMASS'] <- 0 # This indicates 0 individuals in sample, NLA taxa ID 9999
-  outCts[which(is.na(outCts[, biofactor]) & outCts[, rawCt]>0), 'BIOMASS'] <- NA
+  outCts[which(outCts[, rawCt] == 0), "BIOMASS"] <- 0 # This indicates 0 individuals in sample, NLA taxa ID 9999
+  outCts[which(is.na(outCts[, biofactor]) & outCts[, rawCt] > 0), "BIOMASS"] <- NA
 
-  if(subsample == FALSE){
+  if (subsample == FALSE) {
     outCts$DENSITY <- outCts[, rawCt] * outCts$CORR_FACTOR
 
-    outCts.1 <- aggregate(x = list(COUNT = outCts[, rawCt],
-                                 BIOMASS = outCts$BIOMASS,
-                                 DENSITY = outCts$DENSITY),
-                        by = outCts[, c(sampID, sampType, taxa_id)],
-                        FUN = function(x){sum(x, na.rm=TRUE)})
-
-  }else{
-    outCts.1 <- aggregate(x = list(COUNT = outCts[, rawCt],
-                                   BIOMASS = outCts$BIOMASS),
-                          by = outCts[, c(sampID, sampType, taxa_id)],
-                          FUN = function(x){sum(x, na.rm=TRUE)})
+    outCts.1 <- aggregate(
+      x = list(
+        COUNT = outCts[, rawCt],
+        BIOMASS = outCts$BIOMASS,
+        DENSITY = outCts$DENSITY
+      ),
+      by = outCts[, c(sampID, sampType, taxa_id)],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
+  } else {
+    outCts.1 <- aggregate(
+      x = list(
+        COUNT = outCts[, rawCt],
+        BIOMASS = outCts$BIOMASS
+      ),
+      by = outCts[, c(sampID, sampType, taxa_id)],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
   }
 
   # Now add back in large/rare abundances - no changes necessary, just leaves them in the data
-  if(!is.null(lr_taxon) & subsample==FALSE){
+  if (!is.null(lr_taxon) & subsample == FALSE) {
     lrCts <- subset(inCts, !is.na(eval(as.name(lr_taxon))),
-                    select = names(inCts) %in% c(sampID, sampType, taxa_id, lr_taxon))
+      select = names(inCts) %in% c(sampID, sampType, taxa_id, lr_taxon)
+    )
 
     lrCts.out <- lrCts
 
     lrCts.out <- unique(lrCts.out)
 
-    outCts.1 <- merge(outCts.1, lrCts.out, by = c(sampID, sampType, taxa_id), all=TRUE)
-
+    outCts.1 <- merge(outCts.1, lrCts.out, by = c(sampID, sampType, taxa_id), all = TRUE)
   }
 
-  outCts.1 <- outCts.1[with(outCts.1, order(eval(as.name(sampID)), eval(as.name(sampType)),
-                                            eval(as.name(taxa_id)))),]
+  outCts.1 <- outCts.1[with(outCts.1, order(
+    eval(as.name(sampID)), eval(as.name(sampType)),
+    eval(as.name(taxa_id))
+  )), ]
   return(outCts.1)
 }

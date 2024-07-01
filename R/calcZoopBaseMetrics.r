@@ -59,254 +59,297 @@
 #' \emph{nativeMetrics} = TRUE, NAT is appended to metric names.
 
 calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
-                           ct, biomass, density = NULL,
-                           inTaxa, taxa_id='TAXA_ID',
-                           ffg, clad_size, net_size,
-                           nativeMetrics = FALSE,
-                           nonnative = NULL){
-
+                                ct, biomass, density = NULL,
+                                inTaxa, taxa_id = "TAXA_ID",
+                                ffg, clad_size, net_size,
+                                nativeMetrics = FALSE,
+                                nonnative = NULL) {
   indata <- as.data.frame(indata)
   indata <- indata[, names(indata)[names(indata) %in% c(sampID, is_distinct, ct, biomass, density, taxa_id, nonnative)]]
 
   necVars <- c(sampID, is_distinct, ct, biomass, taxa_id)
-  if(any(necVars %nin% names(indata))){
+  if (any(necVars %nin% names(indata))) {
     msgTraits <- which(necVars %nin% names(indata))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
-  }else{
+  } else {
     indata[, c(ct, biomass, is_distinct)] <- lapply(indata[, c(ct, biomass, is_distinct)], as.numeric)
   }
 
-  if(!is.null(density)){
-    if(density %nin% names(indata)){
+  if (!is.null(density)) {
+    if (density %nin% names(indata)) {
       print("Missing density variable in input data frame.")
-    }else{
+    } else {
       indata[, density] <- as.numeric(indata[, density])
     }
   }
 
-  if(!is.null(nonnative)){
-    if(nonnative %nin% names(indata)){
+  if (!is.null(nonnative)) {
+    if (nonnative %nin% names(indata)) {
       print("Missing nonnative variable in input data frame.")
-    }else{
+    } else {
       indata[, nonnative] <- as.numeric(indata[, nonnative])
     }
   }
 
-  necTaxVars <- c(taxa_id, ffg, clad_size, net_size,
-                  'PHYLUM', 'CLASS', 'SUBCLASS', 'ORDER',
-                  'SUBORDER', 'FAMILY')
-  if(any(necTaxVars %nin% names(inTaxa))){
+  necTaxVars <- c(
+    taxa_id, ffg, clad_size, net_size,
+    "PHYLUM", "CLASS", "SUBCLASS", "ORDER",
+    "SUBORDER", "FAMILY"
+  )
+  if (any(necTaxVars %nin% names(inTaxa))) {
     msgTraits <- which(necTaxVars %nin% names(inTaxa))
-    print(paste("Missing variables in input taxalist:",
-                paste(necTaxVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input taxalist:",
+      paste(necTaxVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
   }
 
   # Assign characteristics to taxa
-  calcData <- merge(indata, inTaxa, by = 'TAXA_ID')
+  calcData <- merge(indata, inTaxa, by = "TAXA_ID")
 
-  calcData$CALAN <- with(calcData, ifelse(ORDER=='CALANOIDA', 1, 0))
-  calcData$COPE <- with(calcData, ifelse(SUBCLASS=='COPEPODA', 1, 0))
-  calcData$COARSE <- with(calcData, ifelse(eval(as.name(net_size))=='COARSE', 1, 0))
-  calcData$FINE <- with(calcData, ifelse(eval(as.name(net_size))=='FINE', 1, 0))
-  calcData$SMCLAD <- with(calcData, ifelse(SUBORDER=='CLADOCERA' &
-                                             eval(as.name(clad_size))=='SMALL', 1, 0))
-  calcData$DAPHNIID <- with(calcData, ifelse(FAMILY=='DAPHNIIDAE', 1, 0))
-  calcData$LGCLAD <- with(calcData, ifelse(eval(as.name(clad_size))=='LARGE', 1, 0))
-  calcData$BOSM <- with(calcData, ifelse(FAMILY=='BOSMINIDAE', 1, 0))
-  calcData$CLAD <- with(calcData, ifelse(SUBORDER=='CLADOCERA', 1, 0))
+  calcData$CALAN <- with(calcData, ifelse(ORDER == "CALANOIDA", 1, 0))
+  calcData$COPE <- with(calcData, ifelse(SUBCLASS == "COPEPODA", 1, 0))
+  calcData$COARSE <- with(calcData, ifelse(eval(as.name(net_size)) == "COARSE", 1, 0))
+  calcData$FINE <- with(calcData, ifelse(eval(as.name(net_size)) == "FINE", 1, 0))
+  calcData$SMCLAD <- with(calcData, ifelse(SUBORDER == "CLADOCERA" &
+    eval(as.name(clad_size)) == "SMALL", 1, 0))
+  calcData$DAPHNIID <- with(calcData, ifelse(FAMILY == "DAPHNIIDAE", 1, 0))
+  calcData$LGCLAD <- with(calcData, ifelse(eval(as.name(clad_size)) == "LARGE", 1, 0))
+  calcData$BOSM <- with(calcData, ifelse(FAMILY == "BOSMINIDAE", 1, 0))
+  calcData$CLAD <- with(calcData, ifelse(SUBORDER == "CLADOCERA", 1, 0))
 
   # If input is not just native taxa, there are many more metrics that
   # get calculated.
-  if(nativeMetrics==FALSE){
-    calcData$COPE_HERB <- with(calcData, ifelse(COPE==1 & eval(as.name(ffg))=='HERB', 1, 0))
-    calcData$ROT <- with(calcData, ifelse(PHYLUM=='ROTIFERA', 1, 0))
-    calcData$HERB <- with(calcData, ifelse(eval(as.name(ffg))=='HERB', 1, 0))
-    calcData$OMNI <- with(calcData, ifelse(eval(as.name(ffg))=='OMNI', 1, 0))
-    calcData$PLOIMA <- with(calcData, ifelse(ORDER=='PLOIMA', 1, 0))
-    calcData$SIDID <- with(calcData, ifelse(FAMILY=='SIDIDAE', 1, 0))
-    calcData$CRUST <- with(calcData, ifelse(PHYLUM=='ARTHROPODA' &
-                            CLASS %in% c('MAXILLOPODA','BRANCHIOPODA'), 1, 0))
-    calcData$CYCLOP <- with(calcData, ifelse(ORDER=='CYCLOPOIDA', 1, 0))
-    calcData$FLOS <- with(calcData, ifelse(ORDER=='FLOSCULARIACEAE', 1, 0))
-    calcData$COLLO <- with(calcData, ifelse(ORDER=='COLLOTHECACEAE', 1, 0))
-    calcData$ASPLAN <- with(calcData, ifelse(FAMILY=='ASPLANCHNIDAE', 1, 0))
-    calcData$PRED <- with(calcData, ifelse(eval(as.name(ffg))=='PRED', 1, 0))
-    calcData$CRUST_HERB <- with(calcData, ifelse(HERB==1 & CRUST==1, 1, 0))
-    calcData$CRUST_PRED <- with(calcData, ifelse(PRED==1 & CRUST==1, 1, 0))
-    calcData$CRUST_OMNI <- with(calcData, ifelse(OMNI==1 & CRUST==1, 1, 0))
-    calcData$ROT_HERB <- with(calcData, ifelse(HERB==1 & ROT==1, 1, 0))
-    calcData$ROT_PRED <- with(calcData, ifelse(PRED==1 & ROT==1, 1, 0))
-    calcData$ROT_OMNI <- with(calcData, ifelse(OMNI==1 & ROT==1, 1, 0))
-    calcData$COPE_PRED <- with(calcData, ifelse(PRED==1 & COPE==1, 1, 0))
-    calcData$COPE_OMNI <- with(calcData, ifelse(OMNI==1 & COPE==1, 1, 0))
-    calcData$CLAD_PRED <- with(calcData, ifelse(PRED==1 & CLAD==1, 1, 0))
-    calcData$CLAD_OMNI <- with(calcData, ifelse(OMNI==1 & CLAD==1, 1, 0))
-    calcData$CLAD_HERB <- with(calcData, ifelse(HERB==1 & CLAD==1, 1, 0))
+  if (nativeMetrics == FALSE) {
+    calcData$COPE_HERB <- with(calcData, ifelse(COPE == 1 & eval(as.name(ffg)) == "HERB", 1, 0))
+    calcData$ROT <- with(calcData, ifelse(PHYLUM == "ROTIFERA", 1, 0))
+    calcData$HERB <- with(calcData, ifelse(eval(as.name(ffg)) == "HERB", 1, 0))
+    calcData$OMNI <- with(calcData, ifelse(eval(as.name(ffg)) == "OMNI", 1, 0))
+    calcData$PLOIMA <- with(calcData, ifelse(ORDER == "PLOIMA", 1, 0))
+    calcData$SIDID <- with(calcData, ifelse(FAMILY == "SIDIDAE", 1, 0))
+    calcData$CRUST <- with(calcData, ifelse(PHYLUM == "ARTHROPODA" &
+      CLASS %in% c("MAXILLOPODA", "BRANCHIOPODA"), 1, 0))
+    calcData$CYCLOP <- with(calcData, ifelse(ORDER == "CYCLOPOIDA", 1, 0))
+    calcData$FLOS <- with(calcData, ifelse(ORDER == "FLOSCULARIACEAE", 1, 0))
+    calcData$COLLO <- with(calcData, ifelse(ORDER == "COLLOTHECACEAE", 1, 0))
+    calcData$ASPLAN <- with(calcData, ifelse(FAMILY == "ASPLANCHNIDAE", 1, 0))
+    calcData$PRED <- with(calcData, ifelse(eval(as.name(ffg)) == "PRED", 1, 0))
+    calcData$CRUST_HERB <- with(calcData, ifelse(HERB == 1 & CRUST == 1, 1, 0))
+    calcData$CRUST_PRED <- with(calcData, ifelse(PRED == 1 & CRUST == 1, 1, 0))
+    calcData$CRUST_OMNI <- with(calcData, ifelse(OMNI == 1 & CRUST == 1, 1, 0))
+    calcData$ROT_HERB <- with(calcData, ifelse(HERB == 1 & ROT == 1, 1, 0))
+    calcData$ROT_PRED <- with(calcData, ifelse(PRED == 1 & ROT == 1, 1, 0))
+    calcData$ROT_OMNI <- with(calcData, ifelse(OMNI == 1 & ROT == 1, 1, 0))
+    calcData$COPE_PRED <- with(calcData, ifelse(PRED == 1 & COPE == 1, 1, 0))
+    calcData$COPE_OMNI <- with(calcData, ifelse(OMNI == 1 & COPE == 1, 1, 0))
+    calcData$CLAD_PRED <- with(calcData, ifelse(PRED == 1 & CLAD == 1, 1, 0))
+    calcData$CLAD_OMNI <- with(calcData, ifelse(OMNI == 1 & CLAD == 1, 1, 0))
+    calcData$CLAD_HERB <- with(calcData, ifelse(HERB == 1 & CLAD == 1, 1, 0))
   }
 
   # Now we create the list of parameters to run, and these depend on
   # whether nativeMetrics is TRUE or FALSE
-  if(nativeMetrics == FALSE){
-    params <- c('CALAN','COPE','COPE_HERB','ROT','COARSE','FINE','SMCLAD',
-                'DAPHNIID','HERB','LGCLAD','OMNI','PLOIMA','SIDID','CLAD','BOSM'
-                ,'CYCLOP','FLOS','COLLO','ASPLAN','PRED','ROT_HERB','ROT_PRED',
-                'ROT_OMNI','COPE_PRED','COPE_OMNI','CLAD_HERB','CLAD_OMNI','CLAD_PRED')
-  }else{
-    params <- c('CALAN','COPE','COARSE','FINE','SMCLAD','LGCLAD','CLAD','DAPHNIID','BOSM')
+  if (nativeMetrics == FALSE) {
+    params <- c(
+      "CALAN", "COPE", "COPE_HERB", "ROT", "COARSE", "FINE", "SMCLAD",
+      "DAPHNIID", "HERB", "LGCLAD", "OMNI", "PLOIMA", "SIDID", "CLAD", "BOSM",
+      "CYCLOP", "FLOS", "COLLO", "ASPLAN", "PRED", "ROT_HERB", "ROT_PRED",
+      "ROT_OMNI", "COPE_PRED", "COPE_OMNI", "CLAD_HERB", "CLAD_OMNI", "CLAD_PRED"
+    )
+  } else {
+    params <- c("CALAN", "COPE", "COARSE", "FINE", "SMCLAD", "LGCLAD", "CLAD", "DAPHNIID", "BOSM")
   }
 
-  if(length(sampID)==1){
+  if (length(sampID) == 1) {
     samps <- data.frame(x1 = unique(calcData[, sampID]))
     colnames(samps) <- sampID
-  }else{
+  } else {
     samps <- unique(calcData[, sampID])
   }
 
-  column_names <- c(sampID, 'PARAMETER', 'RESULT')
+  column_names <- c(sampID, "PARAMETER", "RESULT")
 
   metsOut <- data.frame(matrix(nrow = 0, ncol = length(column_names)))
   colnames(metsOut) <- column_names
 
   # Need to calculate totals first
-  if(!is.null(density)){
+  if (!is.null(density)) {
+    totals <- calcZoopTotals(
+      calcData, sampID, is_distinct,
+      c(ct, biomass, density),
+      c("TOTL_NIND", "TOTL_BIO", "TOTL_DEN"),
+      "TOTL_NTAX"
+    )
+  } else {
     totals <- calcZoopTotals(calcData, sampID, is_distinct,
-                             c(ct, biomass, density),
-                             c('TOTL_NIND', 'TOTL_BIO', 'TOTL_DEN'),
-                             'TOTL_NTAX')
-  }else{
-    totals <- calcZoopTotals(calcData, sampID, is_distinct,
-                             c(ct, biomass),
-                             outputSums = c('TOTL_NIND', 'TOTL_BIO'),
-                             outputTaxa = 'TOTL_NTAX')
+      c(ct, biomass),
+      outputSums = c("TOTL_NIND", "TOTL_BIO"),
+      outputTaxa = "TOTL_NTAX"
+    )
   }
 
 
-  for(i in 1:length(params)){
-      print(i)
-      if(nativeMetrics==FALSE){
-        metsIn <- subset(calcData, eval(as.name(params[i]))==1)
-      }else{
-        metsIn <- subset(calcData, eval(as.name(params[i]))==1 &
-                           eval(as.name(nonnative))==0)
+  for (i in 1:length(params)) {
+    print(i)
+    if (nativeMetrics == FALSE) {
+      metsIn <- subset(calcData, eval(as.name(params[i])) == 1)
+    } else {
+      metsIn <- subset(calcData, eval(as.name(params[i])) == 1 &
+        eval(as.name(nonnative)) == 0)
+    }
+
+
+    metsIn <- merge(metsIn, totals, by = sampID)
+
+    # For parameters with no observations, print a message for user
+    # Then create an set of metrics for that parameter and assign value of 0
+    # Then it adds onto the existing metrics calculated
+    if (nrow(metsIn) == 0) {
+      print(paste("No observations for ", params[i], sep = ""))
+      numSamps <- nrow(metsOut)
+      # met.1.long <- merge(samps, data.frame(PARAMETER=c(paste(params[i],'DEN', sep='_'),
+      #                                        paste(params[i],'PDEN', sep='_'),
+      #                                        paste(params[i],'BIO',sep='_'),
+      #                                        paste(params[i],'PBIO',sep='_'),
+      #                                        paste(params[i],'NIND',sep='_'),
+      #                                        paste(params[i],'PIND',sep='_'),
+      #                                        paste(params[i],'PTAX',sep='_'),
+      #                                        paste(params[i],'NTAX',sep='_')),
+      #                                       RESULT=0))
+
+      if (!is.null(density)) {
+        met.1.long <- merge(samps, data.frame(
+          PARAMETER = c(
+            paste(params[i], "DEN", sep = "_"),
+            paste(params[i], "PDEN", sep = "_"),
+            paste(params[i], "BIO", sep = "_"),
+            paste(params[i], "PBIO", sep = "_"),
+            paste(params[i], "NIND", sep = "_"),
+            paste(params[i], "PIND", sep = "_"),
+            paste(params[i], "PTAX", sep = "_"),
+            paste(params[i], "NTAX", sep = "_")
+          ),
+          RESULT = 0
+        ))
+      } else {
+        met.1.long <- merge(samps, data.frame(
+          PARAMETER = c(
+            paste(params[i], "BIO", sep = "_"),
+            paste(params[i], "PBIO", sep = "_"),
+            paste(params[i], "NIND", sep = "_"),
+            paste(params[i], "PIND", sep = "_"),
+            paste(params[i], "PTAX", sep = "_"),
+            paste(params[i], "NTAX", sep = "_")
+          ),
+          RESULT = 0
+        ))
+      }
+
+      if (nativeMetrics == TRUE) {
+        met.1.long$PARAMETER <- with(met.1.long, gsub(params[i], paste(params[i], "NAT", sep = "_"), PARAMETER))
       }
 
 
-      metsIn <- merge(metsIn, totals, by = sampID)
+      metsOut <- rbind(metsOut, met.1.long)
+    } else { # Include NIND only for full metrics, not native only
+      met.1 <- metsIn
+      # If there are samples with parameter present, calculate all types of metrics for
+      # that parameter, then add to existing metrics
+      met.1$CALCPIND <- with(met.1, eval(as.name(ct)) / TOTL_NIND)
+      met.1$CALCPTAX <- with(met.1, eval(as.name(is_distinct)) / TOTL_NTAX)
+      met.1$CALCPBIO <- with(met.1, eval(as.name(biomass)) / TOTL_BIO)
 
-      # For parameters with no observations, print a message for user
-      # Then create an set of metrics for that parameter and assign value of 0
-      # Then it adds onto the existing metrics calculated
-      if(nrow(metsIn)==0){
-        print(paste("No observations for ", params[i], sep=''))
-        numSamps <- nrow(metsOut)
-        # met.1.long <- merge(samps, data.frame(PARAMETER=c(paste(params[i],'DEN', sep='_'),
-        #                                        paste(params[i],'PDEN', sep='_'),
-        #                                        paste(params[i],'BIO',sep='_'),
-        #                                        paste(params[i],'PBIO',sep='_'),
-        #                                        paste(params[i],'NIND',sep='_'),
-        #                                        paste(params[i],'PIND',sep='_'),
-        #                                        paste(params[i],'PTAX',sep='_'),
-        #                                        paste(params[i],'NTAX',sep='_')),
-        #                                       RESULT=0))
-
-        if(!is.null(density)){
-          met.1.long <- merge(samps, data.frame(PARAMETER=c(paste(params[i],'DEN', sep='_'),
-                                                            paste(params[i],'PDEN', sep='_'),
-                                                            paste(params[i],'BIO',sep='_'),
-                                                            paste(params[i],'PBIO',sep='_'),
-                                                            paste(params[i],'NIND',sep='_'),
-                                                            paste(params[i],'PIND',sep='_'),
-                                                            paste(params[i],'PTAX',sep='_'),
-                                                            paste(params[i],'NTAX',sep='_')),
-                                                RESULT=0))
-        }else{
-          met.1.long <- merge(samps, data.frame(PARAMETER=c(paste(params[i],'BIO',sep='_'),
-                                                            paste(params[i],'PBIO',sep='_'),
-                                                            paste(params[i],'NIND',sep='_'),
-                                                            paste(params[i],'PIND',sep='_'),
-                                                            paste(params[i],'PTAX',sep='_'),
-                                                            paste(params[i],'NTAX',sep='_')),
-                                                RESULT=0))
+      met.1a.nind <- aggregate(
+        x = list(
+          NIND = met.1[, ct],
+          NTAX = met.1[, is_distinct]
+        ),
+        by = met.1[sampID],
+        FUN = function(x) {
+          sum(x, na.rm = T)
         }
+      )
 
-        if(nativeMetrics==TRUE){
-          met.1.long$PARAMETER <- with(met.1.long, gsub(params[i], paste(params[i], 'NAT', sep='_'), PARAMETER))
-        }
-
-
-        metsOut <- rbind(metsOut, met.1.long)
-
-      }else{ # Include NIND only for full metrics, not native only
-        met.1 <- metsIn
-        # If there are samples with parameter present, calculate all types of metrics for
-        # that parameter, then add to existing metrics
-        met.1$CALCPIND <- with(met.1, eval(as.name(ct))/TOTL_NIND)
-        met.1$CALCPTAX <- with(met.1, eval(as.name(is_distinct))/TOTL_NTAX)
-        met.1$CALCPBIO <- with(met.1, eval(as.name(biomass))/TOTL_BIO)
-
-        met.1a.nind <- aggregate(x = list(NIND = met.1[, ct],
-                                          NTAX = met.1[, is_distinct]),
-                            by = met.1[sampID],
-                            FUN = function(x){sum(x, na.rm=T)})
-
-        if(!is.null(density)){
-          met.1$CALCPDEN <- with(met.1, eval(as.name(density))/TOTL_DEN)
-          met.1a.den <- aggregate(x = list(DEN = met.1[, density]),
-                                  by = met.1[sampID],
-                                  FUN = function(x){round(sum(x, na.rm=T), 4)})
-        }
-
-        met.1a.bio <- aggregate(x = list(BIO = met.1[, biomass]),
-                                by = met.1[sampID],
-                                FUN = function(x){round(sum(x, na.rm=T), 6)})
-
-        if(!is.null(density)){
-          met.1b <- aggregate(x = list(PIND = met.1$CALCPIND,
-                                       PTAX = met.1$CALCPTAX,
-                                       PDEN = met.1$CALCPDEN,
-                                       PBIO = met.1$CALCPBIO),
-                              by = met.1[sampID],
-                              FUN = function(x){round(sum(x, na.rm=TRUE)*100, 2)})
-        }else{
-          met.1b <- aggregate(x = list(PIND = met.1$CALCPIND,
-                                       PTAX = met.1$CALCPTAX,
-                                       PBIO = met.1$CALCPBIO),
-                              by = met.1[sampID],
-                              FUN = function(x){round(sum(x, na.rm=TRUE)*100, 2)})
-        }
-
-        if(!is.null(density)){
-          met.2 <- merge(met.1a.nind, met.1a.bio, by = sampID) |>
-            merge(met.1a.den, by = sampID) |>
-            merge(met.1b, by = sampID)
-        }else{
-          met.2 <- merge(met.1a.nind, met.1a.bio, by = sampID) |>
-            merge(met.1b, by = sampID)
-        }
-
-        met.2a <- merge(samps, met.2, by = c(sampID), all.x=TRUE)
-        met.2a[is.na(met.2a)] <- 0
-
-        met.2.long <- reshape(met.2a, idvar = sampID, direction = 'long',
-                            varying = names(met.2)[!(names(met.2a) %in% sampID)],
-                            timevar = 'PARAMETER', v.names = 'RESULT',
-                            times = names(met.2)[!(names(met.2a) %in% sampID)])
-
-        if(nativeMetrics==FALSE){
-          met.2.long$PARAMETER <- paste(params[i], met.2.long$PARAMETER, sep='_')
-          met.2.long$RESULT <- with(met.2.long, ifelse(is.na(RESULT), 0, RESULT))
-        }else{
-          met.2.long$PARAMETER <- with(met.2.long, paste(params[i], 'NAT', PARAMETER, sep='_'))
-          met.2.long$RESULT <- with(met.2.long, ifelse(is.na(RESULT), 0, RESULT))
-        }
-
-        metsOut <- rbind(metsOut, met.2.long)
-
+      if (!is.null(density)) {
+        met.1$CALCPDEN <- with(met.1, eval(as.name(density)) / TOTL_DEN)
+        met.1a.den <- aggregate(
+          x = list(DEN = met.1[, density]),
+          by = met.1[sampID],
+          FUN = function(x) {
+            round(sum(x, na.rm = T), 4)
+          }
+        )
       }
+
+      met.1a.bio <- aggregate(
+        x = list(BIO = met.1[, biomass]),
+        by = met.1[sampID],
+        FUN = function(x) {
+          round(sum(x, na.rm = T), 6)
+        }
+      )
+
+      if (!is.null(density)) {
+        met.1b <- aggregate(
+          x = list(
+            PIND = met.1$CALCPIND,
+            PTAX = met.1$CALCPTAX,
+            PDEN = met.1$CALCPDEN,
+            PBIO = met.1$CALCPBIO
+          ),
+          by = met.1[sampID],
+          FUN = function(x) {
+            round(sum(x, na.rm = TRUE) * 100, 2)
+          }
+        )
+      } else {
+        met.1b <- aggregate(
+          x = list(
+            PIND = met.1$CALCPIND,
+            PTAX = met.1$CALCPTAX,
+            PBIO = met.1$CALCPBIO
+          ),
+          by = met.1[sampID],
+          FUN = function(x) {
+            round(sum(x, na.rm = TRUE) * 100, 2)
+          }
+        )
+      }
+
+      if (!is.null(density)) {
+        met.2 <- merge(met.1a.nind, met.1a.bio, by = sampID) |>
+          merge(met.1a.den, by = sampID) |>
+          merge(met.1b, by = sampID)
+      } else {
+        met.2 <- merge(met.1a.nind, met.1a.bio, by = sampID) |>
+          merge(met.1b, by = sampID)
+      }
+
+      met.2a <- merge(samps, met.2, by = c(sampID), all.x = TRUE)
+      met.2a[is.na(met.2a)] <- 0
+
+      met.2.long <- reshape(met.2a,
+        idvar = sampID, direction = "long",
+        varying = names(met.2)[!(names(met.2a) %in% sampID)],
+        timevar = "PARAMETER", v.names = "RESULT",
+        times = names(met.2)[!(names(met.2a) %in% sampID)]
+      )
+
+      if (nativeMetrics == FALSE) {
+        met.2.long$PARAMETER <- paste(params[i], met.2.long$PARAMETER, sep = "_")
+        met.2.long$RESULT <- with(met.2.long, ifelse(is.na(RESULT), 0, RESULT))
+      } else {
+        met.2.long$PARAMETER <- with(met.2.long, paste(params[i], "NAT", PARAMETER, sep = "_"))
+        met.2.long$RESULT <- with(met.2.long, ifelse(is.na(RESULT), 0, RESULT))
+      }
+
+      metsOut <- rbind(metsOut, met.2.long)
+    }
   }
   return(metsOut)
 }
-

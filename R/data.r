@@ -101,8 +101,8 @@
 #' @note This is just a very small subset of benthic count data for NRSA 2008-2009
 #'    for example purposes only.
 #' @examples
-#'    data(bentEx)
-#'    head(bentEx)
+#' data(bentEx)
+#' head(bentEx)
 #' @keywords datasets
 "bentEx"
 
@@ -130,8 +130,8 @@
 #' @note This is just a very small subset of benthic count data for NRSA 2008-2009
 #'   for example purposes only.
 #' @examples
-#'   data(distEx)
-#'   head(distEx)
+#' data(distEx)
+#' head(distEx)
 #' @keywords datasets
 "distEx"
 
@@ -152,8 +152,8 @@
 #' @note This is just a very small subset of fish count data for NRSA 2008-2009
 #'   for example purposes only.
 #' @examples
-#'   data(fishEx)
-#'   head(fishEx)
+#' data(fishEx)
+#' head(fishEx)
 #' @keywords datasets
 "fishEx"
 
@@ -187,8 +187,8 @@
 #' @note Unless a data frame name is provided for argument inTaxa to the fishMet
 #'   function, this dataset provides the inTaxa data frame.
 #' @examples
-#'   data(fishTaxa)
-#'   head(fishTaxa)
+#' data(fishTaxa)
+#' head(fishTaxa)
 #' @keywords datasets
 "fishTaxa"
 
@@ -226,8 +226,8 @@
 #' @note Unless a data frame name is provided for argument inTaxa to the
 #' zooplankton metric functions, this dataset provides the inTaxa data frame.
 #' @examples
-#'   data(zoopTaxa)
-#'   head(zoopTaxa)
+#' data(zoopTaxa)
+#' head(zoopTaxa)
 #' @keywords datasets
 "zoopTaxa"
 
@@ -255,8 +255,7 @@
 #' @note Unless a data frame name is provided for argument inTaxa to the
 #' zooplankton metric functions, this dataset provides the inTaxa data frame.
 #' @examples
-#'   data(zpRawEx)
-#'   head(zpRawEx)
+#' data(zpRawEx)
+#' head(zpRawEx)
 #' @keywords datasets
 "zpRawEx"
-

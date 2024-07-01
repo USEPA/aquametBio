@@ -28,40 +28,49 @@
 #'
 calcZoopTotals <- function(indata, sampID, is_distinct,
                            inputSums, outputSums,
-                           outputTaxa = NULL){
+                           outputTaxa = NULL) {
   necVars <- c(sampID, inputSums)
-  if(any(necVars %nin% names(indata))){
+  if (any(necVars %nin% names(indata))) {
     msgTraits <- which(necVars %nin% names(indata))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
   }
 
   indata[, c(inputSums, is_distinct)] <- lapply(indata[, c(inputSums, is_distinct)], as.numeric)
 
-  if(length(sampID)==1){
+  if (length(sampID) == 1) {
     outdata <- data.frame(col1 = unique(indata[, sampID]))
     colnames(outdata) <- sampID
-  }else{
+  } else {
     outdata <- as.data.frame(unique(indata[, sampID]))
   }
-  for(i in 1:length(inputSums)){
-
-    temp <- aggregate(x=list(x.out = indata[, inputSums[i]]),
-                                   by = indata[sampID],
-                                   FUN = function(x){sum(x, na.rm=TRUE)})
+  for (i in 1:length(inputSums)) {
+    temp <- aggregate(
+      x = list(x.out = indata[, inputSums[i]]),
+      by = indata[sampID],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
 
     outdata <- merge(outdata, temp)
-    names(outdata)[names(outdata)=='x.out'] <- outputSums[i]
+    names(outdata)[names(outdata) == "x.out"] <- outputSums[i]
   }
 
   # now count distinct taxa using distinctness variable
-  if(!is.null(outputTaxa)){
-    ntax <- aggregate(x = list(ntax = indata[, is_distinct]),
-                      by = indata[sampID],
-                      FUN = function(x){sum(x, na.rm=TRUE)})
+  if (!is.null(outputTaxa)) {
+    ntax <- aggregate(
+      x = list(ntax = indata[, is_distinct]),
+      by = indata[sampID],
+      FUN = function(x) {
+        sum(x, na.rm = TRUE)
+      }
+    )
 
-    names(ntax)[names(ntax) == 'ntax'] <- outputTaxa
+    names(ntax)[names(ntax) == "ntax"] <- outputTaxa
 
     outdata <- merge(outdata, ntax, by = sampID)
   }

@@ -75,64 +75,75 @@
 #' \emph{inTaxa} indicating the net size class of a taxon.
 #' Valid values are COARSE and FINE.
 calcZoopAllMets <- function(indata, inCoarse, inFine,
-                              inTaxa, sampID, is_distinct,
-                              ct = 'COUNT', biomass = 'BIOMASS',
-                              density = 'DENSITY',
-                              is_distinct_sub = 'IS_DISTINCT_300',
-                              ct_sub = 'COUNT_300',
-                              biomass_sub = 'BIOMASS_300',
-                              sub_mod = '300', taxa_id = 'TAXA_ID',
-                              nonnative = 'NON_NATIVE', genus = 'GENUS',
-                              family = 'FAMILY', ffg = 'FFG',
-                              clad_size = 'CLADOCERA_SIZE',
-                              net_size = 'NET_SIZECLS_NEW'){
-
+                            inTaxa, sampID, is_distinct,
+                            ct = "COUNT", biomass = "BIOMASS",
+                            density = "DENSITY",
+                            is_distinct_sub = "IS_DISTINCT_300",
+                            ct_sub = "COUNT_300",
+                            biomass_sub = "BIOMASS_300",
+                            sub_mod = "300", taxa_id = "TAXA_ID",
+                            nonnative = "NON_NATIVE", genus = "GENUS",
+                            family = "FAMILY", ffg = "FFG",
+                            clad_size = "CLADOCERA_SIZE",
+                            net_size = "NET_SIZECLS_NEW") {
   indata <- as.data.frame(indata)
 
-  necVars <- c(sampID, is_distinct, ct, biomass, density, ct_sub,
-               biomass_sub, taxa_id, nonnative)
-  if(any(necVars %nin% names(indata))){
+  necVars <- c(
+    sampID, is_distinct, ct, biomass, density, ct_sub,
+    biomass_sub, taxa_id, nonnative
+  )
+  if (any(necVars %nin% names(indata))) {
     msgTraits <- which(necVars %nin% names(indata))
-    print(paste("Missing variables in input data frame:",
-                paste(necVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input data frame:",
+      paste(necVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
-  }else{
+  } else {
     indata[, c(ct, biomass, ct_sub, density, biomass_sub, is_distinct, is_distinct_sub)] <- lapply(indata[, c(ct, biomass, ct_sub, density, biomass_sub, is_distinct, is_distinct_sub)], as.numeric)
   }
 
-  necTaxVars <- c(taxa_id, ffg, clad_size, net_size,
-                  'PHYLUM', 'CLASS', 'SUBCLASS', 'ORDER',
-                  'SUBORDER', 'FAMILY', genus, family)
-  if(any(necTaxVars %nin% names(inTaxa))){
+  necTaxVars <- c(
+    taxa_id, ffg, clad_size, net_size,
+    "PHYLUM", "CLASS", "SUBCLASS", "ORDER",
+    "SUBORDER", "FAMILY", genus, family
+  )
+  if (any(necTaxVars %nin% names(inTaxa))) {
     msgTraits <- which(necTaxVars %nin% names(inTaxa))
-    print(paste("Missing variables in input taxalist:",
-                paste(necTaxVars[msgTraits], collapse=',')))
+    print(paste(
+      "Missing variables in input taxalist:",
+      paste(necTaxVars[msgTraits], collapse = ",")
+    ))
     return(NULL)
   }
 
   baseMets.full <- calcZoopBaseMetrics(indata, sampID, is_distinct,
-                                       ct, biomass, density,
-                                       inTaxa, taxa_id,
-                                       ffg, clad_size,
-                                       net_size,
-                                       nativeMetrics = FALSE)
+    ct, biomass, density,
+    inTaxa, taxa_id,
+    ffg, clad_size,
+    net_size,
+    nativeMetrics = FALSE
+  )
 
-  indata.nat <- subset(indata, eval(as.name(nonnative))==0)
+  indata.nat <- subset(indata, eval(as.name(nonnative)) == 0)
 
   baseMets.nat <- calcZoopBaseMetrics(indata, sampID, is_distinct,
-                                       ct, biomass, density,
-                                       inTaxa, taxa_id,
-                                       ffg, clad_size,
-                                       net_size,
-                                       nativeMetrics = TRUE,
-                                       nonnative)
+    ct, biomass, density,
+    inTaxa, taxa_id,
+    ffg, clad_size,
+    net_size,
+    nativeMetrics = TRUE,
+    nonnative
+  )
 
   baseMets.sub <- calcZoopBaseMetrics(indata, sampID, is_distinct_sub,
-                                      ct_sub, biomass_sub, density = NULL,
-                                      inTaxa, taxa_id,
-                                      ffg, clad_size,
-                                      net_size,
-                                      nativeMetrics = FALSE)
+    ct_sub, biomass_sub,
+    density = NULL,
+    inTaxa, taxa_id,
+    ffg, clad_size,
+    net_size,
+    nativeMetrics = FALSE
+  )
 
   baseMets.sub$PARAMETER <- gsub("\\_NIND", paste0(sub_mod, "\\_NIND"), baseMets.sub$PARAMETER)
   baseMets.sub$PARAMETER <- gsub("\\_PIND", paste0(sub_mod, "\\_PIND"), baseMets.sub$PARAMETER)
@@ -142,12 +153,14 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
   baseMets.sub$PARAMETER <- gsub("\\_PBIO", paste0(sub_mod, "\\_PBIO"), baseMets.sub$PARAMETER)
 
   baseMets.sub.nat <- calcZoopBaseMetrics(indata, sampID, is_distinct_sub,
-                                          ct_sub, biomass_sub, density = NULL,
-                                          inTaxa, taxa_id,
-                                          ffg, clad_size,
-                                          net_size,
-                                          nativeMetrics = TRUE,
-                                          nonnative)
+    ct_sub, biomass_sub,
+    density = NULL,
+    inTaxa, taxa_id,
+    ffg, clad_size,
+    net_size,
+    nativeMetrics = TRUE,
+    nonnative
+  )
 
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_NIND", paste0(sub_mod, "\\_NAT\\_NIND"), baseMets.sub.nat$PARAMETER)
   baseMets.sub.nat$PARAMETER <- gsub("\\_NAT\\_PIND", paste0(sub_mod, "\\_NAT\\_PIND"), baseMets.sub.nat$PARAMETER)
@@ -159,43 +172,63 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
   print("Finished with base metrics")
 
   # Copepod ratio metrics - these require metrics calculated above
-  copeMetsIn <- rbind(subset(baseMets.full, PARAMETER %in% c('CALAN_NIND',
-                                                    'CALAN_BIO', 'CALAN_DEN',
-                                                    'CYCLOP_NIND', 'CYCLOP_BIO',
-                                                    'CYCLOP_DEN', 'CLAD_NIND',
-                                                    'CLAD_BIO', 'CLAD_DEN')),
-                      subset(baseMets.sub, PARAMETER %in% c(paste0('CALAN', sub_mod, '_NIND'),
-                                                    paste0('CALAN', sub_mod, '_BIO'),
-                                                    paste0('CYCLOP', sub_mod, '_NIND'),
-                                                    paste0('CYCLOP', sub_mod, '_BIO'),
-                                                    paste0('CLAD', sub_mod, '_NIND'),
-                                                    paste0('CLAD', sub_mod, '_BIO'))))
+  copeMetsIn <- rbind(
+    subset(baseMets.full, PARAMETER %in% c(
+      "CALAN_NIND",
+      "CALAN_BIO", "CALAN_DEN",
+      "CYCLOP_NIND", "CYCLOP_BIO",
+      "CYCLOP_DEN", "CLAD_NIND",
+      "CLAD_BIO", "CLAD_DEN"
+    )),
+    subset(baseMets.sub, PARAMETER %in% c(
+      paste0("CALAN", sub_mod, "_NIND"),
+      paste0("CALAN", sub_mod, "_BIO"),
+      paste0("CYCLOP", sub_mod, "_NIND"),
+      paste0("CYCLOP", sub_mod, "_BIO"),
+      paste0("CLAD", sub_mod, "_NIND"),
+      paste0("CLAD", sub_mod, "_BIO")
+    ))
+  )
 
-  copeMetsIn.wide <- reshape(copeMetsIn, idvar = c(sampID), direction = 'wide',
-                             timevar = 'PARAMETER', v.names = 'RESULT')
+  copeMetsIn.wide <- reshape(copeMetsIn,
+    idvar = c(sampID), direction = "wide",
+    timevar = "PARAMETER", v.names = "RESULT"
+  )
 
   names(copeMetsIn.wide) <- gsub("RESULT\\.", "", names(copeMetsIn.wide))
 
 
-  copeRatMets <- calcZoopCopeMetrics(copeMetsIn.wide, sampID,
-                                     c('CALAN_NIND', 'CALAN_BIO', 'CALAN_DEN',
-                                       paste0('CALAN', sub_mod, '_NIND'),
-                                       paste0('CALAN', sub_mod, '_BIO')),
-                                     c('CYCLOP_NIND', 'CYCLOP_BIO', 'CYCLOP_DEN',
-                                       paste0('CYCLOP', sub_mod, '_NIND'),
-                                       paste0('CYCLOP', sub_mod, '_BIO')),
-                                     c('CLAD_NIND', 'CLAD_BIO', 'CLAD_DEN',
-                                       paste0('CLAD', sub_mod, '_NIND'),
-                                       paste0('CLAD', sub_mod, '_BIO')))
+  copeRatMets <- calcZoopCopeMetrics(
+    copeMetsIn.wide, sampID,
+    c(
+      "CALAN_NIND", "CALAN_BIO", "CALAN_DEN",
+      paste0("CALAN", sub_mod, "_NIND"),
+      paste0("CALAN", sub_mod, "_BIO")
+    ),
+    c(
+      "CYCLOP_NIND", "CYCLOP_BIO", "CYCLOP_DEN",
+      paste0("CYCLOP", sub_mod, "_NIND"),
+      paste0("CYCLOP", sub_mod, "_BIO")
+    ),
+    c(
+      "CLAD_NIND", "CLAD_BIO", "CLAD_DEN",
+      paste0("CLAD", sub_mod, "_NIND"),
+      paste0("CLAD", sub_mod, "_BIO")
+    )
+  )
 
   print("Finished copepod ratio merics")
 
-# Diversity metrics
-  divMets.full <- calcZoopDivMetrics(indata, sampID, is_distinct,
-                                     ct, biomass, density)
+  # Diversity metrics
+  divMets.full <- calcZoopDivMetrics(
+    indata, sampID, is_distinct,
+    ct, biomass, density
+  )
 
-  divMets.sub <- calcZoopDivMetrics(indata, sampID, is_distinct_sub,
-                                    ct_sub, biomass_sub)
+  divMets.sub <- calcZoopDivMetrics(
+    indata, sampID, is_distinct_sub,
+    ct_sub, biomass_sub
+  )
 
   divMets.sub$PARAMETER <- gsub("\\_NIND", paste0(sub_mod, "\\_NIND"), divMets.sub$PARAMETER)
   divMets.sub$PARAMETER <- gsub("\\_BIO", paste0(sub_mod, "\\_BIO"), divMets.sub$PARAMETER)
@@ -204,304 +237,400 @@ calcZoopAllMets <- function(indata, inCoarse, inFine,
 
   # Now merge taxa with indata to subset to rotifers
   indata.taxa <- merge(indata, inTaxa, by = taxa_id) |>
-    subset(select = c(sampID, ct, ct_sub, taxa_id, biomass, biomass_sub,
-                      density, is_distinct, is_distinct_sub,
-                      'SUBORDER', 'SUBCLASS', 'PHYLUM'))
+    subset(select = c(
+      sampID, ct, ct_sub, taxa_id, biomass, biomass_sub,
+      density, is_distinct, is_distinct_sub,
+      "SUBORDER", "SUBCLASS", "PHYLUM"
+    ))
 
-  divMets.full.rot <- calcZoopDivMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
-                                         sampID, is_distinct, ct, suffix = 'ROT')
+  divMets.full.rot <- calcZoopDivMetrics(subset(indata.taxa, PHYLUM == "ROTIFERA"),
+    sampID, is_distinct, ct,
+    suffix = "ROT"
+  )
 
-  divMets.full.clad <- calcZoopDivMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
-                                         sampID, is_distinct, ct, suffix = 'CLAD')
+  divMets.full.clad <- calcZoopDivMetrics(subset(indata.taxa, SUBORDER == "CLADOCERA"),
+    sampID, is_distinct, ct,
+    suffix = "CLAD"
+  )
 
-  divMets.full.cope <- calcZoopDivMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
-                                         sampID, is_distinct, ct, suffix = 'COPE')
+  divMets.full.cope <- calcZoopDivMetrics(subset(indata.taxa, SUBCLASS == "COPEPODA"),
+    sampID, is_distinct, ct,
+    suffix = "COPE"
+  )
 
-  divMets.sub.rot <- calcZoopDivMetrics(subset(indata.taxa, PHYLUM=='ROTIFERA'),
-                                         sampID, is_distinct_sub, ct_sub, suffix = 'ROT')
+  divMets.sub.rot <- calcZoopDivMetrics(subset(indata.taxa, PHYLUM == "ROTIFERA"),
+    sampID, is_distinct_sub, ct_sub,
+    suffix = "ROT"
+  )
 
   divMets.sub.rot$PARAMETER <- paste0(divMets.sub.rot$PARAMETER, sub_mod)
 
-  divMets.sub.clad <- calcZoopDivMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
-                                          sampID, is_distinct_sub, ct_sub, suffix = 'CLAD')
+  divMets.sub.clad <- calcZoopDivMetrics(subset(indata.taxa, SUBORDER == "CLADOCERA"),
+    sampID, is_distinct_sub, ct_sub,
+    suffix = "CLAD"
+  )
 
   divMets.sub.clad$PARAMETER <- paste0(divMets.sub.clad$PARAMETER, sub_mod)
 
-  divMets.sub.cope <- calcZoopDivMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
-                                          sampID, is_distinct_sub, ct_sub, suffix = 'COPE')
+  divMets.sub.cope <- calcZoopDivMetrics(subset(indata.taxa, SUBCLASS == "COPEPODA"),
+    sampID, is_distinct_sub, ct_sub,
+    suffix = "COPE"
+  )
 
   divMets.sub.cope$PARAMETER <- paste0(divMets.sub.cope$PARAMETER, sub_mod)
 
   print("Finished group diversity metrics")
-# Dominance metrics
+  # Dominance metrics
   dom.full <- calcZoopDomMetrics(indata, sampID, is_distinct,
-                                  valsIn = c(ct, biomass, density),
-                                  valsOut = c('PIND', 'PBIO', 'PDEN'),
-                                  taxa_id,
-                                  subgrp = NULL)
+    valsIn = c(ct, biomass, density),
+    valsOut = c("PIND", "PBIO", "PDEN"),
+    taxa_id,
+    subgrp = NULL
+  )
 
   dom.sub <- calcZoopDomMetrics(indata, sampID, is_distinct_sub,
-                                 valsIn = c(ct_sub, biomass_sub),
-                                 valsOut = c(paste(sub_mod, 'PIND', sep = '_'),
-                                             paste(sub_mod, 'PBIO', sep = '_'),
-                                             paste(sub_mod, 'PDEN', sep = '_')),
-                                 taxa_id,
-                                 subgrp = NULL)
+    valsIn = c(ct_sub, biomass_sub),
+    valsOut = c(
+      paste(sub_mod, "PIND", sep = "_"),
+      paste(sub_mod, "PBIO", sep = "_"),
+      paste(sub_mod, "PDEN", sep = "_")
+    ),
+    taxa_id,
+    subgrp = NULL
+  )
 
-  indata.taxa$ROT <- with(indata.taxa, ifelse(PHYLUM=='ROTIFERA', 1, 0))
-  indata.taxa$CLAD <- with(indata.taxa, ifelse(SUBORDER=='CLADOCERA', 1, 0))
-  indata.taxa$COPE <- with(indata.taxa, ifelse(SUBCLASS=='COPEPODA', 1, 0))
+  indata.taxa$ROT <- with(indata.taxa, ifelse(PHYLUM == "ROTIFERA", 1, 0))
+  indata.taxa$CLAD <- with(indata.taxa, ifelse(SUBORDER == "CLADOCERA", 1, 0))
+  indata.taxa$COPE <- with(indata.taxa, ifelse(SUBCLASS == "COPEPODA", 1, 0))
 
   dom.full.rot <- calcZoopDomMetrics(indata.taxa,
-                                     sampID, is_distinct,
-                                     valsIn = c(ct, biomass, density),
-                                     valsOut = c('PIND', 'PBIO', 'PDEN'),
-                                     taxa_id, subgrp = 'ROT')
+    sampID, is_distinct,
+    valsIn = c(ct, biomass, density),
+    valsOut = c("PIND", "PBIO", "PDEN"),
+    taxa_id, subgrp = "ROT"
+  )
 
   dom.full.clad <- calcZoopDomMetrics(indata.taxa,
-                                     sampID, is_distinct,
-                                     valsIn = c(ct, biomass, density),
-                                     valsOut = c('PIND', 'PBIO', 'PDEN'),
-                                     taxa_id, subgrp = 'CLAD')
+    sampID, is_distinct,
+    valsIn = c(ct, biomass, density),
+    valsOut = c("PIND", "PBIO", "PDEN"),
+    taxa_id, subgrp = "CLAD"
+  )
 
   dom.full.cope <- calcZoopDomMetrics(indata.taxa,
-                                     sampID, is_distinct,
-                                     valsIn = c(ct, biomass, density),
-                                     valsOut = c('PIND', 'PBIO', 'PDEN'),
-                                     taxa_id, subgrp = 'COPE')
+    sampID, is_distinct,
+    valsIn = c(ct, biomass, density),
+    valsOut = c("PIND", "PBIO", "PDEN"),
+    taxa_id, subgrp = "COPE"
+  )
 
   dom.sub.rot <- calcZoopDomMetrics(indata.taxa,
-                                     sampID, is_distinct_sub,
-                                     valsIn = c(ct_sub, biomass_sub),
-                                     valsOut = c('PIND', 'PBIO'),
-                                     taxa_id, subgrp = 'ROT')
-  dom.sub.rot$PARAMETER <- gsub('ROT\\_PIND', paste(sub_mod, 'ROT\\_PIND', sep = '_'),
-                                dom.sub.rot$PARAMETER)
-  dom.sub.rot$PARAMETER <- gsub('ROT\\_PBIO', paste(sub_mod, 'ROT\\_PBIO', sep = '_'),
-                                dom.sub.rot$PARAMETER)
+    sampID, is_distinct_sub,
+    valsIn = c(ct_sub, biomass_sub),
+    valsOut = c("PIND", "PBIO"),
+    taxa_id, subgrp = "ROT"
+  )
+  dom.sub.rot$PARAMETER <- gsub(
+    "ROT\\_PIND", paste(sub_mod, "ROT\\_PIND", sep = "_"),
+    dom.sub.rot$PARAMETER
+  )
+  dom.sub.rot$PARAMETER <- gsub(
+    "ROT\\_PBIO", paste(sub_mod, "ROT\\_PBIO", sep = "_"),
+    dom.sub.rot$PARAMETER
+  )
 
-  dom.sub.clad <- calcZoopDomMetrics(subset(indata.taxa, SUBORDER=='CLADOCERA'),
-                                     sampID, is_distinct_sub,
-                                     valsIn = c(ct_sub, biomass_sub),
-                                      valsOut = c('PIND', 'PBIO'),
-                                      taxa_id, subgrp = 'CLAD')
-  dom.sub.clad$PARAMETER <- gsub('CLAD\\_PIND', paste(sub_mod, 'CLAD\\_PIND', sep = '_'),
-                                 dom.sub.clad$PARAMETER)
-  dom.sub.clad$PARAMETER <- gsub('CLAD\\_PBIO', paste(sub_mod, 'CLAD\\_PBIO', sep = '_'),
-                                 dom.sub.clad$PARAMETER)
+  dom.sub.clad <- calcZoopDomMetrics(subset(indata.taxa, SUBORDER == "CLADOCERA"),
+    sampID, is_distinct_sub,
+    valsIn = c(ct_sub, biomass_sub),
+    valsOut = c("PIND", "PBIO"),
+    taxa_id, subgrp = "CLAD"
+  )
+  dom.sub.clad$PARAMETER <- gsub(
+    "CLAD\\_PIND", paste(sub_mod, "CLAD\\_PIND", sep = "_"),
+    dom.sub.clad$PARAMETER
+  )
+  dom.sub.clad$PARAMETER <- gsub(
+    "CLAD\\_PBIO", paste(sub_mod, "CLAD\\_PBIO", sep = "_"),
+    dom.sub.clad$PARAMETER
+  )
 
-  dom.sub.cope <- calcZoopDomMetrics(subset(indata.taxa, SUBCLASS=='COPEPODA'),
-                                     sampID, is_distinct_sub,
-                                     valsIn = c(ct_sub, biomass_sub),
-                                     valsOut = c('PIND', 'PBIO'),
-                                     taxa_id, subgrp = 'COPE')
-  dom.sub.cope$PARAMETER <- gsub('COPE\\_PIND', paste(sub_mod, 'COPE\\_PIND', sep = '_'),
-                                 dom.sub.cope$PARAMETER)
-  dom.sub.cope$PARAMETER <- gsub('COPE\\_PBIO', paste(sub_mod, 'COPE\\_PBIO', sep = '_'),
-                                 dom.sub.cope$PARAMETER)
+  dom.sub.cope <- calcZoopDomMetrics(subset(indata.taxa, SUBCLASS == "COPEPODA"),
+    sampID, is_distinct_sub,
+    valsIn = c(ct_sub, biomass_sub),
+    valsOut = c("PIND", "PBIO"),
+    taxa_id, subgrp = "COPE"
+  )
+  dom.sub.cope$PARAMETER <- gsub(
+    "COPE\\_PIND", paste(sub_mod, "COPE\\_PIND", sep = "_"),
+    dom.sub.cope$PARAMETER
+  )
+  dom.sub.cope$PARAMETER <- gsub(
+    "COPE\\_PBIO", paste(sub_mod, "COPE\\_PBIO", sep = "_"),
+    dom.sub.cope$PARAMETER
+  )
 
   print("Finished dominance metrics")
 
   # Richness metrics
   richMets.full <- calcZoopRichnessMetrics(indata, sampID,
-                                           distVars=c(is_distinct, is_distinct_sub),
-                                           nonnative, inTaxa,
-                                           taxa_id, genus,
-                                           family, prefix = c('', sub_mod)) |>
-    subset(!(PARAMETER %in% c('TOTL_NTAX', paste0('TOTL', sub_mod, '_NTAX'))))
+    distVars = c(is_distinct, is_distinct_sub),
+    nonnative, inTaxa,
+    taxa_id, genus,
+    family, prefix = c("", sub_mod)
+  ) |>
+    subset(!(PARAMETER %in% c("TOTL_NTAX", paste0("TOTL", sub_mod, "_NTAX"))))
 
   richMets.coarse <- calcZoopRichnessMetrics(inCoarse, sampID,
-                                           distVars=c(is_distinct, is_distinct_sub),
-                                           nonnative, inTaxa,
-                                           taxa_id, genus,
-                                           family, prefix = c('', sub_mod))
+    distVars = c(is_distinct, is_distinct_sub),
+    nonnative, inTaxa,
+    taxa_id, genus,
+    family, prefix = c("", sub_mod)
+  )
 
-  richMets.coarse <- subset(richMets.coarse, !(PARAMETER %in% c('TOTL_NTAX', 'TOTL_NAT_NTAX',
-                                                                paste0('TOTL', sub_mod, '_NTAX'),
-                                                                paste0('TOTL', sub_mod, '_NAT_NTAX'))))
+  richMets.coarse <- subset(richMets.coarse, !(PARAMETER %in% c(
+    "TOTL_NTAX", "TOTL_NAT_NTAX",
+    paste0("TOTL", sub_mod, "_NTAX"),
+    paste0("TOTL", sub_mod, "_NAT_NTAX")
+  )))
 
-  richMets.coarse$PARAMETER <- gsub('FAM\\_', 'ZOCN\\_FAM\\_', richMets.coarse$PARAMETER)
-  richMets.coarse$PARAMETER <- gsub('GEN\\_', 'ZOCN\\_GEN\\_', richMets.coarse$PARAMETER)
-  richMets.coarse$PARAMETER <- gsub(paste0('FAM', sub_mod),
-                                    paste0('ZOCN', sub_mod, '\\_FAM'),
-                                    richMets.coarse$PARAMETER)
-  richMets.coarse$PARAMETER <- gsub(paste0('GEN', sub_mod),
-                                    paste0('ZOCN', sub_mod, '\\_GEN'),
-                                    richMets.coarse$PARAMETER)
+  richMets.coarse$PARAMETER <- gsub("FAM\\_", "ZOCN\\_FAM\\_", richMets.coarse$PARAMETER)
+  richMets.coarse$PARAMETER <- gsub("GEN\\_", "ZOCN\\_GEN\\_", richMets.coarse$PARAMETER)
+  richMets.coarse$PARAMETER <- gsub(
+    paste0("FAM", sub_mod),
+    paste0("ZOCN", sub_mod, "\\_FAM"),
+    richMets.coarse$PARAMETER
+  )
+  richMets.coarse$PARAMETER <- gsub(
+    paste0("GEN", sub_mod),
+    paste0("ZOCN", sub_mod, "\\_GEN"),
+    richMets.coarse$PARAMETER
+  )
 
   richMets.fine <- calcZoopRichnessMetrics(inFine, sampID,
-                                             distVars=c(is_distinct, is_distinct_sub),
-                                             nonnative, inTaxa,
-                                             taxa_id, genus,
-                                             family, prefix = c('', sub_mod))
-  richMets.fine <- subset(richMets.fine, !(PARAMETER %in% c('TOTL_NTAX', 'TOTL_NAT_NTAX',
-                                                            paste0('TOTL', sub_mod, '_NTAX'),
-                                                            paste0('TOTL', sub_mod, '_NAT_NTAX'))))
+    distVars = c(is_distinct, is_distinct_sub),
+    nonnative, inTaxa,
+    taxa_id, genus,
+    family, prefix = c("", sub_mod)
+  )
+  richMets.fine <- subset(richMets.fine, !(PARAMETER %in% c(
+    "TOTL_NTAX", "TOTL_NAT_NTAX",
+    paste0("TOTL", sub_mod, "_NTAX"),
+    paste0("TOTL", sub_mod, "_NAT_NTAX")
+  )))
 
-  richMets.fine$PARAMETER <- gsub('FAM\\_', 'ZOFN\\_FAM\\_', richMets.fine$PARAMETER)
-  richMets.fine$PARAMETER <- gsub('GEN\\_', 'ZOFN\\_GEN\\_', richMets.fine$PARAMETER)
-  richMets.fine$PARAMETER <- gsub(paste0('FAM', sub_mod),
-                                    paste0('ZOFN', sub_mod, '\\_FAM'),
-                                    richMets.fine$PARAMETER)
-  richMets.fine$PARAMETER <- gsub(paste0('GEN', sub_mod),
-                                    paste0('ZOFN', sub_mod, '\\_GEN'),
-                                    richMets.fine$PARAMETER)
+  richMets.fine$PARAMETER <- gsub("FAM\\_", "ZOFN\\_FAM\\_", richMets.fine$PARAMETER)
+  richMets.fine$PARAMETER <- gsub("GEN\\_", "ZOFN\\_GEN\\_", richMets.fine$PARAMETER)
+  richMets.fine$PARAMETER <- gsub(
+    paste0("FAM", sub_mod),
+    paste0("ZOFN", sub_mod, "\\_FAM"),
+    richMets.fine$PARAMETER
+  )
+  richMets.fine$PARAMETER <- gsub(
+    paste0("GEN", sub_mod),
+    paste0("ZOFN", sub_mod, "\\_GEN"),
+    richMets.fine$PARAMETER
+  )
 
 
   print("Finished richness metrics")
 
   # Totals - these are all in wide format so combine and then melt
-  totMets.full <- calcZoopTotals(indata, sampID, is_distinct,
-                                 c(ct, biomass, density),
-                                 c('TOTL_NIND', 'TOTL_BIO', 'TOTL_DEN'),
-                                 'TOTL_NTAX')
+  totMets.full <- calcZoopTotals(
+    indata, sampID, is_distinct,
+    c(ct, biomass, density),
+    c("TOTL_NIND", "TOTL_BIO", "TOTL_DEN"),
+    "TOTL_NTAX"
+  )
 
-  totMets.nat <- calcZoopTotals(indata.nat, sampID, is_distinct,
-                                c(ct, biomass, density),
-                                c('TOTL_NAT_NIND', 'TOTL_NAT_BIO', 'TOTL_NAT_DEN'),
-                                'TOTL_NAT_NTAX')
+  totMets.nat <- calcZoopTotals(
+    indata.nat, sampID, is_distinct,
+    c(ct, biomass, density),
+    c("TOTL_NAT_NIND", "TOTL_NAT_BIO", "TOTL_NAT_DEN"),
+    "TOTL_NAT_NTAX"
+  )
 
-  totMets.sub <- calcZoopTotals(indata, sampID, is_distinct_sub,
-                                 c(ct_sub, biomass_sub),
-                                 c(paste0('TOTL', sub_mod, '_NIND'),
-                                   paste0('TOTL', sub_mod, '_BIO')),
-                                 paste0('TOTL', sub_mod, '_NTAX'))
+  totMets.sub <- calcZoopTotals(
+    indata, sampID, is_distinct_sub,
+    c(ct_sub, biomass_sub),
+    c(
+      paste0("TOTL", sub_mod, "_NIND"),
+      paste0("TOTL", sub_mod, "_BIO")
+    ),
+    paste0("TOTL", sub_mod, "_NTAX")
+  )
 
-  totMets.sub.nat <- calcZoopTotals(indata.nat, sampID, is_distinct_sub,
-                                c(ct_sub, biomass_sub),
-                                c(paste0('TOTL', sub_mod, '_NAT_NIND'),
-                                  paste0('TOTL', sub_mod, '_NAT_BIO')),
-                                  paste0('TOTL', sub_mod, '_NAT_NTAX'))
+  totMets.sub.nat <- calcZoopTotals(
+    indata.nat, sampID, is_distinct_sub,
+    c(ct_sub, biomass_sub),
+    c(
+      paste0("TOTL", sub_mod, "_NAT_NIND"),
+      paste0("TOTL", sub_mod, "_NAT_BIO")
+    ),
+    paste0("TOTL", sub_mod, "_NAT_NTAX")
+  )
 
   print("Finished totals metrics for combined sample")
 
   # Also calculate totals by coarse and fine sample types
-  totMets.zocn.full <- calcZoopTotals(inCoarse, sampID, is_distinct,
-                                      c(ct, biomass, density),
-                                      c('ZOCN_NIND', 'ZOCN_BIO', 'ZOCN_DEN'),
-                                      'ZOCN_NTAX')
+  totMets.zocn.full <- calcZoopTotals(
+    inCoarse, sampID, is_distinct,
+    c(ct, biomass, density),
+    c("ZOCN_NIND", "ZOCN_BIO", "ZOCN_DEN"),
+    "ZOCN_NTAX"
+  )
 
-  totMets.zocn.nat <- calcZoopTotals(subset(inCoarse, eval(as.name(nonnative))==0),
-                                     sampID, is_distinct,
-                                     c(ct, biomass, density),
-                                     c('ZOCN_NAT_NIND', 'ZOCN_NAT_BIO', 'ZOCN_NAT_DEN'),
-                                     'ZOCN_NAT_NTAX')
+  totMets.zocn.nat <- calcZoopTotals(
+    subset(inCoarse, eval(as.name(nonnative)) == 0),
+    sampID, is_distinct,
+    c(ct, biomass, density),
+    c("ZOCN_NAT_NIND", "ZOCN_NAT_BIO", "ZOCN_NAT_DEN"),
+    "ZOCN_NAT_NTAX"
+  )
 
-  totMets.zocn.sub <- calcZoopTotals(inCoarse, sampID, is_distinct_sub,
-                                     c(ct_sub, biomass_sub),
-                                     c(paste0('ZOCN', sub_mod, '_NIND'),
-                                       paste0('ZOCN', sub_mod, '_BIO')),
-                                       paste0('ZOCN', sub_mod, '_NTAX'))
+  totMets.zocn.sub <- calcZoopTotals(
+    inCoarse, sampID, is_distinct_sub,
+    c(ct_sub, biomass_sub),
+    c(
+      paste0("ZOCN", sub_mod, "_NIND"),
+      paste0("ZOCN", sub_mod, "_BIO")
+    ),
+    paste0("ZOCN", sub_mod, "_NTAX")
+  )
 
-  totMets.zocn.sub.nat <- calcZoopTotals(subset(inCoarse, eval(as.name(nonnative))==0),
-                                         sampID, is_distinct_sub,
-                                         c(ct_sub, biomass_sub),
-                                         c(paste0('ZOCN', sub_mod, '_NAT_NIND'),
-                                           paste0('ZOCN', sub_mod, '_NAT_BIO')),
-                                           paste0('ZOCN', sub_mod, '_NAT_NTAX'))
+  totMets.zocn.sub.nat <- calcZoopTotals(
+    subset(inCoarse, eval(as.name(nonnative)) == 0),
+    sampID, is_distinct_sub,
+    c(ct_sub, biomass_sub),
+    c(
+      paste0("ZOCN", sub_mod, "_NAT_NIND"),
+      paste0("ZOCN", sub_mod, "_NAT_BIO")
+    ),
+    paste0("ZOCN", sub_mod, "_NAT_NTAX")
+  )
 
-  totMets.zofn.full <- calcZoopTotals(inFine, sampID, is_distinct,
-                                      c(ct, biomass, density),
-                                      c('ZOFN_NIND', 'ZOFN_BIO', 'ZOFN_DEN'),
-                                      'ZOFN_NTAX')
+  totMets.zofn.full <- calcZoopTotals(
+    inFine, sampID, is_distinct,
+    c(ct, biomass, density),
+    c("ZOFN_NIND", "ZOFN_BIO", "ZOFN_DEN"),
+    "ZOFN_NTAX"
+  )
 
-  totMets.zofn.nat <- calcZoopTotals(subset(inFine, eval(as.name(nonnative))==0),
-                                     sampID, is_distinct,
-                                     c(ct, biomass, density),
-                                     c('ZOFN_NAT_NIND', 'ZOFN_NAT_BIO', 'ZOFN_NAT_DEN'),
-                                     'ZOFN_NAT_NTAX')
+  totMets.zofn.nat <- calcZoopTotals(
+    subset(inFine, eval(as.name(nonnative)) == 0),
+    sampID, is_distinct,
+    c(ct, biomass, density),
+    c("ZOFN_NAT_NIND", "ZOFN_NAT_BIO", "ZOFN_NAT_DEN"),
+    "ZOFN_NAT_NTAX"
+  )
 
-  totMets.zofn.sub <- calcZoopTotals(inFine, sampID, is_distinct_sub,
-                                     c(ct_sub, biomass_sub),
-                                     c(paste0('ZOFN', sub_mod, '_NIND'),
-                                       paste0('ZOFN', sub_mod, '_BIO')),
-                                       paste0('ZOFN', sub_mod, '_NTAX'))
+  totMets.zofn.sub <- calcZoopTotals(
+    inFine, sampID, is_distinct_sub,
+    c(ct_sub, biomass_sub),
+    c(
+      paste0("ZOFN", sub_mod, "_NIND"),
+      paste0("ZOFN", sub_mod, "_BIO")
+    ),
+    paste0("ZOFN", sub_mod, "_NTAX")
+  )
 
-  totMets.zofn.sub.nat <- calcZoopTotals(subset(inFine, eval(as.name(nonnative))==0),
-                                         sampID, is_distinct_sub,
-                                         c(ct_sub, biomass_sub),
-                                         c(paste0('ZOFN', sub_mod, '_NAT_NIND'),
-                                           paste0('ZOFN', sub_mod, '_NAT_BIO')),
-                                           paste0('ZOFN', sub_mod, '_NAT_NTAX'))
+  totMets.zofn.sub.nat <- calcZoopTotals(
+    subset(inFine, eval(as.name(nonnative)) == 0),
+    sampID, is_distinct_sub,
+    c(ct_sub, biomass_sub),
+    c(
+      paste0("ZOFN", sub_mod, "_NAT_NIND"),
+      paste0("ZOFN", sub_mod, "_NAT_BIO")
+    ),
+    paste0("ZOFN", sub_mod, "_NAT_NTAX")
+  )
 
   print("Finished totals metrics for fine and coarse mesh data")
 
-  zonwMets.all <- merge(totMets.full, totMets.nat, by = sampID, all.x=TRUE) |>
-    merge(totMets.sub, by = sampID, all.x=TRUE) |>
-    merge(totMets.sub.nat, by = sampID, all.x=TRUE)
+  zonwMets.all <- merge(totMets.full, totMets.nat, by = sampID, all.x = TRUE) |>
+    merge(totMets.sub, by = sampID, all.x = TRUE) |>
+    merge(totMets.sub.nat, by = sampID, all.x = TRUE)
 
-  zocnTot.all <- merge(totMets.zocn.full, totMets.zocn.nat, by = sampID, all.x=TRUE) |>
-    merge(totMets.zocn.sub, by = sampID, all.x=TRUE) |>
-    merge(totMets.zocn.sub.nat, by = sampID, all.x=TRUE)
+  zocnTot.all <- merge(totMets.zocn.full, totMets.zocn.nat, by = sampID, all.x = TRUE) |>
+    merge(totMets.zocn.sub, by = sampID, all.x = TRUE) |>
+    merge(totMets.zocn.sub.nat, by = sampID, all.x = TRUE)
 
-  zofnTot.all <- merge(totMets.zofn.full, totMets.zofn.nat, by = sampID, all.x=TRUE) |>
-    merge(totMets.zofn.sub, by = sampID, all.x=TRUE) |>
-    merge(totMets.zofn.sub.nat, by = sampID, all.x=TRUE)
+  zofnTot.all <- merge(totMets.zofn.full, totMets.zofn.nat, by = sampID, all.x = TRUE) |>
+    merge(totMets.zofn.sub, by = sampID, all.x = TRUE) |>
+    merge(totMets.zofn.sub.nat, by = sampID, all.x = TRUE)
 
-  totMets.all <- merge(zonwMets.all, zocnTot.all, by = sampID, all.x=TRUE) |>
-    merge(zofnTot.all, by = sampID, all.x=TRUE)
+  totMets.all <- merge(zonwMets.all, zocnTot.all, by = sampID, all.x = TRUE) |>
+    merge(zofnTot.all, by = sampID, all.x = TRUE)
 
-  totMets.all.long <- reshape(totMets.all, idvar = sampID, direction = 'long',
-            varying = names(totMets.all)[!(names(totMets.all) %in% sampID)],
-            timevar = 'PARAMETER', v.names = 'RESULT',
-            times = names(totMets.all)[!(names(totMets.all) %in% sampID)])
+  totMets.all.long <- reshape(totMets.all,
+    idvar = sampID, direction = "long",
+    varying = names(totMets.all)[!(names(totMets.all) %in% sampID)],
+    timevar = "PARAMETER", v.names = "RESULT",
+    times = names(totMets.all)[!(names(totMets.all) %in% sampID)]
+  )
 
   print("Combined totals metrics")
 
   # Native metrics
   natMets.full <- calcZoopNativeMetrics(totMets.all, sampID,
-                        inputNative = c('TOTL_NAT_NTAX',
-                                        paste0('TOTL', sub_mod, '_NAT_NTAX'),
-                                        'ZOCN_NAT_NTAX',
-                                        paste0('ZOCN', sub_mod, '_NAT_NTAX'),
-                                        'ZOFN_NAT_NTAX',
-                                        paste0('ZOFN', sub_mod, '_NAT_NTAX'),
-                                        'TOTL_NAT_DEN', 'TOTL_NAT_BIO',
-                                        'TOTL_NAT_NIND',
-                                        paste0('TOTL', sub_mod, '_NAT_NIND'),
-                                        paste0('TOTL', sub_mod, '_NAT_BIO'),
-                                        'ZOCN_NAT_NIND',
-                                        paste0('ZOCN', sub_mod, '_NAT_NIND'),
-                                        'ZOCN_NAT_BIO',
-                                        paste0('ZOCN', sub_mod, '_NAT_BIO'),
-                                        'ZOCN_NAT_DEN',
-                                        'ZOFN_NAT_NIND',
-                                        paste0('ZOFN', sub_mod, '_NAT_NIND'),
-                                        'ZOFN_NAT_BIO',
-                                        paste0('ZOFN', sub_mod, '_NAT_BIO'),
-                                        'ZOFN_NAT_DEN'),
-                        inputTotals = c('TOTL_NTAX', paste0('TOTL', sub_mod, '_NTAX'),
-                                        'ZOCN_NTAX', paste0('ZOCN', sub_mod, '_NTAX'),
-                                        'ZOFN_NTAX', paste0('ZOFN', sub_mod, '_NTAX'),
-                                        'TOTL_DEN', 'TOTL_BIO', 'TOTL_NIND',
-                                        paste0('TOTL', sub_mod, '_NIND'),
-                                        paste0('TOTL', sub_mod, '_BIO'),
-                                        'ZOCN_NIND',
-                                        paste0('ZOCN', sub_mod, '_NIND'),
-                                        'ZOCN_BIO',
-                                        paste0('ZOCN', sub_mod, '_BIO'),
-                                        'ZOCN_DEN',
-                                        'ZOFN_NIND',
-                                        paste0('ZOFN', sub_mod, '_NIND'),
-                                        'ZOFN_BIO',
-                                        paste0('ZOFN', sub_mod, '_BIO'),
-                                        'ZOFN_DEN'))
+    inputNative = c(
+      "TOTL_NAT_NTAX",
+      paste0("TOTL", sub_mod, "_NAT_NTAX"),
+      "ZOCN_NAT_NTAX",
+      paste0("ZOCN", sub_mod, "_NAT_NTAX"),
+      "ZOFN_NAT_NTAX",
+      paste0("ZOFN", sub_mod, "_NAT_NTAX"),
+      "TOTL_NAT_DEN", "TOTL_NAT_BIO",
+      "TOTL_NAT_NIND",
+      paste0("TOTL", sub_mod, "_NAT_NIND"),
+      paste0("TOTL", sub_mod, "_NAT_BIO"),
+      "ZOCN_NAT_NIND",
+      paste0("ZOCN", sub_mod, "_NAT_NIND"),
+      "ZOCN_NAT_BIO",
+      paste0("ZOCN", sub_mod, "_NAT_BIO"),
+      "ZOCN_NAT_DEN",
+      "ZOFN_NAT_NIND",
+      paste0("ZOFN", sub_mod, "_NAT_NIND"),
+      "ZOFN_NAT_BIO",
+      paste0("ZOFN", sub_mod, "_NAT_BIO"),
+      "ZOFN_NAT_DEN"
+    ),
+    inputTotals = c(
+      "TOTL_NTAX", paste0("TOTL", sub_mod, "_NTAX"),
+      "ZOCN_NTAX", paste0("ZOCN", sub_mod, "_NTAX"),
+      "ZOFN_NTAX", paste0("ZOFN", sub_mod, "_NTAX"),
+      "TOTL_DEN", "TOTL_BIO", "TOTL_NIND",
+      paste0("TOTL", sub_mod, "_NIND"),
+      paste0("TOTL", sub_mod, "_BIO"),
+      "ZOCN_NIND",
+      paste0("ZOCN", sub_mod, "_NIND"),
+      "ZOCN_BIO",
+      paste0("ZOCN", sub_mod, "_BIO"),
+      "ZOCN_DEN",
+      "ZOFN_NIND",
+      paste0("ZOFN", sub_mod, "_NIND"),
+      "ZOFN_BIO",
+      paste0("ZOFN", sub_mod, "_BIO"),
+      "ZOFN_DEN"
+    )
+  )
 
   print("Finished native metrics")
 
   # Now combine all metrics together
-  allMets <- rbind(baseMets.full, baseMets.nat, baseMets.sub,
-                   baseMets.sub.nat, copeRatMets,
-                   divMets.full, divMets.sub,
-                   divMets.full.rot, divMets.full.clad,
-                   divMets.full.cope, divMets.sub.rot,
-                   divMets.sub.clad, divMets.sub.cope,
-                   dom.full, dom.sub, dom.full.rot,
-                   dom.full.clad, dom.full.cope,
-                   dom.sub.rot, dom.sub.clad,
-                   dom.sub.cope, richMets.full,
-                   richMets.coarse, richMets.fine,
-                   totMets.all.long, natMets.full)
+  allMets <- rbind(
+    baseMets.full, baseMets.nat, baseMets.sub,
+    baseMets.sub.nat, copeRatMets,
+    divMets.full, divMets.sub,
+    divMets.full.rot, divMets.full.clad,
+    divMets.full.cope, divMets.sub.rot,
+    divMets.sub.clad, divMets.sub.cope,
+    dom.full, dom.sub, dom.full.rot,
+    dom.full.clad, dom.full.cope,
+    dom.sub.rot, dom.sub.clad,
+    dom.sub.cope, richMets.full,
+    richMets.coarse, richMets.fine,
+    totMets.all.long, natMets.full
+  )
 
   row.names(allMets) <- NULL
   print("Finished calculating metrics.")
