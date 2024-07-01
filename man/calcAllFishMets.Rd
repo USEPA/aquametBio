@@ -125,22 +125,22 @@ all fish metrics as used in the National Aquatic
 Resource Surveys.
 }
 \examples{
-  \dontrun{
-  data(fishEx)
-  head(fishEx)
-  head(fishTaxa)
-  # Calculate metrics for bentIn, using the taxonomy in the count file as is
-  fishMetrics <- calcAllFishMets(indf=fishEx, inTaxa=fishTaxa,
-                     sampID='UID',dist='IS_DISTINCT',
-                     ct='FINAL_CT',anomct='ANOM_CT',taxa_id='TAXA_ID',
-                     tol='TOLERANCE_NRSA',tolval='TOL_VAL_EMAPW',vel='VEL_NRSA',
-                     habitat='HABITAT_NRSA',trophic='TROPHIC_NRSA',
-                     migr='MIGR_NRSA',nonnat='NON_NATIVE',reprod='REPROD_NRSA',
-                     temp='TEMP_NRSA',family='FAMILY',genus='GENUS',
-                     comname='FINAL_NAME')
-                     head(fishMetrics)}
+data(fishEx)
+head(fishEx)
+head(fishTaxa)
+# Calculate metrics for bentIn, using the taxonomy in the count file as is
+fishMetrics <- calcAllFishMets(
+  indf = fishEx, inTaxa = fishTaxa,
+  sampID = "UID", dist = "IS_DISTINCT",
+  ct = "FINAL_CT", anomct = "ANOM_CT", taxa_id = "TAXA_ID",
+  tol = "TOLERANCE_NRSA", tolval = "TOL_VAL_EMAPW", vel = "VEL_NRSA",
+  habitat = "HABITAT_NRSA", trophic = "TROPHIC_NRSA",
+  migr = "MIGR_NRSA", nonnat = "NON_NATIVE", reprod = "REPROD_NRSA",
+  temp = "TEMP_NRSA", family = "FAMILY", genus = "GENUS",
+  comname = "FINAL_NAME"
+)
+head(fishMetrics)
 }
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }
-\keyword{survey}

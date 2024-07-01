@@ -33,7 +33,7 @@ Unless a data frame name is provided for argument inTaxa to the
 zooplankton metric functions, this dataset provides the inTaxa data frame.
 }
 \examples{
-  data(zpRawEx)
-  head(zpRawEx)
+data(zpRawEx)
+head(zpRawEx)
 }
 \keyword{datasets}

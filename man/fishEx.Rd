@@ -26,7 +26,7 @@ This is just a very small subset of fish count data for NRSA 2008-2009
   for example purposes only.
 }
 \examples{
-  data(fishEx)
-  head(fishEx)
+data(fishEx)
+head(fishEx)
 }
 \keyword{datasets}

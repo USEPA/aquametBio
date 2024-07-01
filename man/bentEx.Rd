@@ -28,7 +28,7 @@ This is just a very small subset of benthic count data for NRSA 2008-2009
    for example purposes only.
 }
 \examples{
-   data(bentEx)
-   head(bentEx)
+data(bentEx)
+head(bentEx)
 }
 \keyword{datasets}

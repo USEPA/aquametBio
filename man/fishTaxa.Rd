@@ -39,7 +39,7 @@ Unless a data frame name is provided for argument inTaxa to the fishMet
   function, this dataset provides the inTaxa data frame.
 }
 \examples{
-  data(fishTaxa)
-  head(fishTaxa)
+data(fishTaxa)
+head(fishTaxa)
 }
 \keyword{datasets}

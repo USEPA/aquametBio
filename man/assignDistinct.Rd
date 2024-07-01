@@ -46,16 +46,18 @@ to be count data with all counts above 0.
 }
 \examples{
 \dontrun{
-  data(distEx)
-  head(distEx)
-  # Assign distinctness to each taxon within samples
-  distEx.1 <- assignDistinct(distEx,sampleID=c('UID','SAMPLE_TYPE'),
-  taxlevels=c('PHYLUM','CLASS','ORDER','FAMILY','GENUS'),
-  final.name='TARGET_TAXON',
-  special.taxa=c('THIENEMANNIMYIA GENUS GR.', 'CERATOPOGONINAE', 'CRICOTOPUS/ORTHOCLADIUS'))
+data(distEx)
+head(distEx)
+# Assign distinctness to each taxon within samples
+distEx.1 <- assignDistinct(distEx,
+  sampleID = c("UID", "SAMPLE_TYPE"),
+  taxlevels = c("PHYLUM", "CLASS", "ORDER", "FAMILY", "GENUS"),
+  final.name = "TARGET_TAXON",
+  special.taxa = c("THIENEMANNIMYIA GENUS GR.", "CERATOPOGONINAE", "CRICOTOPUS/ORTHOCLADIUS")
+)
 
-  head(distEx.1)
-  }
+head(distEx.1)
+}
 }
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}
