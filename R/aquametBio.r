@@ -4,7 +4,6 @@
 #' @name aquametBio
 #'
 #' @importFrom Hmisc "%nin%" capitalize
-#' @importFrom gtools smartbind
 #' @importFrom stats aggregate approx reshape formula runif
 #' @importFrom utils head flush.console
 #'

@@ -14,7 +14,6 @@ Depends:
     R (>= 4.1)
 Imports:
     Hmisc,
-    gtools,
 Suggests:
     testthat (>= 3.0.0),
     knitr,
