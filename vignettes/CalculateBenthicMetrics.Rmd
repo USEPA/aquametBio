@@ -20,7 +20,7 @@ In NRSA, a different level of aggregation of taxonomy is used to match that used
 ********
 # 2 Calculating macroinvertebrate metrics
 
-There are two main approaches to calculating the benthic macroinvertebrate metrics. One may either calculate all metrics at once, which may take a long time with larger datasets, or one may calculate various subsets of metrics. The latter approach may be helpful if only certain metrics are of interest or only certain traits are available. In the first approach, the function `calcAllBentMets` serves as a wrapper function for a number of metric subset functions. The other approach involves using individual funcions, including `calcBentTaxMets`, `calcBentTolMets`, `calcBentFFGmets`, `calcBentHabitMets`, and/or `calcBentDominMets`.
+There are two main approaches to calculating the benthic macroinvertebrate metrics. One may either calculate all metrics at once, which may take a long time with larger datasets, or one may calculate various subsets of metrics. The latter approach may be helpful if only certain metrics are of interest or only certain traits are available. In the first approach, the function `calcAllBentMets` serves as a wrapper function for a number of metric subset functions. The other approach involves using individual functions, including `calcBentTaxMets`, `calcBentTolMets`, `calcBentFFGmets`, `calcBentHabitMets`, and/or `calcBentDominMets`.
 
 ## 2.1 All metrics at once
 

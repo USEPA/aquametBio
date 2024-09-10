@@ -18,7 +18,7 @@ The functions in this package allow for a great deal of flexibility in terms of 
 ********
 # 2 Calculating NRSA fish metrics
 
-There are two main approaches to calculating the fish metrics. One may either calculate all fish metrics at once, which may take a long time with larger datasets, or one may calculate various subsets of metrics. The latter approach may be helpful if only certain metrics are of interest or only certain traits are available. In the first approach, the function `calcAllFishMets` serves as a wrapper function for a number of metric subset functions. The other approach involves using individual funcions, including `calcFishTaxMets`, `calcFishTolMets`, `calcFishTrophicMets`, `calcFishOtherMets`, `calcFishNativeMets`, and/or `calcFishAnomMets`. The metrics used in regional fish MMIs and the MMIs themselves, can be calculated using the functions `calcNRSA_FishMMImets()` and `calcFishMMI()`, respectively.
+There are two main approaches to calculating the fish metrics. One may either calculate all fish metrics at once, which may take a long time with larger datasets, or one may calculate various subsets of metrics. The latter approach may be helpful if only certain metrics are of interest or only certain traits are available. In the first approach, the function `calcAllFishMets` serves as a wrapper function for a number of metric subset functions. The other approach involves using individual functions, including `calcFishTaxMets`, `calcFishTolMets`, `calcFishTrophicMets`, `calcFishOtherMets`, `calcFishNativeMets`, and/or `calcFishAnomMets`. The metrics used in regional fish MMIs and the MMIs themselves, can be calculated using the functions `calcNRSA_FishMMImets()` and `calcFishMMI()`, respectively.
 
 ## 2.1 All metrics at once
 
@@ -51,7 +51,7 @@ The definitions of all metrics can be found in **NRSA_Fish_Metric_Descriptions.p
 
 ## 2.2 Subsets of metrics
 
-Suppose only tolerance-related and taxonomic metrics are of interest. Then we need only to run the `calcFishTolMets()` and `calcFishTaxMets()` functions. For each of these functions, if we include a variable for `nonnat` in the input data frame, native status versions of metrics will also be calculated. For the purposes of demonstration, we will included this non-native status variable for the tolerance metrics but not the taxonomy metrics.
+Suppose only tolerance-related and taxonomic metrics are of interest. Then we need only to run the `calcFishTolMets()` and `calcFishTaxMets()` functions. For each of these functions, if we include a variable for `nonnat` in the input data frame, native status versions of metrics will also be calculated. For the purposes of demonstration, we will include this non-native status variable for the tolerance metrics but not the taxonomy metrics.
 
 ### Taxonomy metrics
 
@@ -125,10 +125,10 @@ Again, note that there are missing values for the metrics and metric scores not 
 
 # 4 Assign NRSA fish condition
 
-Using the output from \code{calcFishMMI()}, we can now assign fish assemblage condition to these sites using the
-\code{assignFishCondition()} function. Additional variables, including watershed area (km2) and total number of individuals 
+Using the output from `calcFishMMI()`, we can now assign fish assemblage condition to these sites using the
+`assignFishCondition()` function. Additional variables, including watershed area (km2) and total number of individuals 
 collected would be required to assign condition only if we had missing MMI values. Since we do not, we do not need to add
-these variables. See the example for \code{assignFishCondition} to see examples for that scenario.
+these variables. See the example for `assignFishCondition` to see examples for that scenario.
 
 ```{r fish condition}
 outCond <- assignFishCondition(outMMI, sampID = "UID", ecoreg = "ECO9", mmi = "MMI_FISH")
