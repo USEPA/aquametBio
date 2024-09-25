@@ -35,6 +35,7 @@ rarifyCounts <- function(inCts, sampID = "UID", abund = "COUNT",
                          subsize = NULL,
                          seed = NULL) {
   start.time <- proc.time()
+  inCts <- as.data.frame(inCts)
   inCts <- subset(inCts, !is.na(eval(as.name(abund))) & as.numeric(eval(as.name(abund))) > 0)
   inCts[, abund] <- as.numeric(inCts[, abund])
 
