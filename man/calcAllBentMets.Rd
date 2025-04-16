@@ -61,6 +61,9 @@ variable in inTaxa. The default is \emph{PTV}.}
 \value{
 A data frame containing the variables in sampID and all of
 the benthic macroinvertebrate metrics as additional variables.
+
+Descriptions of all macroinvertabrate metrics can be found here:
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}{NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}.
 }
 \description{
 This is a wrapper function that calculates

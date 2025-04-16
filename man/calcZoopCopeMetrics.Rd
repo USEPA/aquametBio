@@ -27,8 +27,13 @@ the same order as for calaIn and cyclIn metrics.}
 \value{
 A data frame with \emph{sampID} variables and the metric
 containing the copepod ratio metrics
+
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
 }
 \description{
 This function calculates ratios of calanoid
 copepods to the sum of cyclopoid copepods and cladocerans
+}
+\author{
+Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }

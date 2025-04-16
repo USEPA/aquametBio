@@ -47,8 +47,13 @@ This suffix must match the name of a variable in \emph{indata}}
 A data frame containing the variables in sampID and
 the zooplankton metrics as additional variables. If
 \emph{nativeMetrics} = TRUE, NAT is appended to metric names.
+
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
 }
 \description{
 This function calculates all diversity metrics associated
 with a given input data frame using the inputs provided.
+}
+\author{
+Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }

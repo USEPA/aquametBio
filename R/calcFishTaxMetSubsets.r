@@ -38,13 +38,13 @@
 #' \emph{inTaxa} taxalist containing the common name. The
 #' default value is \emph{NAME}.
 #' @return A data frame containing the variables in sampID and
-#' the fish tolerance metrics as additional variables. Metric
-#' descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
-#' included in this package. The names of
+#' the fish tolerance metrics as additional variables. The names of
 #' metrics include  SALMPIND, SALMNTAX, SALMPTAX, ICTAPIND, ICTANTAX,
 #' ICTAPTAX, CATOPIND, CATONTAX, CATOPTAX, RBCATOPIND, RBCATONTAX,
 #' RBCATOPTAX, CENTPIND, CENTNTAX, CENTPTAX, CYPRPIND, CYPRNTAX, CYPRPTAX,
 #' TOTLNTAX, and TOTLNIND.
+#'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA_Fish_Metric_Descriptions.pdf}{NRSA_Fish_Metric_Descriptions.pdf}
 #'
 #' If a non-native status variable is included, these metrics are also
 #' calculated:

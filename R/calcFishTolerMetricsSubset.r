@@ -56,13 +56,13 @@
 #' non-native and 'N' for native. The default name
 #' is \emph{NONNATIVE}.
 #' @return A data frame containing the variables in sampID and
-#' the fish tolerance metrics as additional variables. Metric
-#' descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
-#' included in this package. The names of
+#' the fish tolerance metrics as additional variables. The names of
 #' metrics include INTLNIND, INTLNTAX, INTLPIND, INTLPTAX, MTOLNIND,
 #' MTOLNTAX, MTOLPIND, MTOLPTAX, NTOLNIND, NTOLNTAX, NTOLPIND,
 #' NTOLPTAX, TOLRNIND, TOLRNTAX, TOLRPIND, TOLRPTAX, WTD_TV, TOTLNIND,
 #' and TOTLNTAX.
+#'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA_Fish_Metric_Descriptions.pdf}{NRSA_Fish_Metric_Descriptions.pdf}
 #'
 #' If a non-native status variable is included, these metrics are also
 #' calculated:

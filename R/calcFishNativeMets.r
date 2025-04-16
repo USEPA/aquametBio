@@ -20,11 +20,11 @@
 #' non-native and 'N' for native. The default name
 #' is \emph{NONNATIVE}.
 #' @return A data frame containing the variables in sampID and
-#' the fish native status metrics as additional variables. Metric
-#' descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
-#' included in this package. The names of
-#' metrics include  NAT_TOTLNTAX, NAT_PTAX, NAT_PIND, ALIENNTAX,
+#' the fish native status metrics as additional variables.
+#' The names of metrics include  NAT_TOTLNTAX, NAT_PTAX, NAT_PIND, ALIENNTAX,
 #' ALIENPTAX, ALIENPIND.
+#'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA_Fish_Metric_Descriptions.pdf}{NRSA_Fish_Metric_Descriptions.pdf}
 #'
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'

@@ -74,6 +74,9 @@
 #' @param net_size A string with the name of the variable in
 #' \emph{inTaxa} indicating the net size class of a taxon.
 #' Valid values are COARSE and FINE.
+#'
+#' @return A data frame containing all zooplankton metrics.
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
 calcZoopAllMets <- function(indata, inCoarse, inFine,
                             inTaxa, sampID, is_distinct,
                             ct = "COUNT", biomass = "BIOMASS",

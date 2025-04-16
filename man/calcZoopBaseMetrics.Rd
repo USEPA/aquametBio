@@ -86,10 +86,15 @@ metrics include number of individuals, percent individuals,
 biomass, percent biomass, density, and percent density for
 each of several groups based on traits \emph{inTaxa}. If
 \emph{nativeMetrics} = TRUE, NAT is appended to metric names.
+
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
 }
 \description{
 This function calculates all base metrics associated
 with a given input data frame using the inputs provided. These
 inputs include the names of count, biomass, and density variables,
 as well as a variable indicating distinctness of each taxon.
+}
+\author{
+Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }

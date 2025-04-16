@@ -57,7 +57,10 @@
 #' biomass, percent biomass, density, and percent density for
 #' each of several groups based on traits \emph{inTaxa}. If
 #' \emph{nativeMetrics} = TRUE, NAT is appended to metric names.
-
+#'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
+#'
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 calcZoopBaseMetrics <- function(indata, sampID, is_distinct,
                                 ct, biomass, density = NULL,
                                 inTaxa, taxa_id = "TAXA_ID",

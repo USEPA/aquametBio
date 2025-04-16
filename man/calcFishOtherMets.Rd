@@ -73,13 +73,12 @@ is \emph{NONNATIVE}.}
 }
 \value{
 A data frame containing the variables in sampID and
-the fish metrics as additional variables. Metric
-descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
-included in this package. The names of
+the fish metrics as additional variables. The names of
 metrics include  RHEONTAX, RHEOPIND, RHEOPTAX, LOTNTAX, LOTPIND,
 LOTPTAX,  MIGRNTAX, MIGRPIND, MIGRPTAX,  LITHNTAX, LITHPIND,
 LITHPTAX,  COLDNTAX, COLDPIND, COLDPTAX, TOTLNIND,
 and TOTLNTAX.
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA_Fish_Metric_Descriptions.pdf}{NRSA_Fish_Metric_Descriptions.pdf}
 
 If a non-native status variable is included, these metrics are also
 calculated:

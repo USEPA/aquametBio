@@ -24,6 +24,8 @@
 #' @return A data frame containing the totals of input variables by
 #' the variables in \emph{sampID}.
 #'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
+#'
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
 calcZoopTotals <- function(indata, sampID, is_distinct,

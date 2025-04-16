@@ -115,6 +115,10 @@ taxon. Valid values are LARGE and SMALL.}
 \emph{inTaxa} indicating the net size class of a taxon.
 Valid values are COARSE and FINE.}
 }
+\value{
+A data frame containing all zooplankton metrics.
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
+}
 \description{
 This function calculates all zooplankton metrics
 for a given input data frame using the inputs provided. These

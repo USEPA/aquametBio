@@ -28,6 +28,10 @@
 #' @return A data frame containing the variables in sampID and
 #' the zooplankton metrics as additional variables. If
 #' \emph{nativeMetrics} = TRUE, NAT is appended to metric names.
+#'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
+#'
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 calcZoopDivMetrics <- function(indata, sampID, is_distinct,
                                ct, biomass = NULL, density = NULL,
                                suffix = "") {

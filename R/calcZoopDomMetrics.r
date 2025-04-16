@@ -20,6 +20,10 @@
 #' @return A data frame with \emph{sampID} variables and the metric containing
 #' the % individuals in the
 #' dominant (topN) taxa
+#'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
+#'
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 calcZoopDomMetrics <- function(indata, sampID, is_distinct,
                                valsIn, valsOut, taxa_id,
                                subgrp = NULL) {

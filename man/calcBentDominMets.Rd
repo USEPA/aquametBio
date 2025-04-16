@@ -45,8 +45,8 @@ the benthic macroinvertebrate metrics as additional variables.
 The names of metrics include HPRIME, DOM1PIND, DOM3PIND,
 DOM5PIND, CHIRDOM1PIND, CHIRDOM3PIND, and CHIRDOM5PIND.
 
-Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
-included in this package.
+Descriptions of all macroinvertabrate metrics can be found here:
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}{NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}
 }
 \description{
 This function calculates overall dominance,

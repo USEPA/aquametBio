@@ -16,6 +16,10 @@
 #' the same order as for calaIn and cyclIn metrics.
 #' @return A data frame with \emph{sampID} variables and the metric
 #' containing the copepod ratio metrics
+#'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
+#'
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 calcZoopCopeMetrics <- function(indata, sampID,
                                 calaIn, cyclIn, cladIn) {
   indata <- as.data.frame(indata)

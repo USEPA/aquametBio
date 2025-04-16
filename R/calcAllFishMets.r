@@ -73,9 +73,10 @@
 #' \emph{inTaxa} taxalist containing the common name. The
 #' default value is \emph{NAME}.
 #' @return A data frame containing the variables in sampID and
-#' all fish metrics as additional variables. These are listed in
-#' the document \emph{NRSA_Fish_Metric_Descriptions.pdf} included
-#' in this package, which contains metric descriptions.
+#' all fish metrics as additional variables.
+#'
+#' Descriptions of all macroinvertabrate metrics can be found here:
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA_Fish_Metric_Descriptions.pdf}{NRSA_Fish_Metric_Descriptions.pdf}
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @examples
 #' data(fishEx)

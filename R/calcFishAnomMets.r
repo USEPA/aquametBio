@@ -15,9 +15,9 @@
 #' @param anomct A string with the name of the count variable. If not
 #' specified, the default is \emph{ANOM_CT}.
 #' @return A data frame containing the variables in sampID and
-#' the fish anomaly metric ANOMPIND as an additional variable. Metric
-#' descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
-#' included in this package.
+#' the fish anomaly metric ANOMPIND as an additional variable.
+#'
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA_Fish_Metric_Descriptions.pdf}{NRSA_Fish_Metric_Descriptions.pdf}
 #'
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'

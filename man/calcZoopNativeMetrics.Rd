@@ -30,6 +30,8 @@ of the \emph{inputTotals}. The names of the resulting
 metrics are based on the names of the inputs. Metrics
 with suffixes are replaced as follows: NIND = PIND,
 NTAX = PTAX, DEN = PDEN, BIO = PBIO.
+
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
 }
 \description{
 This function calculates percent native for

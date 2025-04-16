@@ -21,6 +21,8 @@
 #' with suffixes are replaced as follows: NIND = PIND,
 #' NTAX = PTAX, DEN = PDEN, BIO = PBIO.
 #'
+#'\href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
+#'
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #'
 calcZoopNativeMetrics <- function(indata, sampID,

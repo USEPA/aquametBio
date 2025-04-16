@@ -55,8 +55,8 @@ COFITRICNTAX, COFITRICPIND, COFITRICPTAX, COGANTAX, COGAPIND,
 COGAPTAX, PREDNTAX, PREDPIND, PREDPTAX, SCRPNTAX, SCRPPIND,
 SCRPPTAX, SHRDNTAX, SHRDPIND, and SHRDPTAX.
 
-Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
-included in this package.
+Descriptions of all macroinvertabrate metrics can be found here:
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}{NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}
 }
 \description{
 This function calculates

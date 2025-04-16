@@ -38,6 +38,8 @@ number of taxa output variable.}
 \value{
 A data frame containing the totals of input variables by
 the variables in \emph{sampID}.
+
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
 }
 \description{
 This internal function calculates totals for

@@ -56,6 +56,8 @@ A data frame containing the richness metrics that include
 number of taxa for full data (native only and all taxa) and
 300 count subsamples (native only and all taxa), with variations
 based on the lowest taxon possible, genus level, and family level.
+
+\href{https://github.com/USEPA/aquametBio/blob/main/inst/NLA_Zooplankton_Metric_Descriptions.pdf}{NLA_Zooplankton_Metric_Descriptions.pdf}
 }
 \description{
 This function calculates all of the variations of

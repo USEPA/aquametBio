@@ -36,8 +36,8 @@
 #'  TANYPIND, TANYPTAX, TRICNTAX, TRICPIND, TRICPTAX, TUBINAIDNTAX,
 #'  TUBINAIDPIND, TUBINAIDPTAX, and ORTHCHIRPIND.
 #'
-#' Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
-#' included in this package.
+#' Descriptions of all macroinvertabrate metrics can be found here:
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}{NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 
@@ -289,8 +289,8 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
 #' COGAPTAX, PREDNTAX, PREDPIND, PREDPTAX, SCRPNTAX, SCRPPIND,
 #' SCRPPTAX, SHRDNTAX, SHRDPIND, and SHRDPTAX.
 #'
-#' Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
-#' included in this package.
+#' Descriptions of all macroinvertabrate metrics can be found here:
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}{NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 calcBentFFGmets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
@@ -500,8 +500,8 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
 #'  CLMBPIND, CLMBPTAX, CLNGNTAX, CLNGPIND, CLNGPTAX, SPWLNTAX,
 #'  SPWLPIND, SPWLPTAX, SWIMNTAX, SWIMPIND, and SWIMPTAX.
 #'
-#' Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
-#' included in this package.
+#' Descriptions of all macroinvertabrate metrics can be found here:
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}{NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 calcBentHabitMets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
@@ -700,8 +700,8 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT
 #'  TL23PIND, TL23PTAX, TL45NTAX, TL45PIND, TL45PTAX, TL67NTAX,
 #'  TL67PIND, TL67PTAX, TOLRNTAX, TOLRPIND, TOLRPTAX, and WTD_TV.
 #'
-#' Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
-#' included in this package.
+#' Descriptions of all macroinvertabrate metrics can be found here:
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}{NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 calcBentTolMets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
@@ -921,8 +921,8 @@ calcBentTolMets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
 #' The names of metrics include HPRIME, DOM1PIND, DOM3PIND,
 #' DOM5PIND, CHIRDOM1PIND, CHIRDOM3PIND, and CHIRDOM5PIND.
 #'
-#' Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
-#' included in this package.
+#' Descriptions of all macroinvertabrate metrics can be found here:
+#' \href{https://github.com/USEPA/aquametBio/blob/main/inst/NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}{NRSA-NLA_Invertebrate_Metric_Descriptions.pdf}
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 calcBentDominMets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
