@@ -1,3 +1,7 @@
+# aquametBio 2.2.4
+
+5/6/2025 Added code to address case where Orthocladiinae not present in dataset.
+
 # aquametBio 2.2.2
 
 3/22/2024 Corrected zooplankton MMI thresholds back to original values.

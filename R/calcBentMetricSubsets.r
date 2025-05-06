@@ -198,9 +198,12 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
 
   # ORTHCHIRPIND are % of Chironomidae individuals in ORTHOCLADIINAE (not in
   # total indiv in sample)
-  outWide$ORTHCHIRPIND <- with(outWide, round(ORTHNIND / CHIRNIND * 100, 2))
-  outWide$ORTHCHIRPIND <- with(outWide, ifelse(is.na(ORTHCHIRPIND) | is.nan(ORTHCHIRPIND), 0, ORTHCHIRPIND))
-
+  if('ORTHNIND' %in% names(outWide)){
+    outWide$ORTHCHIRPIND <- with(outWide, round(ORTHNIND / CHIRNIND * 100, 2))
+    outWide$ORTHCHIRPIND <- with(outWide, ifelse(is.na(ORTHCHIRPIND) | is.nan(ORTHCHIRPIND), 0, ORTHCHIRPIND))
+  }else{
+    outWide$ORTHCHIRPIND <- 0
+  }
   empty_tax <- data.frame(t(rep(NA, 56)), stringsAsFactors = F)
   names(empty_tax) <- c(
     "TOTLNTAX", "AMPHNTAX", "AMPHPIND",
