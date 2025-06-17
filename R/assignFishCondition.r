@@ -81,7 +81,7 @@ assignFishCondition <- function(inMMI, sampID = "UID", ecoreg = "ECOREG", mmi = 
   }
 
   # Make sure variables are numeric and rename area and total individuals
-  if (any(is.na(inMMI.1[, mmi]))) {
+  if (any(is.na(inMMI.1[, mmi])|inMMI.1[, mmi] == 0)) {
     names(inMMI.1)[names(inMMI.1) == wsarea] <- "WSAREA"
     names(inMMI.1)[names(inMMI.1) == totlnind] <- "TOTLNIND"
 

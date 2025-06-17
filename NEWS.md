@@ -1,3 +1,8 @@
+# aquametBio 2.2.5
+
+6/17/2025 Added condition to assignFishCondition in case where MMI = 0 to 
+require watershed area and total individuals
+
 # aquametBio 2.2.4
 
 5/6/2025 Added code to address case where Orthocladiinae not present in dataset.
